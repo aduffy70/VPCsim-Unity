@@ -15,7 +15,7 @@ public class VPCsimCharacterController : MonoBehaviour
 	public float maximumY = 90f;
 	float rotationY = 0;
 	public float speed = 10.0f;
-	public float minimumSpeed = 5f;
+	public float minimumSpeed = 1f;
 	public float maximumSpeed = 500f;
 	public float acceleration = 1f;
 	public float rotationSpeedHorizontal = 100.0f;
@@ -72,6 +72,7 @@ public class VPCsimCharacterController : MonoBehaviour
 	//Add a fly/walk button to the GUI
 	void OnGUI()
 	{
+		GUI.Box(new Rect(10, 265, 100, 25), "Speed: " + ((int)speed).ToString());
 		GUI.Box(new Rect(10, 200, 100, 60), boxText);
 		bool walkFlyButton = GUI.Button(new Rect(20, 230, 80, 20), new GUIContent(buttonText));
 		if (walkFlyButton)
