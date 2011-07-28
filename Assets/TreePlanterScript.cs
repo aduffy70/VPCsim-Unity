@@ -37,11 +37,33 @@ public class TreePlanterScript : MonoBehaviour
     int m_fertilityMap = 0;
 	int m_xCells = 200;
 	int m_yCells = 200;
-	
+	public float m_scale0 = 0.5f;
+	public float m_scale1 = 0.5f;
+	public float m_scale2 = 1.0f;
+	public float m_scale3 = 1.0f;
+	public float m_scale4 = 1.0f;
+	public float m_scale5 = 1.0f;
+	public float m_scale6 = 1.0f;
+	public float m_scale7 = 1.0f;
+	public float m_scale8 = 1.0f;
+	public float m_scale9 = 1.0f;
+	public float m_scale10 = 1.0f;
+	public float m_scale11 = 1.0f;
+	public float m_scale12 = 1.0f;
+	public float m_scale13 = 1.0f;
+	public float m_scale14 = 0.5f;
+	public float m_scale15 = 0.5f;
+	public float m_scale16 = 1.0f;
+	public float m_scale17 = 0.5f;
+	public float m_scale18 = 0.5f;
+	public float m_scale19 = 0.5f;
+	float[] m_plantDefaultScales; 	
 
 	// Use this for initialization
 	void Start()
 	{
+		m_plantDefaultScales = new float[20] {m_scale0, m_scale1, m_scale2, m_scale3, m_scale4, m_scale5, m_scale6, m_scale7, m_scale8, m_scale9, m_scale10, m_scale11, m_scale12, m_scale13, m_scale14, m_scale15, m_scale16, m_scale17, m_scale18, m_scale19};
+
 		ClearAllTrees();	
 		GenerateRandomCommunity();
 	}
@@ -51,11 +73,13 @@ public class TreePlanterScript : MonoBehaviour
 	{
 	}
 
+	//Before shutting down
 	void OnApplicationQuit()
 	{
 		ClearAllTrees();
 	}
 	
+	//Generate the GUI controls and HUD
 	void OnGUI()
 	{
 		GUI.Box(new Rect(10, 10, 100, 90), "Inworld Controls");
@@ -75,7 +99,9 @@ public class TreePlanterScript : MonoBehaviour
 			TreeInstance tree = new TreeInstance();
 			tree.position = location;
 			tree.prototypeIndex = index;
-			float scale = Random.Range(0.5f, 1.5f);
+			//float scale = 1.0f;
+			//float scale = Random.Range(0.5f, 1.5f);
+			float scale = m_plantDefaultScales[index];
 			tree.widthScale = scale;
 			tree.heightScale = scale;
 			tree.color = Color.white;
@@ -84,53 +110,42 @@ public class TreePlanterScript : MonoBehaviour
 		//}
 	}
 	
-	int tempNumber = 0;
-	
-	void OnMouseDown()
-	{
-		print("Eureka! " + tempNumber);
-		tempNumber++;
-		ChangeManyTrees();
-	}
-	
+		
 	void ChangeManyTrees()
 	{
+		//Test function to change all trees in the scene
 		TreeInstance[] oldTrees = Terrain.activeTerrain.terrainData.treeInstances;
 		Terrain.activeTerrain.terrainData.treeInstances = new TreeInstance[0];
 		for (int i=0; i< oldTrees.Length; i++)
 		{
-			//if (oldTrees[i].prototypeIndex == 14)
-			//{
-			//	oldTrees[i].prototypeIndex = 1;
-			//}
-			//Terrain.activeTerrain.AddTreeInstance(oldTrees[i]);
-			if (i % 243 != 0)
+			if (oldTrees[i].prototypeIndex == 19)
 			{
-				if (oldTrees[i].prototypeIndex == 19)
-				{
-					oldTrees[i].prototypeIndex = 0;
-				}
-				else
-				{
-					oldTrees[i].prototypeIndex++;
-				}
-				Terrain.activeTerrain.AddTreeInstance(oldTrees[i]);
+				oldTrees[i].prototypeIndex = 0;
 			}
+			else
+			{
+				oldTrees[i].prototypeIndex++;
+			}
+			Terrain.activeTerrain.AddTreeInstance(oldTrees[i]);
 		}
 		Terrain.activeTerrain.Flush();	
 	}
 		
 	void GenerateRandomCommunity()
 	{
-		for (float x=0.25f; x<0.75f;x=x+0.004f)
+		int tempCount = 0;
+		for (float x=0.0f; x<1.0f;x=x+0.004f)
 		{
-			for (float z=0.25f; z<0.75f; z=z+0.0025f)
+			for (float z=0.0f; z<1.0f; z=z+0.01f)
 			{
+				//Randomize about the location a bit
 				//Vector3 location = new Vector3(x + Random.Range(-0.01f, 0.01f), 
 				//							   0.0f, z + Random.Range(-0.01f, 0.01f));
 				Vector3 location = new Vector3(x, 0.0f, z);
-				int index = Random.Range(0, 20);
+				//int index = Random.Range(0, 20);
+				int index = tempCount % 20;
 				PlantTree(location, index);
+				tempCount++;
 			}
 		}
 		Terrain.activeTerrain.Flush();

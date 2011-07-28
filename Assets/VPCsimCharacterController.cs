@@ -19,6 +19,7 @@ public class VPCsimCharacterController : MonoBehaviour
 	public float maximumSpeed = 500f;
 	public float acceleration = 1f;
 	public float rotationSpeedHorizontal = 100.0f;
+	bool isWalking;
 
 	// Use this for initialization
 	void Start()
@@ -27,6 +28,8 @@ public class VPCsimCharacterController : MonoBehaviour
 		if (rigidbody)
 		{
 			rigidbody.freezeRotation = true;
+			rigidbody.useGravity = true;
+			isWalking = true;
 		}
 	}
 		
@@ -61,5 +64,30 @@ public class VPCsimCharacterController : MonoBehaviour
 		}
 		rotationY = Mathf.Clamp(rotationY, minimumY, maximumY);	
 		transform.localEulerAngles = new Vector3(-rotationY, transform.localEulerAngles.y, 0);	
+	}
+	
+	string buttonText = "Fly";
+	string boxText = "Walking...";
+	
+	//Add a fly/walk button to the GUI
+	void OnGUI()
+	{
+		GUI.Box(new Rect(10, 200, 100, 60), boxText);
+		bool walkFlyButton = GUI.Button(new Rect(20, 230, 80, 20), new GUIContent(buttonText));
+		if (walkFlyButton)
+		{
+			isWalking = !isWalking;
+			rigidbody.useGravity = isWalking;
+			if (isWalking)
+			{
+				buttonText = "Fly";
+				boxText = "Walking...";
+			}
+			else
+			{
+				buttonText = "Walk";
+				boxText = "Flying...";
+			}
+		}
 	}
 }
