@@ -37,26 +37,27 @@ public class TreePlanterScript : MonoBehaviour
     int m_fertilityMap = 0;
 	int m_xCells = 200;
 	int m_yCells = 200;
-	public float m_scale0 = 0.5f;
-	public float m_scale1 = 0.5f;
-	public float m_scale2 = 1.0f;
-	public float m_scale3 = 1.0f;
-	public float m_scale4 = 1.0f;
-	public float m_scale5 = 1.0f;
-	public float m_scale6 = 1.0f;
-	public float m_scale7 = 1.0f;
-	public float m_scale8 = 1.0f;
-	public float m_scale9 = 1.0f;
-	public float m_scale10 = 1.0f;
-	public float m_scale11 = 1.0f;
-	public float m_scale12 = 1.0f;
-	public float m_scale13 = 1.0f;
-	public float m_scale14 = 0.5f;
-	public float m_scale15 = 0.5f;
-	public float m_scale16 = 1.0f;
-	public float m_scale17 = 0.5f;
-	public float m_scale18 = 0.5f;
-	public float m_scale19 = 0.5f;
+	//Default scale for each plant type
+	float m_scale0 = 1.2f; //Alder
+	float m_scale1 = 1.0f; //Bamboo
+	float m_scale2 = 3.0f; //Grass leaves
+	float m_scale3 = 80.0f; //Banyan
+	float m_scale4 = 5.0f; //Bush1
+	float m_scale5 = 7.0f; //Bush2
+	float m_scale6 = 6.0f; //Bush3
+	float m_scale7 = 7.0f; //Bush4
+	float m_scale8 = 5.0f; //Bush5
+	float m_scale9 = 2.0f; //Bush5 Low Poly
+	float m_scale10 = 5.0f; //Bush6
+	float m_scale11 = 2.0f; //Bush6 Low Poly
+	float m_scale12 = 7.0f; //Bush7
+	float m_scale13 = 3.0f; //Fern
+	float m_scale14 = 0.5f; //Japanese Maple
+	float m_scale15 = 0.3f; //Mimosa
+	float m_scale16 = 75.0f; //Palm (group)
+	float m_scale17 = 1.0f; //Cots Pinetype
+	float m_scale18 = 1.2f; //Sycamore
+	float m_scale19 = 1.5f; //Willow
 	float[] m_plantDefaultScales; 	
 
 	// Use this for initialization
