@@ -6,7 +6,7 @@ using System.Timers;
 public class TreePlanterScript : MonoBehaviour
 {
 	System.Random m_random = new System.Random();
-	int m_generations = 1000; //Number of time steps to simulate
+	int m_generations = 10; //Number of time steps to simulate
 	bool m_naturalAppearance = true; //Whether the trees are placed in rows or randomly
 	int[,,] m_cellStatus; //Tree type for each cell in each generation [gen,x,y]
 	bool[,] m_permanentDisturbanceMap; //Whether each cell is marked as permanently disturbed
@@ -80,6 +80,7 @@ public class TreePlanterScript : MonoBehaviour
 	int[,] m_totalSpeciesCounts; //Total species counts for each generation.
 	Vector3[,] m_coordinates; //Keeps track of the region coordinates where each plant will be placed so we only have to calculate them once.
 	int m_totalActiveCells; //The total number of possible plant locations (plants + gaps + disturbed areas ... or ... xCells * zCells). This shouldn't change over the course of a simulation.  This used to have to be adjusted for cells below water or outside the region but that is no longer an issue so do I need this or could it be replaced with xCells * zCells?
+	int[,] m_displayedPlants; //Tracks the currently displayed plants
 
 	#region Unity3D specific functions
 
@@ -126,13 +127,90 @@ public class TreePlanterScript : MonoBehaviour
 		}
 		if (testButton)
 		{
-			
+			RunSimulation();
 		}
 	}
 	
 	#endregion
 		
 	#region Visualization functions
+
+//	void ChangeManyTrees()
+//	{
+//		//Test function to change all trees in the scene
+//		TreeInstance[] oldTrees = Terrain.activeTerrain.terrainData.treeInstances;
+//		Terrain.activeTerrain.terrainData.treeInstances = new TreeInstance[0];
+//		for (int i=0; i< oldTrees.Length; i++)
+//		{
+//			if (oldTrees[i].prototypeIndex == 19)
+//			{
+//				oldTrees[i].prototypeIndex = 0;				
+//			}
+//			else
+//			{
+//				oldTrees[i].prototypeIndex++;
+//			}
+//			float scaleHeight = m_treeScales[oldTrees[i].prototypeIndex] * Random.Range(0.75f, 1.5f);
+//			float scaleWidth = m_treeScales[oldTrees[i].prototypeIndex] * Random.Range(0.75f, 1.5f);
+//			oldTrees[i].widthScale = scaleWidth;
+//			oldTrees[i].heightScale = scaleHeight;
+//			Terrain.activeTerrain.AddTreeInstance(oldTrees[i]);
+//		}
+//		Terrain.activeTerrain.Flush();	
+//	}
+
+
+	
+	void VisualizeGeneration(int nextGeneration)
+    {
+        //Update the visualization with plants from the next generation.
+        int [] speciesCounts = new int[6] {0, 0, 0, 0, 0, 0};
+        //Remove old trees from the terrain
+        Terrain.activeTerrain.terrainData.treeInstances = new TreeInstance[0];
+        for (int z=0; z<m_zCells; z++)
+        {
+            for (int x=0; x<m_xCells; x++)
+            {
+                int currentSpecies = m_displayedPlants[x, z];
+                int newSpecies = m_cellStatus[nextGeneration, x, z];
+                
+                
+                
+                
+                if (newSpecies != currentSpecies)
+                {
+                    if ((currentSpecies != 0) && (currentSpecies != -1))
+                    {
+                        //Don't try to delete plants that don't exist
+                        DeletePlant(m_prims[x, z]);
+                    }
+                    if ((newSpecies != 0) && (newSpecies != -1))
+                    {
+                        m_prims[x, z] = CreatePlant(x, z, newSpecies);
+                        if (m_prims[x, z] != null)
+                        {
+                            m_displayedPlants[x, z] = newSpecies;
+                        }
+                        else
+                        {
+                            m_displayedPlants[x, z] = 0;
+                        }
+                    }
+                    else
+                    {
+                        m_prims[x, z] = null;
+                        m_displayedPlants[x, z] = 0;
+                    }
+                }
+                if (m_displayedPlants[x, z] != 0)
+                {
+                    speciesCounts[newSpecies] += 1;
+                }
+            }
+        }
+        CalculateStatistics(nextGeneration, m_currentGeneration, true);
+        m_currentGeneration = nextGeneration;
+    }
 	
 	void AddTree(Vector3 location, int species)
 	{
@@ -163,6 +241,8 @@ public class TreePlanterScript : MonoBehaviour
 		Terrain.activeTerrain.terrainData.treeInstances = new TreeInstance[0];
 		Terrain.activeTerrain.Flush();
 	}
+	
+	void DeleteTree(
 	
 	void OnCycleTimer(object source, ElapsedEventArgs e)
 	{
@@ -197,11 +277,6 @@ public class TreePlanterScript : MonoBehaviour
 	void StopCycling()
 	{
 		//Stop stepping through the generations
-	}
-	
-	void VisualizeGeneration(int nextGeneration)
-	{
-		//Update the trees in the community to show the next generation
 	}
 	
 	#endregion
@@ -641,6 +716,8 @@ public class TreePlanterScript : MonoBehaviour
     }
 		
 	#endregion
+	
+	
 }
 
 
