@@ -140,7 +140,6 @@ public class TreePlanterScript : MonoBehaviour
 	void VisualizeGeneration(int generation)
     {
         //Update the visualization with plants from a particular generation.
-        int [] speciesCounts = new int[6] {0, 0, 0, 0, 0, 0}; //TODO - Not used?
         //Remove old trees from the terrain
         Terrain.activeTerrain.terrainData.treeInstances = new TreeInstance[0];
         //Add new trees to the terrain
@@ -153,32 +152,12 @@ public class TreePlanterScript : MonoBehaviour
                 Vector3 newTreeLocation = m_cellPositions[x, z];
                 //AddTree(newTreeLocation, newTreePrototype);
                 AddTree(newTreeLocation, newTreeSpecies, m_age[generation, x, z]);
-                speciesCounts[newTreeSpecies] += 1; //TODO - Not used?
             }
         }
         Terrain.activeTerrain.Flush();
         CalculateSummaryStatistics(generation, m_displayedGeneration, true);
         m_displayedGeneration = generation;
     }
-	
-	void AddTree(Vector3 position, int treePrototype)
-	{
-		//Add a tree to the terrain
-		if (treePrototype != -1) // -1 would be a gap (no tree)
-		{
-			TreeInstance tree = new TreeInstance();
-			tree.position = position;
-			tree.prototypeIndex = treePrototype;
-			//Vary the height and width of individual trees a bit for a more natural appearance
-			float scaleHeight = m_prototypeScales[treePrototype] * Random.Range(0.75f, 1.5f);
-			float scaleWidth = m_prototypeScales[treePrototype] * Random.Range(0.75f, 1.5f);
-			tree.widthScale = scaleWidth;
-			tree.heightScale = scaleHeight;
-			tree.color = Color.white;
-			tree.lightmapColor = Color.white;
-			Terrain.activeTerrain.AddTreeInstance(tree);
-		}
-	}
 	
 	void AddTree(Vector3 position, int treeSpecies, int age)
 	{
@@ -190,13 +169,10 @@ public class TreePlanterScript : MonoBehaviour
 			tree.position = position;
 			tree.prototypeIndex = treePrototype;
 			//Vary the height and width of individual trees according to age
-			
-			float scaleHeight = m_prototypeScales[treePrototype] * (
-								(age / (float)m_lifespans[treeSpecies]) + 0.5f);
-			float scaleWidth = m_prototypeScales[treePrototype] * (
-							   (age / (float)m_lifespans[treeSpecies]) + 0.5f);
-			tree.widthScale = scaleWidth;
-			tree.heightScale = scaleHeight;
+			float scale = m_prototypeScales[treePrototype] * (
+						  (age / (float)m_lifespans[treeSpecies]) + 0.5f);
+			tree.widthScale = scale;
+			tree.heightScale = scale;
 			tree.color = Color.white;
 			tree.lightmapColor = Color.white;
 			Terrain.activeTerrain.AddTreeInstance(tree);
@@ -669,8 +645,6 @@ public class TreePlanterScript : MonoBehaviour
     }
 		
 	#endregion
-	
-	
 }
 
 
