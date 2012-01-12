@@ -6,13 +6,14 @@ using System.Timers;
 public class TreePlanterScript : MonoBehaviour
 {
 	System.Random m_random = new System.Random();
-	int m_generations = 10; //Number of time steps to simulate
+	int m_generations = 300; //Number of time steps to simulate
 	bool m_naturalAppearance = true; //Whether the trees are placed in rows or randomly
-	int[,,] m_cellStatus; //Tree type for each cell in each generation [gen,x,y]
+	int[,,] m_cellStatus; //Tree species for each cell in each generation [gen,x,y]
 	bool[,] m_permanentDisturbanceMap; //Whether each cell is marked as permanently disturbed
-	int[] m_communityMembers = new int[6] {-1, 2, 13, 14, 17, 19}; //Default tree types to include in the community (-1 represents a gap with no tree)
-	//Replacement Matrix.  The probability of replacement of one species by a 
-	//surrounding species.  Example [1,2] is the probability that species 2 
+	int[] m_speciesList = new int[6] {-1, 2, 13, 14, 17, 19}; //Unity tree prototypes to include in the community (-1 represents a gap with no tree)
+	//Replacement Matrix.  The probability of replacement of a tree of one species 
+	//by another species if it is entirely surrounded by the other species.  
+	//Example [1,2] is the probability that species 2 
 	//will be replaced by species 1, if species 2 is entirely surrounded by 
 	//species 1.
     //NOTE: Row zero is always 0's and does not effect the simulation because 
@@ -42,7 +43,7 @@ public class TreePlanterScript : MonoBehaviour
     float[] m_drainageEffects = new float[6] {0f, 0f, 0f, 0f, 0f, 0f};
     float[] m_fertilityOptimums = new float[6] {0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f};
     float[] m_fertilityEffects = new float[6] {0f, 0f, 0f, 0f, 0f, 0f};
-    bool m_disturbanceOnly = false; //Whether we are loading only a new disturbance map or all data from the webform
+    bool m_disturbanceOnly = false; //Whether we are loading only a new disturbance map or all data from the webform TODO- Does this need to be global?
     float m_ongoingDisturbanceRate = 0.0f;
 	int m_terrainMap = 0; //Which terrain map we are using
     //TODO: These map values are being read from the webform but we aren't using them for anything.  
@@ -53,7 +54,7 @@ public class TreePlanterScript : MonoBehaviour
     //Number of x and z cells (horizontal plane is xz in Unity3D)
 	int m_xCells = 200;
 	int m_zCells = 200;
-	//Default scale for each tree type
+	//Default scale for each tree prototype.
 	float m_scale0 = 1.2f; //Alder
 	float m_scale1 = 1.0f; //Bamboo
 	float m_scale2 = 3.0f; //Grass leaves
@@ -74,44 +75,43 @@ public class TreePlanterScript : MonoBehaviour
 	float m_scale17 = 1.0f; //Cots Pinetype
 	float m_scale18 = 1.2f; //Sycamore
 	float m_scale19 = 1.5f; //Willow
-	float[] m_treeScales; 
+	float[] m_prototypeScales; 
 	string m_configPath = "http://vmeadowga.aduffy70.org/"; //Url path to community config settings
 	int[,,] m_age; //Tracks the age of each plant in each generation.  We need to store age in each generation for when we run a new simulation from a particular starting step.
 	int[,] m_totalSpeciesCounts; //Total species counts for each generation.
-	Vector3[,] m_coordinates; //Keeps track of the region coordinates where each plant will be placed so we only have to calculate them once.
-	int m_totalActiveCells; //The total number of possible plant locations (plants + gaps + disturbed areas ... or ... xCells * zCells). This shouldn't change over the course of a simulation.  This used to have to be adjusted for cells below water or outside the region but that is no longer an issue so do I need this or could it be replaced with xCells * zCells?
+	Vector3[,] m_cellPositions; //Keeps track of the region coordinates where each plant will be placed so we only have to calculate them once.
 	int m_displayedGeneration = 0; //Which generation number is currently visualized
 
 	#region Unity3D specific functions
 
-	// Use this for initialization
 	void Start()
 	{
-		m_treeScales = new float[20] {m_scale0, m_scale1, m_scale2, 
+		//Initialize the list of prototype scales
+		m_prototypeScales = new float[20] {m_scale0, m_scale1, m_scale2, 
 											  m_scale3, m_scale4, m_scale5, 
 											  m_scale6, m_scale7, m_scale8, 
 											  m_scale9, m_scale10, m_scale11, 
 											  m_scale12, m_scale13, m_scale14, 
 											  m_scale15, m_scale16, m_scale17, 
 											  m_scale18, m_scale19};
-		
+		//In production there would never be trees in the scene at startup, but
+		//during development it can happen, so delete them just in case.
 		DeleteAllTrees();	
 	}
 		
-	// Update is called once per frame
 	void Update()
 	{
+		//Called once per frame
 	}
 
-	// Before shutting down
 	void OnApplicationQuit()
 	{
 		DeleteAllTrees();
 	}
 	
-	//Generate the GUI controls and HUD
 	void OnGUI()
 	{
+		//Generate the GUI controls and HUD
 		GUI.Box(new Rect(10, 10, 100, 90), "Inworld Controls");
 		bool randomizeButton = GUI.Button(new Rect(20, 40, 80, 20), 
 										  new GUIContent("Randomize", 
@@ -129,7 +129,7 @@ public class TreePlanterScript : MonoBehaviour
 		}
 		if (testButton)
 		{
-			VisualizeGeneration(m_displayedGeneration + 1);
+			VisualizeGeneration(m_displayedGeneration + 10);
 		}
 	}
 	
@@ -137,50 +137,45 @@ public class TreePlanterScript : MonoBehaviour
 		
 	#region Visualization functions
 	
-	void VisualizeGeneration(int nextGeneration)
+	void VisualizeGeneration(int generation)
     {
-        //Update the visualization with plants from the next generation.
-        int [] speciesCounts = new int[6] {0, 0, 0, 0, 0, 0};
+        //Update the visualization with plants from a particular generation.
+        int [] speciesCounts = new int[6] {0, 0, 0, 0, 0, 0}; //TODO - Not used?
         //Remove old trees from the terrain
         Terrain.activeTerrain.terrainData.treeInstances = new TreeInstance[0];
-        //Add trees to the terrain based on the cellStatus for nextGeneration
+        //Add new trees to the terrain
         for (int z=0; z<m_zCells; z++)
         {
             for (int x=0; x<m_xCells; x++)
             {
-                int newTreeSpecies = m_cellStatus[nextGeneration, x, z];
-                int newTreePrototypeIndex = m_communityMembers[newTreeSpecies];
-                Vector3 newTreeLocation = m_coordinates[x, z];
-                AddTree(newTreeLocation, newTreePrototypeIndex);
-                //AddTree(m_coordinates[x,z], m_communityMembers[m_cellStatus[0, x, z]]);
-                speciesCounts[newTreeSpecies] += 1;
+                int newTreeSpecies = m_cellStatus[generation, x, z];
+                int newTreePrototype = m_speciesList[newTreeSpecies];
+                Vector3 newTreeLocation = m_cellPositions[x, z];
+                AddTree(newTreeLocation, newTreePrototype);
+                speciesCounts[newTreeSpecies] += 1; //TODO - Not used?
             }
         }
         Terrain.activeTerrain.Flush();
-        CalculateSummaryStatistics(nextGeneration, m_displayedGeneration, true);
-        m_displayedGeneration = nextGeneration;
+        CalculateSummaryStatistics(generation, m_displayedGeneration, true);
+        m_displayedGeneration = generation;
     }
 	
-	void AddTree(Vector3 location, int treePrototypeIndex)
+	void AddTree(Vector3 position, int treePrototype)
 	{
 		//Add a tree to the terrain
-		if (treePrototypeIndex != -1) // -1 would be a gap
+		if (treePrototype != -1) // -1 would be a gap (no tree)
 		{
 			TreeInstance tree = new TreeInstance();
-			tree.position = location;
-			tree.prototypeIndex = treePrototypeIndex;
+			tree.position = position;
+			tree.prototypeIndex = treePrototype;
 			//Vary the height and width of individual trees a bit for a more natural appearance
-			float scaleHeight = m_treeScales[treePrototypeIndex] * Random.Range(0.75f, 1.5f);
-			float scaleWidth = m_treeScales[treePrototypeIndex] * Random.Range(0.75f, 1.5f);
+			float scaleHeight = m_prototypeScales[treePrototype] * Random.Range(0.75f, 1.5f);
+			float scaleWidth = m_prototypeScales[treePrototype] * Random.Range(0.75f, 1.5f);
 			tree.widthScale = scaleWidth;
 			tree.heightScale = scaleHeight;
 			tree.color = Color.white;
 			tree.lightmapColor = Color.white;
 			Terrain.activeTerrain.AddTreeInstance(tree);
-		}
-		else
-		{
-			//this is a gap - no tree
 		}
 	}
 	
@@ -232,55 +227,48 @@ public class TreePlanterScript : MonoBehaviour
 
 	void GenerateRandomCommunity()
 	{
-		//Generate starting matrix of random plant types and determine the 
-		//region x,y,z coordinates where each plant will be placed
+		//Generate starting matrix with random species and determine the 
+		//region x,y,z coordinates where each tree will be placed
 		m_cellStatus = new int[m_generations, m_xCells, m_zCells];
-        m_permanentDisturbanceMap = new bool[m_xCells, m_zCells];
         m_age = new int[m_generations, m_xCells, m_zCells];
         m_totalSpeciesCounts = new int[m_generations, 6];
-        m_coordinates = new Vector3[m_xCells, m_zCells];
+        m_cellPositions = new Vector3[m_xCells, m_zCells];
+        //Make a default disturbance map with no permanent disturbances
+        m_permanentDisturbanceMap = new bool[m_xCells, m_zCells];
         for (int z=0; z<m_zCells; z++)
         {
             for (int x=0; x<m_xCells; x++)
             {
-            	Vector3 location;
+            	Vector3 position;
                 if (m_naturalAppearance)
               	{
-                	//Randomize about the location a bit
+                	//Randomize about the cell position a bit
                 	//Coordinates for trees on the terrain range from 0-1.0
 					//To evenly space trees on each axis we need to divide 1.0 by 
 					//the number of x or z cells
-					location = new Vector3(x * (1.0f / m_xCells) + Random.Range(-0.01f, 0.01f), 
+					position = new Vector3(x * (1.0f / m_xCells) + Random.Range(-0.01f, 0.01f), 
 										   0.0f, 
 										   z * (1.0f / m_zCells) + Random.Range(-0.01f, 0.01f));
 				}
 				else
 				{
-					location = new Vector3(x * (1.0f / m_xCells), 0.0f, z * (1.0f / m_zCells));
+					position = new Vector3(x * (1.0f / m_xCells), 0.0f, z * (1.0f / m_zCells));
 				}
-				//Store the location coordinates so we don't have to recalculate them
-				m_coordinates[x, z] = location;
-				//Assing a random plant type
+				//Store the coordinates of each position so we don't have to recalculate them
+				m_cellPositions[x, z] = position;
+				//Choose a species at random
 				int newSpecies = Random.Range(0,6);
                 m_cellStatus[0, x, z] = newSpecies;
                 //Assign a random age to each plant so there isn't a massive 
                 //dieoff early in the simulation, but skew the distribution 
                 //of ages downward or we will start with a dieoff because a 
                 //random selection of ages has many more old ages than expected.
+                //TODO - there is probably a distribution we could draw from to
+                //do this better.
                 m_age[0, x, z] = Random.Range(0, m_lifespans[newSpecies] / 3);             
                 m_totalSpeciesCounts[0, newSpecies]++;
             }
         }
-        //This total number of active cells will remain constant unless we load 
-        //new parameters from the webform.  
-        //Is this needed anymore since we don't have the issue of underwater 
-        //locations or locations outside the region boundaries?
-		m_totalActiveCells = m_totalSpeciesCounts[0, 0] + (
-							 m_totalSpeciesCounts[0, 1] + 
-							 m_totalSpeciesCounts[0, 2] + 
-							 m_totalSpeciesCounts[0, 3] + 
-							 m_totalSpeciesCounts[0, 4] + 
-							 m_totalSpeciesCounts[0, 5]);
 	}
 	
 	void RunSimulation()
@@ -288,11 +276,10 @@ public class TreePlanterScript : MonoBehaviour
     	//Generate the simulation data
         for (int generation=0; generation<m_generations - 1; generation++)
         {
-            if (generation % 1000 == 0)
+            if (generation % 100 == 0)
             {
-                //Provide status updates every 1000 generations
-                //Alert(String.Format("Step {0} of {1}...", generation, m_generations - 1));
-                print(generation);
+                //Provide status updates every 100 generations
+                print("Generation# " + generation);
             }
             int nextGeneration = generation + 1;
             int rowabove;
@@ -324,7 +311,7 @@ public class TreePlanterScript : MonoBehaviour
                             							  rowbelow, colright, colleft, generation);
                             //Determine plant survival based on age and environment
                             bool plantSurvives = CalculateSurvival(currentSpecies, 
-                            					 m_age[generation, x, z], m_coordinates[x, z]);
+                            					 m_age[generation, x, z], m_cellPositions[x, z]);
                             if (plantSurvives)
                             {
                                 //Calculate replacement probabilities based on current plant
@@ -583,7 +570,7 @@ public class TreePlanterScript : MonoBehaviour
             									 0.9f) + 
             									 ((m_replacementMatrix[species, currentSpecies] *
             									 ((float)m_totalSpeciesCounts[generation, species] /
-            									  m_totalActiveCells)) * 0.0995f) + 0.0005f;
+            									  (m_xCells * m_zCells))) * 0.0995f) + 0.0005f;
         }
         return replacementProbabilities;
     }
@@ -666,28 +653,3 @@ public class TreePlanterScript : MonoBehaviour
 
 //Code I may not need but don't want to lose:
 //if (Terrain.activeTerrain.terrainData.GetSteepness(location.x, location.z) < 45f)
-
-//	void ChangeManyTrees()
-//	{
-//		//Test function to change all trees in the scene
-//		TreeInstance[] oldTrees = Terrain.activeTerrain.terrainData.treeInstances;
-//		Terrain.activeTerrain.terrainData.treeInstances = new TreeInstance[0];
-//		for (int i=0; i< oldTrees.Length; i++)
-//		{
-//			if (oldTrees[i].prototypeIndex == 19)
-//			{
-//				oldTrees[i].prototypeIndex = 0;				
-//			}
-//			else
-//			{
-//				oldTrees[i].prototypeIndex++;
-//			}
-//			float scaleHeight = m_treeScales[oldTrees[i].prototypeIndex] * Random.Range(0.75f, 1.5f);
-//			float scaleWidth = m_treeScales[oldTrees[i].prototypeIndex] * Random.Range(0.75f, 1.5f);
-//			oldTrees[i].widthScale = scaleWidth;
-//			oldTrees[i].heightScale = scaleHeight;
-//			Terrain.activeTerrain.AddTreeInstance(oldTrees[i]);
-//		}
-//		Terrain.activeTerrain.Flush();	
-//	}
-
