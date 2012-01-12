@@ -6,7 +6,7 @@ using System.Timers;
 public class TreePlanterScript : MonoBehaviour
 {
 	System.Random m_random = new System.Random();
-	int m_generations = 300; //Number of time steps to simulate
+	int m_generations = 30; //Number of time steps to simulate
 	bool m_naturalAppearance = true; //Whether the trees are placed in rows or randomly
 	int[,,] m_cellStatus; //Tree species for each cell in each generation [gen,x,y]
 	bool[,] m_permanentDisturbanceMap; //Whether each cell is marked as permanently disturbed
@@ -129,7 +129,7 @@ public class TreePlanterScript : MonoBehaviour
 		}
 		if (testButton)
 		{
-			VisualizeGeneration(m_displayedGeneration + 10);
+			VisualizeGeneration(m_displayedGeneration + 1);
 		}
 	}
 	
@@ -151,7 +151,8 @@ public class TreePlanterScript : MonoBehaviour
                 int newTreeSpecies = m_cellStatus[generation, x, z];
                 int newTreePrototype = m_speciesList[newTreeSpecies];
                 Vector3 newTreeLocation = m_cellPositions[x, z];
-                AddTree(newTreeLocation, newTreePrototype);
+                //AddTree(newTreeLocation, newTreePrototype);
+                AddTree(newTreeLocation, newTreeSpecies, m_age[generation, x, z]);
                 speciesCounts[newTreeSpecies] += 1; //TODO - Not used?
             }
         }
@@ -171,6 +172,29 @@ public class TreePlanterScript : MonoBehaviour
 			//Vary the height and width of individual trees a bit for a more natural appearance
 			float scaleHeight = m_prototypeScales[treePrototype] * Random.Range(0.75f, 1.5f);
 			float scaleWidth = m_prototypeScales[treePrototype] * Random.Range(0.75f, 1.5f);
+			tree.widthScale = scaleWidth;
+			tree.heightScale = scaleHeight;
+			tree.color = Color.white;
+			tree.lightmapColor = Color.white;
+			Terrain.activeTerrain.AddTreeInstance(tree);
+		}
+	}
+	
+	void AddTree(Vector3 position, int treeSpecies, int age)
+	{
+		//Add a tree to the terrain sized according to its age
+		if (treeSpecies != 0) // -1 would be a gap (no tree)
+		{
+			int treePrototype = m_speciesList[treeSpecies];
+			TreeInstance tree = new TreeInstance();
+			tree.position = position;
+			tree.prototypeIndex = treePrototype;
+			//Vary the height and width of individual trees according to age
+			
+			float scaleHeight = m_prototypeScales[treePrototype] * (
+								(age / (float)m_lifespans[treeSpecies]) + 0.5f);
+			float scaleWidth = m_prototypeScales[treePrototype] * (
+							   (age / (float)m_lifespans[treeSpecies]) + 0.5f);
 			tree.widthScale = scaleWidth;
 			tree.heightScale = scaleHeight;
 			tree.color = Color.white;
@@ -279,7 +303,7 @@ public class TreePlanterScript : MonoBehaviour
             if (generation % 100 == 0)
             {
                 //Provide status updates every 100 generations
-                print("Generation# " + generation);
+                print("Generation# " + generation); //TODO- this needs to be on the hud
             }
             int nextGeneration = generation + 1;
             int rowabove;
