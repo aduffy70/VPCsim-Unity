@@ -82,6 +82,8 @@ public class TreePlanterScript : MonoBehaviour
 	Vector3[,] m_cellPositions; //Keeps track of the region coordinates where each plant will be placed so we only have to calculate them once.
 	int m_displayedGeneration = 0; //Which generation number is currently visualized
 	string m_chosenGeneration = "-";
+	List<int> m_loggedGenerations = new List<int>();
+	bool m_showLogWindow = false;
 
 	#region Unity3D specific functions
 
@@ -113,7 +115,7 @@ public class TreePlanterScript : MonoBehaviour
 	void OnGUI()
 	{
 		//Generate the GUI controls and HUD
-		GUI.Box(new Rect(10, 10, 100, 150), "Simulation");
+		GUI.Box(new Rect(10, 10, 125, 170), "Simulation");
 		bool randomizeButton = GUI.Button(new Rect(20, 35, 80, 20), 
 										  new GUIContent("Randomize", 
 										  "Generate a new random community"));
@@ -128,11 +130,20 @@ public class TreePlanterScript : MonoBehaviour
 		bool goButton = GUI.Button(new Rect(65, 85, 35, 20),
 											 new GUIContent("Go",
 											 "View the selected simulation step")); 
-		bool testButton = GUI.Button(new Rect(20, 110, 80, 20), 
-										new GUIContent("Test", 
-										"Not useful yet"));
-		GUI.Label(new Rect(115, 35, 200, 100), GUI.tooltip);
-				
+		bool logButton = GUI.Button(new Rect(20, 110, 50, 20), 
+										new GUIContent("Log", 
+										"Store data for the current simulation step"));
+		bool clearButton = GUI.Button(new Rect(80, 110, 50, 20), 
+										new GUIContent("Clear", 
+										"Clear all logged data"));
+		bool showButton = GUI.Button(new Rect(20, 135, 50, 20), 
+										new GUIContent("Show", 
+										"Show logged data"));
+		GUI.Label(new Rect(130, 35, 200, 100), GUI.tooltip);
+		if (m_showLogWindow)
+		{
+			Rect logWindow = GUI.Window(0, new Rect(150, 10, 400, 400), DisplayLogWindow, "Log data");
+		}	
 		if (randomizeButton)
 		{
 			DeleteAllTrees();
@@ -184,12 +195,55 @@ public class TreePlanterScript : MonoBehaviour
 				//TODO - Display some error message (not a valid integer)
 			}
 		}
-		if (testButton)
+		if (logButton)
 		{
-			VisualizeGeneration(m_displayedGeneration + 1);
+			LogSummaryStatistics(m_displayedGeneration);
+		}
+		if (clearButton)
+		{
+			ClearLog();
+		}
+		if (showButton)
+		{
+			m_showLogWindow = !m_showLogWindow;
+			ShowLog();
 		}
 	}
 	
+	void DisplayLogWindow(int windowID)
+	{
+		if (GUI.Button(new Rect(330,370,50,20), "Close"))
+		{
+			m_showLogWindow = !m_showLogWindow;
+		}
+		string logData = GetLogData();
+		if (m_loggedGenerations.Count > 0)
+		{
+			GUI.TextArea(new Rect(5, 20, 390, 350), logData);
+		}
+		else
+		{
+			GUI.TextArea(new Rect(5, 20, 390, 350), "You haven't logged any data yet");
+		}
+		GUI.DragWindow(new Rect(0, 0, 10000, 10000));
+	}
+	
+	string GetLogData()
+	{
+		//Generates a string of data for all logged generations
+		string logData = "Gaps, Species1, Species2, Species3, Species4, Species5\n";
+		foreach(int generation in m_loggedGenerations)
+		{
+			logData += (generation.ToString() + "," +
+						m_totalSpeciesCounts[generation, 0].ToString() + ", " +
+						m_totalSpeciesCounts[generation, 1].ToString() + ", " +
+						m_totalSpeciesCounts[generation, 2].ToString() + ", " +
+				    	m_totalSpeciesCounts[generation, 3].ToString() + ", " +
+						m_totalSpeciesCounts[generation, 4].ToString() + ", " +
+						m_totalSpeciesCounts[generation, 5].ToString() + "\n");
+		}
+		return logData;
+	}
 	#endregion
 		
 	#region Visualization functions
@@ -254,14 +308,22 @@ public class TreePlanterScript : MonoBehaviour
 		//Generate summary statistics for the currently viewed generation
 	}
 	
-	void ClearLogs()
+	void ClearLog()
 	{
 		//Delete all logged data
+		m_loggedGenerations = new List<int>();
 	}
 	
-	void LogSummaryStatistics(string logString)
+	void LogSummaryStatistics(int generation)
 	{
-		//Write summary statistics to the log... however we are going to handle this now...
+		//Stores a list of the generations that have been logged so we can display
+		//Statistics for those generations when requested
+		m_loggedGenerations.Add(generation);
+	}
+	
+	void ShowLog()
+	{
+		//Display logged summary statistics
 	}
 	
 	void DisplaySummaryStatistics(string hudString)
