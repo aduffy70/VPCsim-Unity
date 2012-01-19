@@ -6,7 +6,7 @@ using System.Timers;
 public class TreePlanterScript : MonoBehaviour
 {
 	System.Random m_random = new System.Random();
-	int m_generations = 30; //Number of time steps to simulate
+	int m_generations = 100; //Number of time steps to simulate
 	bool m_naturalAppearance = true; //Whether the trees are placed in rows or randomly
 	int[,,] m_cellStatus; //Tree species for each cell in each generation [gen,x,y]
 	bool[,] m_permanentDisturbanceMap; //Whether each cell is marked as permanently disturbed
@@ -81,6 +81,7 @@ public class TreePlanterScript : MonoBehaviour
 	int[,] m_totalSpeciesCounts; //Total species counts for each generation.
 	Vector3[,] m_cellPositions; //Keeps track of the region coordinates where each plant will be placed so we only have to calculate them once.
 	int m_displayedGeneration = 0; //Which generation number is currently visualized
+	string m_chosenGeneration = "-";
 
 	#region Unity3D specific functions
 
@@ -112,20 +113,76 @@ public class TreePlanterScript : MonoBehaviour
 	void OnGUI()
 	{
 		//Generate the GUI controls and HUD
-		GUI.Box(new Rect(10, 10, 100, 90), "Inworld Controls");
-		bool randomizeButton = GUI.Button(new Rect(20, 40, 80, 20), 
+		GUI.Box(new Rect(10, 10, 100, 150), "Simulation");
+		bool randomizeButton = GUI.Button(new Rect(20, 35, 80, 20), 
 										  new GUIContent("Randomize", 
 										  "Generate a new random community"));
-		bool testButton = GUI.Button(new Rect(20, 70, 80, 20), 
+		bool reverseButton = GUI.Button(new Rect (20, 60, 20, 20),
+										new GUIContent("<",
+										"View previous simulation step"));
+		bool forwardButton = GUI.Button(new Rect (45, 60, 20, 20),
+										new GUIContent(">",
+										"View next simulation step"));
+		m_chosenGeneration = GUI.TextField(new Rect(20, 85, 40, 20),
+									m_chosenGeneration, 4);
+		bool goButton = GUI.Button(new Rect(65, 85, 35, 20),
+											 new GUIContent("Go",
+											 "View the selected simulation step")); 
+		bool testButton = GUI.Button(new Rect(20, 110, 80, 20), 
 										new GUIContent("Test", 
 										"Not useful yet"));
 		GUI.Label(new Rect(115, 35, 200, 100), GUI.tooltip);
+				
 		if (randomizeButton)
 		{
 			DeleteAllTrees();
 			GenerateRandomCommunity();
 			RunSimulation();
 			VisualizeGeneration(0);
+			m_chosenGeneration = m_displayedGeneration.ToString();
+		}
+		if (reverseButton)
+		{
+			if (m_displayedGeneration > 0)
+			{
+				VisualizeGeneration(m_displayedGeneration - 1);
+				m_chosenGeneration = m_displayedGeneration.ToString();
+			}
+			else
+			{
+				//TODO - Display some error message (invalid step)
+			}
+		}
+		if (forwardButton)
+		{
+			if (m_displayedGeneration < m_generations - 1)
+			{
+				VisualizeGeneration(m_displayedGeneration + 1);
+				m_chosenGeneration = m_displayedGeneration.ToString();
+			}
+			else
+			{
+				//TODO - Display some error message (invalid step)
+			}
+		}
+		if (goButton)
+		{
+			try
+			{
+				int chosenGeneration = System.Int32.Parse(m_chosenGeneration);
+				if (chosenGeneration >= 0 && chosenGeneration <= m_generations - 1)
+				{
+					VisualizeGeneration(chosenGeneration);
+				}
+				else
+				{
+					//TODO - DIsplay some error message (invalid step)
+				}
+			}
+			catch
+			{
+				//TODO - Display some error message (not a valid integer)
+			}
 		}
 		if (testButton)
 		{
@@ -157,6 +214,7 @@ public class TreePlanterScript : MonoBehaviour
         Terrain.activeTerrain.Flush();
         CalculateSummaryStatistics(generation, m_displayedGeneration, true);
         m_displayedGeneration = generation;
+        print("Generation: " + m_displayedGeneration); //TODO Move this to the HUD?
     }
 	
 	void AddTree(Vector3 position, int treeSpecies, int age)
