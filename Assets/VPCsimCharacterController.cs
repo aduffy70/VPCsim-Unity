@@ -10,15 +10,15 @@ using System.Collections;
 
 public class VPCsimCharacterController : MonoBehaviour
 {
-	public float rotationSpeedY = 1f;
-	public float minimumY = -90f;
-	public float maximumY = 90f;
+	float rotationSpeedY = 0.75f;
+	float minimumY = -90f;
+	float maximumY = 90f;
 	float rotationY = 0;
-	public float speed = 10.0f;
-	public float minimumSpeed = 1f;
-	public float maximumSpeed = 500f;
-	public float acceleration = 1f;
-	public float rotationSpeedHorizontal = 100.0f;
+	float speed = 11.0f;
+	float minimumSpeed = 1.0f;
+	float maximumSpeed = 91.0f;
+	float acceleration = 10.0f;
+	float rotationSpeedHorizontal = 50.0f;
 	bool isWalking;
 
 	// Use this for initialization
@@ -37,11 +37,11 @@ public class VPCsimCharacterController : MonoBehaviour
 	void Update()
 	{
 		//'q' & 'z' acceleration
-		if (Input.GetKey("q"))
+		if (Input.GetKeyDown("q"))
 		{
 			speed += acceleration;
 		}
-		else if (Input.GetKey("z"))
+		else if (Input.GetKeyDown("z"))
 		{
 			speed -= acceleration;
 		}
@@ -72,7 +72,12 @@ public class VPCsimCharacterController : MonoBehaviour
 	//Add a fly/walk button to the GUI
 	void OnGUI()
 	{
-		GUI.Box(new Rect(10, 265, 100, 25), "Speed: " + ((int)speed).ToString());
+		Vector3 position = transform.position;
+		int displayedSpeed = ((int)speed / 10) + 1;
+		GUI.Box(new Rect(10, 265, 100, 25), "Speed: " + displayedSpeed.ToString());
+		GUI.Box(new Rect(10, 295, 130, 50), "Position: " + ((int)position.x).ToString() +
+											", " + ((int)position.z).ToString() +
+											"\nAltitude: " + ((int)position.y).ToString());
 		GUI.Box(new Rect(10, 200, 100, 60), boxText);
 		bool walkFlyButton = GUI.Button(new Rect(20, 230, 80, 20), new GUIContent(buttonText));
 		if (walkFlyButton)
