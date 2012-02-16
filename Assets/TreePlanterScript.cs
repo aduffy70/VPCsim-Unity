@@ -124,7 +124,7 @@ public class TreePlanterScript : MonoBehaviour
 										"First simulation step"));										  
 		bool reverse10Button = GUI.Button(new Rect (34, 60, 25, 20),
 										new GUIContent("<<",
-										"Skip forward 10 simulation steps"));
+										"Skip backward 10 simulation steps"));
 		bool reverseButton = GUI.Button(new Rect (61, 60, 20, 20),
 										new GUIContent("<",
 										"Previous simulation step"));
@@ -133,22 +133,24 @@ public class TreePlanterScript : MonoBehaviour
 										"Next simulation step"));
 		bool forward10Button = GUI.Button(new Rect (105, 60, 25, 20),
 										new GUIContent(">>",
-										"Skip backward simulation steps"));
+										"Skip forward 10 simulation steps"));
 		bool lastButton = GUI.Button(new Rect (132, 60, 22, 20),
 										new GUIContent(">]",
 										"Last simulation step"));								
-		m_chosenGeneration = GUI.TextField(new Rect(10, 85, 40, 20),
+		GUI.Label(new Rect(10, 85, 35, 20), "Step:");
+		m_chosenGeneration = GUI.TextField(new Rect(42, 85, 40, 20),
 									m_chosenGeneration, 4);
-		bool goButton = GUI.Button(new Rect(55, 85, 35, 20),
+		GUI.Label(new Rect(83, 85, 35, 20), "/ " + (m_generations - 1).ToString());							
+		bool goButton = GUI.Button(new Rect(120, 85, 35, 20),
 											 new GUIContent("Go",
 											 "View the selected simulation step")); 
-		bool logButton = GUI.Button(new Rect(10, 110, 50, 20), 
+		bool logButton = GUI.Button(new Rect(10, 110, 40, 20), 
 										new GUIContent("Log", 
 										"Store data for the current simulation step"));
-		bool clearButton = GUI.Button(new Rect(70, 110, 50, 20), 
+		bool clearButton = GUI.Button(new Rect(55, 110, 45, 20), 
 										new GUIContent("Clear", 
 										"Clear all logged data"));
-		bool showButton = GUI.Button(new Rect(10, 135, 50, 20), 
+		bool showButton = GUI.Button(new Rect(105, 110, 45, 20), 
 										new GUIContent("Show", 
 										"Show logged data"));
 		GUI.Label(new Rect(165, 35, 200, 100), GUI.tooltip);
