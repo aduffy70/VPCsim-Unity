@@ -115,31 +115,43 @@ public class TreePlanterScript : MonoBehaviour
 	void OnGUI()
 	{
 		//Generate the GUI controls and HUD
-		GUI.Box(new Rect(10, 10, 125, 170), "Simulation");
-		bool randomizeButton = GUI.Button(new Rect(20, 35, 80, 20), 
+		GUI.Box(new Rect(5, 10, 155, 170), "Simulation");
+		bool randomizeButton = GUI.Button(new Rect(10, 35, 80, 20), 
 										  new GUIContent("Randomize", 
 										  "Generate a new random community"));
-		bool reverseButton = GUI.Button(new Rect (20, 60, 20, 20),
+		bool firstButton = GUI.Button(new Rect (10, 60, 22, 20),
+										new GUIContent("[<",
+										"First simulation step"));										  
+		bool reverse10Button = GUI.Button(new Rect (34, 60, 25, 20),
+										new GUIContent("<<",
+										"Skip forward 10 simulation steps"));
+		bool reverseButton = GUI.Button(new Rect (61, 60, 20, 20),
 										new GUIContent("<",
-										"View previous simulation step"));
-		bool forwardButton = GUI.Button(new Rect (45, 60, 20, 20),
+										"Previous simulation step"));
+		bool forwardButton = GUI.Button(new Rect (83, 60, 20, 20),
 										new GUIContent(">",
-										"View next simulation step"));
-		m_chosenGeneration = GUI.TextField(new Rect(20, 85, 40, 20),
+										"Next simulation step"));
+		bool forward10Button = GUI.Button(new Rect (105, 60, 25, 20),
+										new GUIContent(">>",
+										"Skip backward simulation steps"));
+		bool lastButton = GUI.Button(new Rect (132, 60, 22, 20),
+										new GUIContent(">]",
+										"Last simulation step"));								
+		m_chosenGeneration = GUI.TextField(new Rect(10, 85, 40, 20),
 									m_chosenGeneration, 4);
-		bool goButton = GUI.Button(new Rect(65, 85, 35, 20),
+		bool goButton = GUI.Button(new Rect(55, 85, 35, 20),
 											 new GUIContent("Go",
 											 "View the selected simulation step")); 
-		bool logButton = GUI.Button(new Rect(20, 110, 50, 20), 
+		bool logButton = GUI.Button(new Rect(10, 110, 50, 20), 
 										new GUIContent("Log", 
 										"Store data for the current simulation step"));
-		bool clearButton = GUI.Button(new Rect(80, 110, 50, 20), 
+		bool clearButton = GUI.Button(new Rect(70, 110, 50, 20), 
 										new GUIContent("Clear", 
 										"Clear all logged data"));
-		bool showButton = GUI.Button(new Rect(20, 135, 50, 20), 
+		bool showButton = GUI.Button(new Rect(10, 135, 50, 20), 
 										new GUIContent("Show", 
 										"Show logged data"));
-		GUI.Label(new Rect(130, 35, 200, 100), GUI.tooltip);
+		GUI.Label(new Rect(165, 35, 200, 100), GUI.tooltip);
 		if (m_showLogWindow)
 		{
 			Rect logWindow = GUI.Window(0, new Rect(150, 10, 400, 400), DisplayLogWindow, "Log data");
@@ -152,32 +164,75 @@ public class TreePlanterScript : MonoBehaviour
 			VisualizeGeneration(0);
 			m_chosenGeneration = m_displayedGeneration.ToString();
 		}
-		if (reverseButton)
+		if (firstButton)
 		{
-			if (m_displayedGeneration > 0)
+			//Visualize first simulation step
+			if (m_displayedGeneration != 0)
 			{
-				VisualizeGeneration(m_displayedGeneration - 1);
+				VisualizeGeneration(0);
 				m_chosenGeneration = m_displayedGeneration.ToString();
 			}
-			else
+		}
+		if (reverse10Button)
+		{
+			//Move the visualization back 10 simulation steps
+			int newGeneration = m_displayedGeneration - 10;
+			if (newGeneration < 0)
 			{
-				//TODO - Display some error message (invalid step)
+				newGeneration = 0;
+			}
+			if (newGeneration != m_displayedGeneration)
+			{
+				VisualizeGeneration(newGeneration);
+				m_chosenGeneration = m_displayedGeneration.ToString();
+			}
+		}
+		if (reverseButton)
+		{
+			//Visualize the previous simulation step
+			int newGeneration = m_displayedGeneration - 1;
+			if (newGeneration >= 0)
+			{
+				VisualizeGeneration(newGeneration);
+				m_chosenGeneration = m_displayedGeneration.ToString();
 			}
 		}
 		if (forwardButton)
 		{
-			if (m_displayedGeneration < m_generations - 1)
+			//Visualize the next simulation step
+			int newGeneration = m_displayedGeneration + 1;
+			if (newGeneration <= m_generations - 1)
 			{
-				VisualizeGeneration(m_displayedGeneration + 1);
+				VisualizeGeneration(newGeneration);
 				m_chosenGeneration = m_displayedGeneration.ToString();
 			}
-			else
+		}
+		if (forward10Button)
+		{
+			//Move the visualization forward 10 steps
+			int newGeneration = m_displayedGeneration + 10;
+			if (newGeneration > m_generations - 1)
 			{
-				//TODO - Display some error message (invalid step)
+				newGeneration = m_generations - 1;
+			}
+			if (newGeneration != m_displayedGeneration)
+			{
+				VisualizeGeneration(newGeneration);
+				m_chosenGeneration = m_displayedGeneration.ToString();
 			}
 		}
+		if (lastButton)
+		{
+			//Visualize the last simulation step
+			if (m_displayedGeneration != m_generations - 1)
+			{
+				VisualizeGeneration(m_generations - 1);
+				m_chosenGeneration = m_displayedGeneration.ToString();
+			}
+		}		
 		if (goButton)
 		{
+			//Visualize the simulation step entered in the text box
 			try
 			{
 				int chosenGeneration = System.Int32.Parse(m_chosenGeneration);
