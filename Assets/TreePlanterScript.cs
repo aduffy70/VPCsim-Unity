@@ -140,7 +140,7 @@ public class TreePlanterScript : MonoBehaviour
 		GUI.Label(new Rect(10, 85, 35, 20), "Step:");
 		m_chosenGeneration = GUI.TextField(new Rect(42, 85, 40, 20),
 									m_chosenGeneration, 4);
-		GUI.Label(new Rect(83, 85, 35, 20), "/ " + (m_generations - 1).ToString());							
+		GUI.Label(new Rect(83, 85, 35, 20), "/ " + (m_generations - 1).ToString());								GUI.SetNextControlName("focusBuster"); //Gives us someplace to move focus out of the TextField
 		bool goButton = GUI.Button(new Rect(120, 85, 35, 20),
 											 new GUIContent("Go",
 											 "View the selected simulation step")); 
@@ -165,6 +165,7 @@ public class TreePlanterScript : MonoBehaviour
 			RunSimulation();
 			VisualizeGeneration(0);
 			m_chosenGeneration = m_displayedGeneration.ToString();
+			GUI.FocusControl("focusBuster");
 		}
 		if (firstButton)
 		{
@@ -174,6 +175,7 @@ public class TreePlanterScript : MonoBehaviour
 				VisualizeGeneration(0);
 				m_chosenGeneration = m_displayedGeneration.ToString();
 			}
+			GUI.FocusControl("focusBuster");
 		}
 		if (reverse10Button)
 		{
@@ -188,6 +190,7 @@ public class TreePlanterScript : MonoBehaviour
 				VisualizeGeneration(newGeneration);
 				m_chosenGeneration = m_displayedGeneration.ToString();
 			}
+			GUI.FocusControl("focusBuster");
 		}
 		if (reverseButton)
 		{
@@ -198,6 +201,7 @@ public class TreePlanterScript : MonoBehaviour
 				VisualizeGeneration(newGeneration);
 				m_chosenGeneration = m_displayedGeneration.ToString();
 			}
+			GUI.FocusControl("focusBuster");
 		}
 		if (forwardButton)
 		{
@@ -208,6 +212,7 @@ public class TreePlanterScript : MonoBehaviour
 				VisualizeGeneration(newGeneration);
 				m_chosenGeneration = m_displayedGeneration.ToString();
 			}
+			GUI.FocusControl("focusBuster");
 		}
 		if (forward10Button)
 		{
@@ -222,6 +227,7 @@ public class TreePlanterScript : MonoBehaviour
 				VisualizeGeneration(newGeneration);
 				m_chosenGeneration = m_displayedGeneration.ToString();
 			}
+			GUI.FocusControl("focusBuster");
 		}
 		if (lastButton)
 		{
@@ -231,39 +237,53 @@ public class TreePlanterScript : MonoBehaviour
 				VisualizeGeneration(m_generations - 1);
 				m_chosenGeneration = m_displayedGeneration.ToString();
 			}
+			GUI.FocusControl("focusBuster");
 		}		
 		if (goButton)
 		{
 			//Visualize the simulation step entered in the text box
+			int newGeneration;
 			try
 			{
-				int chosenGeneration = System.Int32.Parse(m_chosenGeneration);
-				if (chosenGeneration >= 0 && chosenGeneration <= m_generations - 1)
-				{
-					VisualizeGeneration(chosenGeneration);
-				}
-				else
-				{
-					//TODO - DIsplay some error message (invalid step)
-				}
+				newGeneration = System.Int32.Parse(m_chosenGeneration);
 			}
 			catch
 			{
-				//TODO - Display some error message (not a valid integer)
+				newGeneration = m_displayedGeneration;
 			}
+			if (newGeneration < 0)
+			{
+				newGeneration = 0;
+			}
+			if (newGeneration > m_generations - 1)
+			{
+				newGeneration = m_generations - 1;
+			}
+			if (newGeneration != m_displayedGeneration)
+			{
+				VisualizeGeneration(newGeneration);
+			}
+			m_chosenGeneration = m_displayedGeneration.ToString();
+			GUI.FocusControl("focusBuster");
 		}
 		if (logButton)
 		{
 			LogSummaryStatistics(m_displayedGeneration);
+			m_chosenGeneration = m_displayedGeneration.ToString();
+			GUI.FocusControl("focusBuster");
 		}
 		if (clearButton)
 		{
 			ClearLog();
+			m_chosenGeneration = m_displayedGeneration.ToString();
+			GUI.FocusControl("focusBuster");
 		}
 		if (showButton)
 		{
 			m_showLogWindow = !m_showLogWindow;
 			ShowLog();
+			m_chosenGeneration = m_displayedGeneration.ToString();
+			GUI.FocusControl("focusBuster");
 		}
 	}
 	
