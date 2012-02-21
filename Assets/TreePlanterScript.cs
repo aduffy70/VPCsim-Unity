@@ -2,10 +2,12 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Timers;
+using System.Xml;
 
 public class TreePlanterScript : MonoBehaviour
 {
 	System.Random m_random = new System.Random();
+	string m_simulationId = "random (default)";
 	int m_generations = 100; //Number of time steps to simulate
 	bool m_naturalAppearance = true; //Whether the trees are placed in rows or randomly
 	int[,,] m_cellStatus; //Tree species for each cell in each generation [gen,x,y]
@@ -43,14 +45,13 @@ public class TreePlanterScript : MonoBehaviour
     float[] m_drainageEffects = new float[6] {0f, 0f, 0f, 0f, 0f, 0f};
     float[] m_fertilityOptimums = new float[6] {0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f};
     float[] m_fertilityEffects = new float[6] {0f, 0f, 0f, 0f, 0f, 0f};
-    bool m_disturbanceOnly = false; //Whether we are loading only a new disturbance map or all data from the webform TODO- Does this need to be global?
+    bool m_environmentOnly = false; //Whether we are loading only a new disturbance map and environment parameters or all data from the webform TODO- Does this need to be global?
     float m_ongoingDisturbanceRate = 0.0f;
 	int m_terrainMap = 0; //Which terrain map we are using
-    //TODO: These map values are being read from the webform but we aren't using them for anything.  
-    //Implementing this will require changes to the Soil Module and its interface.
-    int m_salinityMap = 0;
-    int m_drainageMap = 0;
-    int m_fertilityMap = 0;
+    //These levels range from 0-4.  Default to 2 (mid-range or normal)
+    int m_waterLevel = 2; 
+    int m_lightLevel = 2;
+    int m_temperatureLevel = 2;
     //Number of x and z cells (horizontal plane is xz in Unity3D)
 	int m_xCells = 200;
 	int m_zCells = 200;
@@ -76,7 +77,6 @@ public class TreePlanterScript : MonoBehaviour
 	float m_scale18 = 1.2f; //Sycamore
 	float m_scale19 = 1.5f; //Willow
 	float[] m_prototypeScales; 
-	string m_configPath = "http://vmeadowga.aduffy70.org/"; //Url path to community config settings
 	int[,,] m_age; //Tracks the age of each plant in each generation.  We need to store age in each generation for when we run a new simulation from a particular starting step.
 	int[,] m_totalSpeciesCounts; //Total species counts for each generation.
 	Vector3[,] m_cellPositions; //Keeps track of the region coordinates where each plant will be placed so we only have to calculate them once.
@@ -84,11 +84,13 @@ public class TreePlanterScript : MonoBehaviour
 	string m_chosenGeneration = "-";
 	List<int> m_loggedGenerations = new List<int>();
 	bool m_showLogWindow = false;
+	string m_parameterPath = "http://fernseed.usu.edu/vpcsim-parameters-test";
 
 	#region Unity3D specific functions
 
 	void Start()
 	{
+		print("Start"); //Debug
 		//Initialize the list of prototype scales
 		m_prototypeScales = new float[20] {m_scale0, m_scale1, m_scale2, 
 											  m_scale3, m_scale4, m_scale5, 
@@ -119,6 +121,9 @@ public class TreePlanterScript : MonoBehaviour
 		bool randomizeButton = GUI.Button(new Rect(10, 35, 80, 20), 
 										  new GUIContent("Randomize", 
 										  "Generate a new random community"));
+		bool loadButton = GUI.Button(new Rect(95, 35, 60, 20),
+									 new GUIContent("Load",
+									 "Test loading parameters from the web"));
 		bool firstButton = GUI.Button(new Rect (10, 60, 22, 20),
 										new GUIContent("[<",
 										"First simulation step"));										  
@@ -166,6 +171,11 @@ public class TreePlanterScript : MonoBehaviour
 			VisualizeGeneration(0);
 			m_chosenGeneration = m_displayedGeneration.ToString();
 			GUI.FocusControl("focusBuster");
+		}
+		if (loadButton)
+		{
+			//Retrieve simulation parameters from the web
+			LoadNewSimulation("1329418454"); //TODO: This is a hardcoded file name for test purposes
 		}
 		if (firstButton)
 		{
@@ -345,7 +355,6 @@ public class TreePlanterScript : MonoBehaviour
         Terrain.activeTerrain.Flush();
         CalculateSummaryStatistics(generation, m_displayedGeneration, true);
         m_displayedGeneration = generation;
-        print("Generation: " + m_displayedGeneration); //TODO Move this to the HUD?
     }
 	
 	void AddTree(Vector3 position, int treeSpecies, int age)
@@ -407,20 +416,79 @@ public class TreePlanterScript : MonoBehaviour
 	{
 		//Display summary statistics on the HUD
 	}
-	
-	void StartCycling(bool isReverse)
-	{
-		//Start stepping forward or backward through the generations
-	}
-	
-	void StopCycling()
-	{
-		//Stop stepping through the generations
-	}
-	
+		
 	#endregion
 
 	#region Simulation functions
+
+	void LoadNewSimulation(string fileName)
+	{
+		//Retrieve a parameter file from the web and use it to generate a new simulation 
+		print("Retrieving parameters"); //TODO: Put in the HUD??
+		bool readSuccess = ReadParametersFromWeb(System.IO.Path.Combine(m_parameterPath,
+															            fileName));
+		//print(readSuccess);
+	}
+
+	bool ReadParametersFromWeb(string url)
+	{
+		//Retrieve the parameter file and unpack the xml data into appropriate variables
+		Dictionary<string, string> newParameters = new Dictionary<string, string>();
+		XmlTextReader reader;
+		try
+		{
+			reader = new XmlTextReader(url);
+			reader.WhitespaceHandling = WhitespaceHandling.Significant;
+			print("Success!  Found URL: " + url);
+		}
+		catch
+		{
+			print("Unable to access URL: " + url);
+			return false;
+		}
+		while (reader.Read())
+		{
+			if (reader.Name == "property")
+			{
+				string parameterName = reader.GetAttribute("name");
+				string parameterValue = reader.ReadString();
+				newParameters.Add(parameterName, parameterValue);
+				print(parameterName + ": " + parameterValue);
+			}
+		}
+		print("Read File Successfully");
+		if (newParameters["environment_only"] == "1")
+		{
+			m_environmentOnly = true;
+		}
+		else
+		{
+			m_environmentOnly = false;
+		}
+		if (m_environmentOnly == false)
+		{
+			//Store all parameters
+			m_simulationId = newParameters["id"];
+			m_terrainMap = System.Int32.Parse(newParameters["terrain"]);
+			//LoadTerrain(m_terrainMap);
+			m_waterLevel = System.Int32.Parse(newParameters["water_level"]);
+			m_lightLevel = System.Int32.Parse(newParameters["light_level"]);
+			m_temperatureLevel = System.Int32.Parse(newParameters["temperature_level"]);
+			string[] speciesList = newParameters["plant_types"].Split(',');
+			for (int i = 1; i<6; i++) //Start at index 1 so index 0 stays "None" to represent gaps
+               {
+                   m_speciesList[i] = System.Int32.Parse(speciesList[i - 1]);
+               }
+               m_ongoingDisturbanceRate = System.Int32.Parse(newParameters["disturbance_level"]);
+		}
+		else
+		{
+			//TODO: Do I really want to support this option?
+			//only store environment and disturbance parameters
+		} 
+		return true;
+	}
+
 
 	void GenerateRandomCommunity()
 	{
