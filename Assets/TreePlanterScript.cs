@@ -480,11 +480,22 @@ public class TreePlanterScript : MonoBehaviour
 		m_errorText += "Reading\n";
 		//Retrieve the parameter file and unpack the xml data into appropriate variables
 		Dictionary<string, string> newParameters = new Dictionary<string, string>();
+		
+		
+		WWW www = new WWW(url);
+		while (!www.isDone)
+		{
+		}
+		m_errorText += "Finished www\n";
+		
 		XmlTextReader reader;
 		try
 		{
 			m_errorText += "before actual read\n";
-			reader = new XmlTextReader(url);
+			
+			reader = new XmlTextReader(new System.IO.StringReader(www.text));
+			
+			//reader = new XmlTextReader(url);
 			m_errorText += "after actual read\n";
 			reader.WhitespaceHandling = WhitespaceHandling.Significant;
 			print("Success!  Found URL: " + url);
