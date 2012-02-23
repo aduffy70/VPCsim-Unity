@@ -7,9 +7,8 @@ using System.Xml;
 public class TreePlanterScript : MonoBehaviour
 {
 	System.Random m_random = new System.Random();
-	string m_simulationId = "random (default)";
+	string m_simulationId = "none";
 	int m_generations = 100; //Number of time steps to simulate
-	bool m_naturalAppearance = true; //Whether the trees are placed in rows or randomly
 	int[,,] m_cellStatus; //Tree species for each cell in each generation [gen,x,y]
 	bool[,] m_permanentDisturbanceMap; //Whether each cell is marked as permanently disturbed
 	int[] m_speciesList = new int[6] {-1, 2, 13, 14, 17, 19}; //Unity tree prototypes to include in the community (-1 represents a gap with no tree)
@@ -45,7 +44,6 @@ public class TreePlanterScript : MonoBehaviour
     float[] m_drainageEffects = new float[6] {0f, 0f, 0f, 0f, 0f, 0f};
     float[] m_fertilityOptimums = new float[6] {0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f};
     float[] m_fertilityEffects = new float[6] {0f, 0f, 0f, 0f, 0f, 0f};
-    bool m_environmentOnly = false; //Whether we are loading only a new disturbance map and environment parameters or all data from the webform TODO- Does this need to be global?
     float m_ongoingDisturbanceRate = 0.0f;
 	int m_terrainMap = 0; //Which terrain map we are using
     //These levels range from 0-4.  Default to 2 (mid-range or normal)
@@ -53,8 +51,8 @@ public class TreePlanterScript : MonoBehaviour
     int m_lightLevel = 2;
     int m_temperatureLevel = 2;
     //Number of x and z cells (horizontal plane is xz in Unity3D)
-	int m_xCells = 200;
-	int m_zCells = 200;
+	int m_xCells = 150;
+	int m_zCells = 150;
 	//Default scale for each tree prototype.
 	float m_scale0 = 1.2f; //Alder
 	float m_scale1 = 1.0f; //Bamboo
@@ -82,9 +80,10 @@ public class TreePlanterScript : MonoBehaviour
 	Vector3[,] m_cellPositions; //Keeps track of the region coordinates where each plant will be placed so we only have to calculate them once.
 	int m_displayedGeneration = 0; //Which generation number is currently visualized
 	string m_chosenGeneration = "-";
+	string m_chosenSimulationId = "";
 	List<int> m_loggedGenerations = new List<int>();
 	bool m_showLogWindow = false;
-	string m_parameterPath = "http://fernseed.usu.edu/vpcsim-parameters-test";
+	string m_parameterPath = "http://vpcsim.appspot.com";
 
 	#region Unity3D specific functions
 
@@ -118,44 +117,46 @@ public class TreePlanterScript : MonoBehaviour
 	{
 		//Generate the GUI controls and HUD
 		GUI.Box(new Rect(5, 10, 155, 170), "Simulation");
-		bool randomizeButton = GUI.Button(new Rect(10, 35, 80, 20), 
-										  new GUIContent("Randomize", 
+		bool randomizeButton = GUI.Button(new Rect(10, 35, 145, 20), 
+										  new GUIContent("Load Default", 
 										  "Generate a new random community"));
-		bool loadButton = GUI.Button(new Rect(95, 35, 60, 20),
+		m_chosenSimulationId = GUI.TextField(new Rect(10, 60, 80, 20),
+									m_chosenSimulationId, 10);
+		bool loadButton = GUI.Button(new Rect(95, 60, 60, 20),
 									 new GUIContent("Load",
 									 "Test loading parameters from the web"));
-		bool firstButton = GUI.Button(new Rect (10, 60, 22, 20),
+		bool firstButton = GUI.Button(new Rect (10, 85, 22, 20),
 										new GUIContent("[<",
 										"First simulation step"));										  
-		bool reverse10Button = GUI.Button(new Rect (34, 60, 25, 20),
+		bool reverse10Button = GUI.Button(new Rect (34, 85, 25, 20),
 										new GUIContent("<<",
 										"Skip backward 10 simulation steps"));
-		bool reverseButton = GUI.Button(new Rect (61, 60, 20, 20),
+		bool reverseButton = GUI.Button(new Rect (61, 85, 20, 20),
 										new GUIContent("<",
 										"Previous simulation step"));
-		bool forwardButton = GUI.Button(new Rect (83, 60, 20, 20),
+		bool forwardButton = GUI.Button(new Rect (83, 85, 20, 20),
 										new GUIContent(">",
 										"Next simulation step"));
-		bool forward10Button = GUI.Button(new Rect (105, 60, 25, 20),
+		bool forward10Button = GUI.Button(new Rect (105, 85, 25, 20),
 										new GUIContent(">>",
 										"Skip forward 10 simulation steps"));
-		bool lastButton = GUI.Button(new Rect (132, 60, 22, 20),
+		bool lastButton = GUI.Button(new Rect (132, 85, 22, 20),
 										new GUIContent(">]",
 										"Last simulation step"));								
-		GUI.Label(new Rect(10, 85, 35, 20), "Step:");
-		m_chosenGeneration = GUI.TextField(new Rect(42, 85, 40, 20),
+		GUI.Label(new Rect(10, 110, 35, 20), "Step:");
+		m_chosenGeneration = GUI.TextField(new Rect(42, 110, 40, 20),
 									m_chosenGeneration, 4);
-		GUI.Label(new Rect(83, 85, 35, 20), "/ " + (m_generations - 1).ToString());								GUI.SetNextControlName("focusBuster"); //Gives us someplace to move focus out of the TextField
-		bool goButton = GUI.Button(new Rect(120, 85, 35, 20),
+		GUI.Label(new Rect(83, 110, 35, 20), "/ " + (m_generations - 1).ToString());							GUI.SetNextControlName("focusBuster"); //Gives us someplace to move focus out of the TextField
+		bool goButton = GUI.Button(new Rect(120, 110, 35, 20),
 											 new GUIContent("Go",
 											 "View the selected simulation step")); 
-		bool logButton = GUI.Button(new Rect(10, 110, 40, 20), 
+		bool logButton = GUI.Button(new Rect(10, 135, 40, 20), 
 										new GUIContent("Log", 
 										"Store data for the current simulation step"));
-		bool clearButton = GUI.Button(new Rect(55, 110, 45, 20), 
+		bool clearButton = GUI.Button(new Rect(55, 135, 45, 20), 
 										new GUIContent("Clear", 
 										"Clear all logged data"));
-		bool showButton = GUI.Button(new Rect(105, 110, 45, 20), 
+		bool showButton = GUI.Button(new Rect(105, 135, 45, 20), 
 										new GUIContent("Show", 
 										"Show logged data"));
 		GUI.Label(new Rect(165, 35, 200, 100), GUI.tooltip);
@@ -170,12 +171,32 @@ public class TreePlanterScript : MonoBehaviour
 			RunSimulation();
 			VisualizeGeneration(0);
 			m_chosenGeneration = m_displayedGeneration.ToString();
+			m_chosenSimulationId = m_simulationId;
 			GUI.FocusControl("focusBuster");
 		}
 		if (loadButton)
 		{
-			//Retrieve simulation parameters from the web
-			LoadNewSimulation("1329418454"); //TODO: This is a hardcoded file name for test purposes
+			bool isValidId = false;
+			int newSimulationId;
+			try
+			{
+				newSimulationId = System.Int32.Parse(m_chosenSimulationId);
+				isValidId = true;
+			}
+			catch
+			{
+				isValidId = false;
+			}
+			if (isValidId)
+			{
+				//Retrieve simulation parameters from the web
+				LoadNewSimulation(m_chosenSimulationId); //TODO: This is a hardcoded file name for test purposes
+			}
+			else
+			{
+				//TODO - Error message: Invalid simulation ID
+			}
+			GUI.FocusControl("focusBuster");
 		}
 		if (firstButton)
 		{
@@ -425,9 +446,15 @@ public class TreePlanterScript : MonoBehaviour
 	{
 		//Retrieve a parameter file from the web and use it to generate a new simulation 
 		print("Retrieving parameters"); //TODO: Put in the HUD??
-		bool readSuccess = ReadParametersFromWeb(System.IO.Path.Combine(m_parameterPath,
-															            fileName));
-		//print(readSuccess);
+		bool readSuccess = ReadParametersFromWeb(System.IO.Path.Combine(m_parameterPath, 
+																		"data?id=" + fileName));
+		if (readSuccess)
+		{
+			DeleteAllTrees();
+			ClearLog();
+			RunSimulation();
+			VisualizeGeneration(0);
+		}
 	}
 
 	bool ReadParametersFromWeb(string url)
@@ -453,39 +480,70 @@ public class TreePlanterScript : MonoBehaviour
 				string parameterName = reader.GetAttribute("name");
 				string parameterValue = reader.ReadString();
 				newParameters.Add(parameterName, parameterValue);
-				print(parameterName + ": " + parameterValue);
+				//print(parameterName + ": " + parameterValue);
 			}
 		}
 		print("Read File Successfully");
-		if (newParameters["environment_only"] == "1")
-		{
-			m_environmentOnly = true;
-		}
-		else
-		{
-			m_environmentOnly = false;
-		}
-		if (m_environmentOnly == false)
-		{
-			//Store all parameters
-			m_simulationId = newParameters["id"];
-			m_terrainMap = System.Int32.Parse(newParameters["terrain"]);
-			//LoadTerrain(m_terrainMap);
-			m_waterLevel = System.Int32.Parse(newParameters["water_level"]);
-			m_lightLevel = System.Int32.Parse(newParameters["light_level"]);
-			m_temperatureLevel = System.Int32.Parse(newParameters["temperature_level"]);
-			string[] speciesList = newParameters["plant_types"].Split(',');
-			for (int i = 1; i<6; i++) //Start at index 1 so index 0 stays "None" to represent gaps
-               {
-                   m_speciesList[i] = System.Int32.Parse(speciesList[i - 1]);
-               }
-               m_ongoingDisturbanceRate = System.Int32.Parse(newParameters["disturbance_level"]);
-		}
-		else
-		{
-			//TODO: Do I really want to support this option?
-			//only store environment and disturbance parameters
-		} 
+		//Store all parameters
+		m_simulationId = newParameters["id"];
+		m_terrainMap = System.Int32.Parse(newParameters["terrain"]);
+		//LoadTerrain(m_terrainMap);
+		m_waterLevel = System.Int32.Parse(newParameters["water_level"]);
+		m_lightLevel = System.Int32.Parse(newParameters["light_level"]);
+		m_temperatureLevel = System.Int32.Parse(newParameters["temperature_level"]);
+		string[] speciesList = newParameters["plant_types"].Split(',');
+		for (int i = 1; i<6; i++) //Start at index 1 so index 0 stays "None" to represent gaps
+        {
+        	m_speciesList[i] = System.Int32.Parse(speciesList[i - 1]);
+        }
+        m_ongoingDisturbanceRate = System.Int32.Parse(newParameters["disturbance_level"]);
+        char[]startingPlants = newParameters["starting_matrix"].ToCharArray();
+		m_cellStatus = new int[m_generations, m_xCells, m_zCells];
+        m_permanentDisturbanceMap = new bool[m_xCells, m_zCells];
+        m_age = new int[m_generations, m_xCells, m_zCells];
+        m_totalSpeciesCounts = new int[m_generations, 6];
+        m_cellPositions = new Vector3[m_xCells, m_zCells];
+		for (int z=0; z<m_zCells; z++)
+        {
+            for (int x=0; x<m_xCells; x++)
+            {
+               	//Randomize about the cell position a bit
+               	//Coordinates for trees on the terrain range from 0-1.0
+				//To evenly space trees on each axis we need to divide 1.0 by 
+				//the number of x or z cells
+				Vector3 position = new Vector3(x * (1.0f / m_xCells) + Random.Range(-0.01f, 0.01f), 
+										       0.0f, 
+										       z * (1.0f / m_zCells) + Random.Range(-0.01f, 0.01f));
+				//Store the coordinates of each position so we don't have to recalculate them
+				m_cellPositions[x, z] = position;
+				int newSpecies;
+				int currentCell = (z * m_xCells) + x;
+				//The world has a 150x150 matrix of plants but the form to control it is only 50x50 so we need to make a conversion
+				int startingMatrixCell = ((z/3) * (m_xCells/3)) + (x/3); 
+				if (startingPlants[startingMatrixCell] == 'R')
+				{
+					//Randomly select the plant type
+					newSpecies = Random.Range(0,6);
+					m_cellStatus[0, x, z] = newSpecies;
+					m_age[0, x, z] = Random.Range(0, m_lifespans[newSpecies] / 3);
+					m_totalSpeciesCounts[0, newSpecies]++;
+				}
+				else if (startingPlants[startingMatrixCell] == 'N')
+				{
+					//Permanent gap
+					m_cellStatus[0, x, z] = 0;
+					m_permanentDisturbanceMap[x, z] = true;
+				}
+				else
+				{
+					//A numbered plant type (or a gap for 0)
+					newSpecies = System.Int32.Parse(startingPlants[startingMatrixCell].ToString()); //Have to convert char to string to int because we can't go straight from char to int?
+					m_cellStatus[0, x, z] = newSpecies;
+					m_age[0, x, z] = Random.Range(0, m_lifespans[newSpecies] / 3);
+					m_totalSpeciesCounts[0, newSpecies]++;
+				}
+            }
+        }
 		return true;
 	}
 
@@ -494,6 +552,7 @@ public class TreePlanterScript : MonoBehaviour
 	{
 		//Generate starting matrix with random species and determine the 
 		//region x,y,z coordinates where each tree will be placed
+		m_speciesList = new int[6] {-1, 2, 13, 14, 17, 19}; //Unity tree prototypes to include in the default community (-1 represents a gap with no tree)
 		m_cellStatus = new int[m_generations, m_xCells, m_zCells];
         m_age = new int[m_generations, m_xCells, m_zCells];
         m_totalSpeciesCounts = new int[m_generations, 6];
@@ -504,21 +563,13 @@ public class TreePlanterScript : MonoBehaviour
         {
             for (int x=0; x<m_xCells; x++)
             {
-            	Vector3 position;
-                if (m_naturalAppearance)
-              	{
-                	//Randomize about the cell position a bit
-                	//Coordinates for trees on the terrain range from 0-1.0
-					//To evenly space trees on each axis we need to divide 1.0 by 
-					//the number of x or z cells
-					position = new Vector3(x * (1.0f / m_xCells) + Random.Range(-0.01f, 0.01f), 
-										   0.0f, 
-										   z * (1.0f / m_zCells) + Random.Range(-0.01f, 0.01f));
-				}
-				else
-				{
-					position = new Vector3(x * (1.0f / m_xCells), 0.0f, z * (1.0f / m_zCells));
-				}
+               	//Randomize about the cell position a bit
+               	//Coordinates for trees on the terrain range from 0-1.0
+				//To evenly space trees on each axis we need to divide 1.0 by 
+				//the number of x or z cells
+				Vector3 position = new Vector3(x * (1.0f / m_xCells) + Random.Range(-0.01f, 0.01f), 
+										       0.0f, 
+										       z * (1.0f / m_zCells) + Random.Range(-0.01f, 0.01f));
 				//Store the coordinates of each position so we don't have to recalculate them
 				m_cellPositions[x, z] = position;
 				//Choose a species at random
@@ -534,6 +585,7 @@ public class TreePlanterScript : MonoBehaviour
                 m_totalSpeciesCounts[0, newSpecies]++;
             }
         }
+        m_simulationId = "default";
 	}
 	
 	void RunSimulation()
