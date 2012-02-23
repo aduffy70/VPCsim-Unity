@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using System.Timers;
 using System.Xml;
 
 public class TreePlanterScript : MonoBehaviour
@@ -84,13 +83,17 @@ public class TreePlanterScript : MonoBehaviour
 	List<int> m_loggedGenerations = new List<int>();
 	bool m_showLogWindow = false;
 	string m_parameterPath = "http://vpcsim.appspot.com";
-	string m_errorText = "";
+	string m_errorText = ""; //Debug errors to display on the HUD - DEBUG
+	WWW m_www; //Stores xml data downloaded from the web
+	bool m_debugMode = false; //Turn the debug window on and off
+	Rect m_debugWindow = new Rect(300, 10, 400, 400);
+	Rect m_logWindow = new Rect(150, 10, 400, 400);
 
 	#region Unity3D specific functions
 
 	void Start()
 	{
-		print("Start"); //Debug
+		m_errorText += "Start\n"; //Debug
 		//Initialize the list of prototype scales
 		m_prototypeScales = new float[20] {m_scale0, m_scale1, m_scale2, 
 											  m_scale3, m_scale4, m_scale5, 
@@ -117,7 +120,6 @@ public class TreePlanterScript : MonoBehaviour
 	void OnGUI()
 	{
 		//Generate the GUI controls and HUD
-		GUI.Box(new Rect(250, 10, 450, 400), m_errorText);
 		GUI.Box(new Rect(5, 10, 155, 170), "Simulation");
 		GUI.SetNextControlName("focusBuster"); //Gives us someplace to move focus out of the TextField
 		bool focusBusterButton = GUI.Button(new Rect(-10, -10, 1, 1),
@@ -165,11 +167,18 @@ public class TreePlanterScript : MonoBehaviour
 		bool showButton = GUI.Button(new Rect(105, 135, 45, 20), 
 										new GUIContent("Show", 
 										"Show logged data"));
+		bool debugButton = GUI.Button(new Rect(10, 160, 60, 20),
+									  new GUIContent("Debug",
+									  "Show/Hide debug messages"));
 		GUI.Label(new Rect(165, 35, 200, 100), GUI.tooltip);
 		if (m_showLogWindow)
 		{
-			Rect logWindow = GUI.Window(0, new Rect(150, 10, 400, 400), DisplayLogWindow, "Log data");
+			m_logWindow = GUI.Window(0, m_logWindow, DisplayLogWindow, "Log data");
 		}	
+		if (m_debugMode)
+		{
+			m_debugWindow = GUI.Window(0, m_debugWindow, DisplayDebugWindow, "Debug");
+		}
 		if (randomizeButton)
 		{
 			DeleteAllTrees();
@@ -182,7 +191,7 @@ public class TreePlanterScript : MonoBehaviour
 		}
 		if (loadButton)
 		{
-			m_errorText = "";
+			//StartCoroutine(TestDownloads());
 			bool isValidId = false;
 			int newSimulationId;
 			try
@@ -199,7 +208,8 @@ public class TreePlanterScript : MonoBehaviour
 			if (isValidId)
 			{
 				//Retrieve simulation parameters from the web
-				LoadNewSimulation(m_chosenSimulationId); 
+				//LoadNewSimulation(m_chosenSimulationId); 
+				StartCoroutine(GetNewSimulationParameters(m_chosenSimulationId));
 			}
 			else
 			{
@@ -325,6 +335,11 @@ public class TreePlanterScript : MonoBehaviour
 			m_chosenGeneration = m_displayedGeneration.ToString();
 			GUI.FocusControl("focusBuster");
 		}
+		if (debugButton)
+		{
+			m_debugMode = !m_debugMode;
+			GUI.FocusControl("focusBuster");
+		}
 	}
 	
 	void DisplayLogWindow(int windowID)
@@ -342,8 +357,15 @@ public class TreePlanterScript : MonoBehaviour
 		{
 			GUI.TextArea(new Rect(5, 20, 390, 350), "You haven't logged any data yet");
 		}
-		GUI.DragWindow(new Rect(0, 0, 10000, 10000));
+		GUI.DragWindow();
 	}
+	
+	void DisplayDebugWindow(int windowID)
+	{
+		GUI.TextArea(new Rect(5, 20, 390, 350), m_errorText);
+		GUI.DragWindow();
+	}
+
 	
 	string GetLogData()
 	{
@@ -413,11 +435,6 @@ public class TreePlanterScript : MonoBehaviour
 		Terrain.activeTerrain.terrainData.treeInstances = new TreeInstance[0];
 		Terrain.activeTerrain.Flush();
 	}
-		
-	void OnCycleTimer(object source, ElapsedEventArgs e)
-	{
-		//Display the next generation forward or backward
-	}
 	
 	void CalculateSummaryStatistics(int generation, int lastVisualizedGeneration, bool needToLog)
 	{
@@ -451,60 +468,56 @@ public class TreePlanterScript : MonoBehaviour
 
 	#region Simulation functions
 
-	void LoadNewSimulation(string fileName)
+	IEnumerator GetNewSimulationParameters(string fileName)
 	{
-		//Retrieve a parameter file from the web and use it to generate a new simulation 
-		print("Retrieving parameters"); //TODO: Put in the HUD??
-		bool readSuccess = ReadParametersFromWeb(System.IO.Path.Combine(m_parameterPath, 
-																		"data?id=" + fileName));
-		if (readSuccess)
+		string url = System.IO.Path.Combine(m_parameterPath,"data?id=" + fileName);
+		m_www = new WWW(url);
+		yield return m_www;
+		if (m_www.isDone)
 		{
-			m_errorText += "ReadParamatersFromWeb success\n";
-			DeleteAllTrees();
-			m_errorText += "DeleteTrees success\n";
-			ClearLog();
-			m_errorText += "ClearLog success\n";
-			RunSimulation();
-			m_errorText += "RunSimulation success\n";
-			VisualizeGeneration(0);
-			m_errorText += "VisualizeGeneration success\n";
+			m_errorText += "WWW read isDone\n";
+			bool unpackSuccess = UnpackParameters();
+			if (unpackSuccess)
+			{
+				m_errorText += "Unpacked success\n";
+				DeleteAllTrees();
+				m_errorText += "DeleteTrees success\n";
+				ClearLog();
+				m_errorText += "ClearLog success\n";
+				RunSimulation();
+				m_errorText += "RunSimulation success\n";
+				VisualizeGeneration(0);
+				m_errorText += "VisualizeGeneration success\n";
+				m_chosenGeneration = m_displayedGeneration.ToString();
+				m_chosenSimulationId = m_simulationId;
+			}
+			else
+			{
+				m_errorText += "Unpack fail\n";
+			}	
+
 		}
 		else
 		{
-			m_errorText += "ReadParamatersFromWeb fail\n";
+			m_errorText += "WWW not isDone\n";
 		}
+		
 	}
 
-	bool ReadParametersFromWeb(string url)
+	bool UnpackParameters()
 	{
-		m_errorText += "Reading\n";
-		//Retrieve the parameter file and unpack the xml data into appropriate variables
+		m_errorText += "Unpacking\n";
+		//Unpack the xml data into appropriate variables
 		Dictionary<string, string> newParameters = new Dictionary<string, string>();
-		
-		
-		WWW www = new WWW(url);
-		while (!www.isDone)
-		{
-		}
-		m_errorText += "Finished www\n";
-		
 		XmlTextReader reader;
 		try
-		{
-			m_errorText += "before actual read\n";
-			
-			reader = new XmlTextReader(new System.IO.StringReader(www.text));
-			
-			//reader = new XmlTextReader(url);
-			m_errorText += "after actual read\n";
+		{	
+			reader = new XmlTextReader(new System.IO.StringReader(m_www.text));	
+			m_errorText += "opened stream\n";
 			reader.WhitespaceHandling = WhitespaceHandling.Significant;
-			print("Success!  Found URL: " + url);
-			m_errorText += "Read successfully\n";
 		}
 		catch
 		{
-			print("Unable to access URL: " + url);
-			m_errorText += "Read failed " + url + "\n";
 			return false;
 		}
 		while (reader.Read())
@@ -517,7 +530,6 @@ public class TreePlanterScript : MonoBehaviour
 				//print(parameterName + ": " + parameterValue);
 			}
 		}
-		print("Read File Successfully");
 		//Store all parameters
 		m_simulationId = newParameters["id"];
 		m_terrainMap = System.Int32.Parse(newParameters["terrain"]);
@@ -630,7 +642,7 @@ public class TreePlanterScript : MonoBehaviour
             if (generation % 100 == 0)
             {
                 //Provide status updates every 100 generations
-                print("Generation# " + generation); //TODO- this needs to be on the hud
+                //print("Generation# " + generation); //TODO- this needs to be on the hud
             }
             int nextGeneration = generation + 1;
             int rowabove;
