@@ -84,6 +84,7 @@ public class TreePlanterScript : MonoBehaviour
 	List<int> m_loggedGenerations = new List<int>();
 	bool m_showLogWindow = false;
 	string m_parameterPath = "http://vpcsim.appspot.com";
+	string m_errorText = "";
 
 	#region Unity3D specific functions
 
@@ -116,7 +117,12 @@ public class TreePlanterScript : MonoBehaviour
 	void OnGUI()
 	{
 		//Generate the GUI controls and HUD
+		GUI.Box(new Rect(250, 10, 450, 400), m_errorText);
 		GUI.Box(new Rect(5, 10, 155, 170), "Simulation");
+		GUI.SetNextControlName("focusBuster"); //Gives us someplace to move focus out of the TextField
+		bool focusBusterButton = GUI.Button(new Rect(-10, -10, 1, 1),
+											new GUIContent("", 
+										  	""));
 		bool randomizeButton = GUI.Button(new Rect(10, 35, 145, 20), 
 										  new GUIContent("Load Default", 
 										  "Generate a new random community"));
@@ -146,7 +152,7 @@ public class TreePlanterScript : MonoBehaviour
 		GUI.Label(new Rect(10, 110, 35, 20), "Step:");
 		m_chosenGeneration = GUI.TextField(new Rect(42, 110, 40, 20),
 									m_chosenGeneration, 4);
-		GUI.Label(new Rect(83, 110, 35, 20), "/ " + (m_generations - 1).ToString());							GUI.SetNextControlName("focusBuster"); //Gives us someplace to move focus out of the TextField
+		GUI.Label(new Rect(83, 110, 35, 20), "/ " + (m_generations - 1).ToString());							//GUI.SetNextControlName("focusBuster"); //Gives us someplace to move focus out of the TextField
 		bool goButton = GUI.Button(new Rect(120, 110, 35, 20),
 											 new GUIContent("Go",
 											 "View the selected simulation step")); 
@@ -176,21 +182,24 @@ public class TreePlanterScript : MonoBehaviour
 		}
 		if (loadButton)
 		{
+			m_errorText = "";
 			bool isValidId = false;
 			int newSimulationId;
 			try
 			{
 				newSimulationId = System.Int32.Parse(m_chosenSimulationId);
 				isValidId = true;
+				m_errorText += "Valid ID\n";
 			}
 			catch
 			{
 				isValidId = false;
+				m_errorText += "Not Valid ID\n";
 			}
 			if (isValidId)
 			{
 				//Retrieve simulation parameters from the web
-				LoadNewSimulation(m_chosenSimulationId); //TODO: This is a hardcoded file name for test purposes
+				LoadNewSimulation(m_chosenSimulationId); 
 			}
 			else
 			{
@@ -450,27 +459,41 @@ public class TreePlanterScript : MonoBehaviour
 																		"data?id=" + fileName));
 		if (readSuccess)
 		{
+			m_errorText += "ReadParamatersFromWeb success\n";
 			DeleteAllTrees();
+			m_errorText += "DeleteTrees success\n";
 			ClearLog();
+			m_errorText += "ClearLog success\n";
 			RunSimulation();
+			m_errorText += "RunSimulation success\n";
 			VisualizeGeneration(0);
+			m_errorText += "VisualizeGeneration success\n";
+		}
+		else
+		{
+			m_errorText += "ReadParamatersFromWeb fail\n";
 		}
 	}
 
 	bool ReadParametersFromWeb(string url)
 	{
+		m_errorText += "Reading\n";
 		//Retrieve the parameter file and unpack the xml data into appropriate variables
 		Dictionary<string, string> newParameters = new Dictionary<string, string>();
 		XmlTextReader reader;
 		try
 		{
+			m_errorText += "before actual read\n";
 			reader = new XmlTextReader(url);
+			m_errorText += "after actual read\n";
 			reader.WhitespaceHandling = WhitespaceHandling.Significant;
 			print("Success!  Found URL: " + url);
+			m_errorText += "Read successfully\n";
 		}
 		catch
 		{
 			print("Unable to access URL: " + url);
+			m_errorText += "Read failed " + url + "\n";
 			return false;
 		}
 		while (reader.Read())
