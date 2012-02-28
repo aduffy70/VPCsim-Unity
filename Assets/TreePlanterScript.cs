@@ -89,7 +89,8 @@ public class TreePlanterScript : MonoBehaviour
 	WWW m_www; //Stores xml data downloaded from the web
 	bool m_debugMode = false; //Turn the debug window on and off
 	Rect m_debugWindow = new Rect(300, 10, 400, 400);
-	Rect m_logWindow = new Rect(150, 10, 400, 400);
+	Rect m_logWindow = new Rect(200, 5, 400, 400);
+	string m_currentDataString = "";
 
 	#region Unity3D specific functions
 
@@ -127,7 +128,7 @@ public class TreePlanterScript : MonoBehaviour
 	void OnGUI()
 	{
 		//Generate the GUI controls and HUD
-		GUI.Box(new Rect(5, 10, 155, 170), "Simulation");
+		GUI.Box(new Rect(5, 10, 155, 290), "Simulation");
 		//Create an unused button off-screen so we have someplace to move focus out of the TextFields
 		GUI.SetNextControlName("focusBuster"); 
 		bool focusBusterButton = GUI.Button(new Rect(-10, -10, 1, 1),
@@ -135,47 +136,48 @@ public class TreePlanterScript : MonoBehaviour
 										  	""));
 		bool randomizeButton = GUI.Button(new Rect(10, 35, 145, 20), 
 										  new GUIContent("Load Default", 
-										  "Generate a new random community"));
+										  "Load the default (random) community"));
 		m_chosenSimulationId = GUI.TextField(new Rect(10, 60, 80, 20),
 									m_chosenSimulationId, 10);
 		bool loadButton = GUI.Button(new Rect(95, 60, 60, 20),
 									 new GUIContent("Load",
-									 "Test loading parameters from the web"));
-		bool firstButton = GUI.Button(new Rect (10, 85, 22, 20),
+									 "Load parameters from the web"));
+		bool firstButton = GUI.Button(new Rect (10, 95, 22, 20),
 										new GUIContent("[<",
 										"First simulation step"));										  
-		bool reverse10Button = GUI.Button(new Rect (34, 85, 25, 20),
+		bool reverse10Button = GUI.Button(new Rect (34, 95, 25, 20),
 										new GUIContent("<<",
 										"Skip backward 10 simulation steps"));
-		bool reverseButton = GUI.Button(new Rect (61, 85, 20, 20),
+		bool reverseButton = GUI.Button(new Rect (61, 95, 20, 20),
 										new GUIContent("<",
 										"Previous simulation step"));
-		bool forwardButton = GUI.Button(new Rect (83, 85, 20, 20),
+		bool forwardButton = GUI.Button(new Rect (83, 95, 20, 20),
 										new GUIContent(">",
 										"Next simulation step"));
-		bool forward10Button = GUI.Button(new Rect (105, 85, 25, 20),
+		bool forward10Button = GUI.Button(new Rect (105, 95, 25, 20),
 										new GUIContent(">>",
 										"Skip forward 10 simulation steps"));
-		bool lastButton = GUI.Button(new Rect (132, 85, 22, 20),
+		bool lastButton = GUI.Button(new Rect (132, 95, 22, 20),
 										new GUIContent(">]",
 										"Last simulation step"));								
-		GUI.Label(new Rect(10, 110, 35, 20), "Step:");
-		m_chosenGeneration = GUI.TextField(new Rect(42, 110, 40, 20),
+		GUI.Label(new Rect(10, 120, 35, 20), "Step:");
+		m_chosenGeneration = GUI.TextField(new Rect(42, 120, 40, 20),
 									m_chosenGeneration, 4);
-		GUI.Label(new Rect(83, 110, 35, 20), "/ " + (m_generations - 1).ToString());
-		bool goButton = GUI.Button(new Rect(120, 110, 35, 20),
+		GUI.Label(new Rect(83, 120, 35, 20), "/ " + (m_generations - 1).ToString());
+		bool goButton = GUI.Button(new Rect(120, 120, 35, 20),
 											 new GUIContent("Go",
 											 "View the selected simulation step")); 
-		bool logButton = GUI.Button(new Rect(10, 135, 40, 20), 
+		GUI.Label(new Rect(10, 145, 135, 100), m_currentDataString);
+		bool logButton = GUI.Button(new Rect(10, 250, 40, 20), 
 										new GUIContent("Log", 
 										"Show log data"));
-		bool plotButton = GUI.Button(new Rect(55, 135, 45, 20),
+		bool plotButton = GUI.Button(new Rect(55, 250, 45, 20),
 									 new GUIContent("Plots",
 									 "Show data plots"));
-		bool debugButton = GUI.Button(new Rect(10, 160, 60, 20),
+		bool debugButton = GUI.Button(new Rect(10, 275, 60, 20),
 									  new GUIContent("Debug",
 									  "Show/Hide debug messages"));
-		GUI.Label(new Rect(165, 35, 200, 100), GUI.tooltip);
+		GUI.Label(new Rect(165, 35, 250, 250), GUI.tooltip);
 		if (m_showLogWindow)
 		{
 			m_logWindow = GUI.Window(0, m_logWindow, DisplayLogWindow, "Log data");
@@ -370,6 +372,21 @@ public class TreePlanterScript : MonoBehaviour
 		GUI.DragWindow();
 	}
 
+	string GetCurrentData()
+	{
+		//Generates a string to display the current species counts formatted for the HUD
+		StringBuilder currentDataBuilder = new StringBuilder();
+		string currentData;
+		currentDataBuilder.Append("Gaps: ");
+		currentDataBuilder.Append(m_totalSpeciesCounts[m_displayedGeneration, 0].ToString() + "\n");
+		for (int i=1; i<6; i++)
+		{
+			currentDataBuilder.Append(m_prototypeNames[m_speciesList[i]] + ": ");
+			currentDataBuilder.Append(m_totalSpeciesCounts[m_displayedGeneration, i].ToString() + "\n");
+		}
+		currentData = currentDataBuilder.ToString();
+		return currentData;
+	}
 	
 	string GetLogData(bool isForPlotting)
 	{
@@ -463,6 +480,7 @@ public class TreePlanterScript : MonoBehaviour
         Terrain.activeTerrain.Flush();
         CalculateSummaryStatistics(generation, m_displayedGeneration, true);
         m_displayedGeneration = generation;
+        m_currentDataString = GetCurrentData();
     }
 	
 	void AddTree(Vector3 position, int treeSpecies, int age)

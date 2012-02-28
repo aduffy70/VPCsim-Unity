@@ -69,17 +69,17 @@ public class VPCsimCharacterController : MonoBehaviour
 	string buttonText = "Fly";
 	string boxText = "Walking...";
 	
-	//Add a fly/walk button to the GUI
 	void OnGUI()
 	{
 		Vector3 position = transform.position;
 		int displayedSpeed = ((int)speed / 10) + 1;
-		GUI.Box(new Rect(10, 265, 100, 25), "Speed: " + displayedSpeed.ToString());
-		GUI.Box(new Rect(10, 295, 130, 50), "Position: " + ((int)position.x).ToString() +
+		GUI.Box(new Rect(5, 325, 155, 110), "Movement");
+		GUI.Label(new Rect(10, 350, 60, 20), boxText);
+		bool walkFlyButton = GUI.Button(new Rect(75, 350, 45, 20), new GUIContent(buttonText));
+		GUI.Label(new Rect(10, 375, 100, 25), "Speed: " + displayedSpeed.ToString());
+		GUI.Label(new Rect(10, 400, 130, 50), "Position: " + ((int)position.x).ToString() +
 											", " + ((int)position.z).ToString() +
 											"\nAltitude: " + ((int)position.y).ToString());
-		GUI.Box(new Rect(10, 200, 100, 60), boxText);
-		bool walkFlyButton = GUI.Button(new Rect(20, 230, 80, 20), new GUIContent(buttonText));
 		if (walkFlyButton)
 		{
 			isWalking = !isWalking;
