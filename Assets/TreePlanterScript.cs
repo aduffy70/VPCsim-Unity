@@ -2,12 +2,13 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Xml;
+using System.Text;
 
 public class TreePlanterScript : MonoBehaviour
 {
 	System.Random m_random = new System.Random();
 	string m_simulationId = "none";
-	int m_generations = 100; //Number of time steps to simulate
+	int m_generations = 30; //Number of time steps to simulate
 	int[,,] m_cellStatus; //Tree species for each cell in each generation [gen,x,y]
 	bool[,] m_permanentDisturbanceMap; //Whether each cell is marked as permanently disturbed
 	int[] m_speciesList = new int[6] {-1, 2, 13, 14, 17, 19}; //Unity tree prototypes to include in the community (-1 represents a gap with no tree)
@@ -73,14 +74,16 @@ public class TreePlanterScript : MonoBehaviour
 	float m_scale17 = 1.0f; //Cots Pinetype
 	float m_scale18 = 1.2f; //Sycamore
 	float m_scale19 = 1.5f; //Willow
+	string[] m_prototypeNames;
 	float[] m_prototypeScales; 
-	int[,,] m_age; //Tracks the age of each plant in each generation.  We need to store age in each generation for when we run a new simulation from a particular starting step.
+	int[,,] m_age; //Tracks the age of each plant in each generation.
 	int[,] m_totalSpeciesCounts; //Total species counts for each generation.
-	Vector3[,] m_cellPositions; //Keeps track of the region coordinates where each plant will be placed so we only have to calculate them once.
+	Vector3[,] m_cellPositions; //Keeps track of the region coordinates where each plant will be placed so we only have to calculate them once per simulation.
 	int m_displayedGeneration = 0; //Which generation number is currently visualized
-	string m_chosenGeneration = "-";
+	string m_chosenGeneration = "0";
 	string m_chosenSimulationId = "";
-	List<int> m_loggedGenerations = new List<int>();
+//	List<int> m_loggedGenerations = new List<int>();
+	string m_logString = "";
 	bool m_showLogWindow = false;
 	string m_parameterPath = "http://vpcsim.appspot.com";
 	string m_errorText = ""; //Debug errors to display on the HUD - DEBUG
@@ -102,8 +105,13 @@ public class TreePlanterScript : MonoBehaviour
 											  m_scale12, m_scale13, m_scale14, 
 											  m_scale15, m_scale16, m_scale17, 
 											  m_scale18, m_scale19};
-		//In production there would never be trees in the scene at startup, but
-		//during development it can happen, so delete them just in case.
+		//Store the human-readable plant names so we can display them later
+		m_prototypeNames = new string[20] {"Alder", "Bamboo", "Grass", "Banyan",
+											"Bush1", "Bush2", "Bush3", "Bush4", 
+											"Bush5", "Bush5a", "Bush6", "Bush6a",
+											"Bush7", "Fern", "Maple", "Mimosa", 
+											"Palm", "Pine", "Sycamore", "Willow"};
+		//There shouldn't be trees in the scene at startup, but just in case...
 		DeleteAllTrees();	
 	}
 		
@@ -121,7 +129,8 @@ public class TreePlanterScript : MonoBehaviour
 	{
 		//Generate the GUI controls and HUD
 		GUI.Box(new Rect(5, 10, 155, 170), "Simulation");
-		GUI.SetNextControlName("focusBuster"); //Gives us someplace to move focus out of the TextField
+		//Create an unused button off-screen so we have someplace to move focus out of the TextFields
+		GUI.SetNextControlName("focusBuster"); 
 		bool focusBusterButton = GUI.Button(new Rect(-10, -10, 1, 1),
 											new GUIContent("", 
 										  	""));
@@ -154,22 +163,25 @@ public class TreePlanterScript : MonoBehaviour
 		GUI.Label(new Rect(10, 110, 35, 20), "Step:");
 		m_chosenGeneration = GUI.TextField(new Rect(42, 110, 40, 20),
 									m_chosenGeneration, 4);
-		GUI.Label(new Rect(83, 110, 35, 20), "/ " + (m_generations - 1).ToString());							//GUI.SetNextControlName("focusBuster"); //Gives us someplace to move focus out of the TextField
+		GUI.Label(new Rect(83, 110, 35, 20), "/ " + (m_generations - 1).ToString());
 		bool goButton = GUI.Button(new Rect(120, 110, 35, 20),
 											 new GUIContent("Go",
 											 "View the selected simulation step")); 
-		bool logButton = GUI.Button(new Rect(10, 135, 40, 20), 
-										new GUIContent("Log", 
-										"Store data for the current simulation step"));
-		bool clearButton = GUI.Button(new Rect(55, 135, 45, 20), 
-										new GUIContent("Clear", 
-										"Clear all logged data"));
+//		bool logButton = GUI.Button(new Rect(10, 135, 40, 20), 
+//										new GUIContent("Log", 
+//										"Store data for the current simulation step"));
+//		bool clearButton = GUI.Button(new Rect(55, 135, 45, 20), 
+//										new GUIContent("Clear", 
+//										"Clear all logged data"));
 		bool showButton = GUI.Button(new Rect(105, 135, 45, 20), 
-										new GUIContent("Show", 
+										new GUIContent("Log", 
 										"Show logged data"));
 		bool debugButton = GUI.Button(new Rect(10, 160, 60, 20),
 									  new GUIContent("Debug",
 									  "Show/Hide debug messages"));
+		bool plotButton = GUI.Button(new Rect(75, 160, 60, 20),
+									 new GUIContent("Plots",
+									 "Show data plots"));
 		GUI.Label(new Rect(165, 35, 200, 100), GUI.tooltip);
 		if (m_showLogWindow)
 		{
@@ -184,6 +196,7 @@ public class TreePlanterScript : MonoBehaviour
 			DeleteAllTrees();
 			GenerateRandomCommunity();
 			RunSimulation();
+			m_logString = GetLogData(false);
 			VisualizeGeneration(0);
 			m_chosenGeneration = m_displayedGeneration.ToString();
 			m_chosenSimulationId = m_simulationId;
@@ -191,7 +204,6 @@ public class TreePlanterScript : MonoBehaviour
 		}
 		if (loadButton)
 		{
-			//StartCoroutine(TestDownloads());
 			bool isValidId = false;
 			int newSimulationId;
 			try
@@ -207,8 +219,7 @@ public class TreePlanterScript : MonoBehaviour
 			}
 			if (isValidId)
 			{
-				//Retrieve simulation parameters from the web
-				//LoadNewSimulation(m_chosenSimulationId); 
+				//Retrieve simulation parameters from the web 
 				StartCoroutine(GetNewSimulationParameters(m_chosenSimulationId));
 			}
 			else
@@ -316,22 +327,22 @@ public class TreePlanterScript : MonoBehaviour
 			m_chosenGeneration = m_displayedGeneration.ToString();
 			GUI.FocusControl("focusBuster");
 		}
-		if (logButton)
-		{
-			LogSummaryStatistics(m_displayedGeneration);
-			m_chosenGeneration = m_displayedGeneration.ToString();
-			GUI.FocusControl("focusBuster");
-		}
-		if (clearButton)
-		{
-			ClearLog();
-			m_chosenGeneration = m_displayedGeneration.ToString();
-			GUI.FocusControl("focusBuster");
-		}
+//		//if (logButton)
+//		//{
+//		//	LogSummaryStatistics(m_displayedGeneration);
+//		//	m_chosenGeneration = m_displayedGeneration.ToString();
+//		//	GUI.FocusControl("focusBuster");
+//		}
+//		if (clearButton)
+//		{
+//			ClearLog();
+//			m_chosenGeneration = m_displayedGeneration.ToString();
+//			GUI.FocusControl("focusBuster");
+//		}
 		if (showButton)
 		{
 			m_showLogWindow = !m_showLogWindow;
-			ShowLog();
+//			ShowLog();
 			m_chosenGeneration = m_displayedGeneration.ToString();
 			GUI.FocusControl("focusBuster");
 		}
@@ -340,6 +351,20 @@ public class TreePlanterScript : MonoBehaviour
 			m_debugMode = !m_debugMode;
 			GUI.FocusControl("focusBuster");
 		}
+		if (plotButton)
+		{
+			if (m_simulationId != "none")
+			{
+				DisplayPlots();
+			}
+			GUI.FocusControl("focusBuster");
+		}
+	}
+	
+	void DisplayPlots()
+	{
+		string logData = GetLogData(true);
+		Application.ExternalCall("OpenCountsPlotPage", logData);
 	}
 	
 	void DisplayLogWindow(int windowID)
@@ -348,10 +373,10 @@ public class TreePlanterScript : MonoBehaviour
 		{
 			m_showLogWindow = !m_showLogWindow;
 		}
-		string logData = GetLogData();
-		if (m_loggedGenerations.Count > 0)
+		if (m_simulationId != "none")
 		{
-			GUI.TextArea(new Rect(5, 20, 390, 350), logData);
+//			string logData = GetLogData(false);
+			GUI.TextArea(new Rect(5, 20, 390, 350), m_logString);
 		}
 		else
 		{
@@ -367,22 +392,73 @@ public class TreePlanterScript : MonoBehaviour
 	}
 
 	
-	string GetLogData()
+	string GetLogData(bool isForPlotting)
 	{
-		//Generates a string of data for all logged generations
-		string logData = "Gaps, Species1, Species2, Species3, Species4, Species5\n";
-		foreach(int generation in m_loggedGenerations)
+		//Generates a string of log data suitable for either displaying to humans or 
+		//for sending out for plotting
+		StringBuilder logDataBuilder = new StringBuilder();
+		string logData;
+		if (isForPlotting)
 		{
-			logData += (generation.ToString() + "," +
-						m_totalSpeciesCounts[generation, 0].ToString() + ", " +
-						m_totalSpeciesCounts[generation, 1].ToString() + ", " +
-						m_totalSpeciesCounts[generation, 2].ToString() + ", " +
-				    	m_totalSpeciesCounts[generation, 3].ToString() + ", " +
-						m_totalSpeciesCounts[generation, 4].ToString() + ", " +
-						m_totalSpeciesCounts[generation, 5].ToString() + "\n");
+       		logDataBuilder.Append("\"time step,Gaps,");
+    		for (int i=1; i<6; i++)
+    		{
+    			logDataBuilder.Append(m_prototypeNames[m_speciesList[i]]);
+    			if (i != 5)
+    			{
+    				logDataBuilder.Append(",");
+    			}
+    		}
+    		logDataBuilder.Append("\\\n\" + ");
+    		for(int generation=0; generation<m_generations; generation++)
+    		{
+    			logDataBuilder.Append("\"");
+    			logDataBuilder.Append(generation.ToString() + ',');
+    			logDataBuilder.Append(m_totalSpeciesCounts[generation, 0].ToString() + ",");
+    			logDataBuilder.Append(m_totalSpeciesCounts[generation, 1].ToString() + ","); 
+    			logDataBuilder.Append(m_totalSpeciesCounts[generation, 2].ToString() + ","); 
+    			logDataBuilder.Append(m_totalSpeciesCounts[generation, 3].ToString() + ","); 
+    			logDataBuilder.Append(m_totalSpeciesCounts[generation, 4].ToString() + ","); 
+    			logDataBuilder.Append(m_totalSpeciesCounts[generation, 5].ToString() + "\\\n\""); 
+    			if (generation != m_generations - 1)
+    			{
+    				logDataBuilder.Append(" + ");
+    			}
+    		}
 		}
-		return logData;
+		else
+		{
+			logDataBuilder.Append("Time_step, Gaps, ");
+    		for (int i=1; i<6; i++)
+    		{
+    			logDataBuilder.Append(m_prototypeNames[m_speciesList[i]]);
+    			if (i != 5)
+    			{
+    				logDataBuilder.Append(", ");
+    			}
+    		}
+    		logDataBuilder.Append("\n");
+    		for(int generation=0; generation<m_generations; generation++)
+    		{
+    			logDataBuilder.Append(generation.ToString() + ", ");
+    			logDataBuilder.Append(m_totalSpeciesCounts[generation, 0].ToString() + ", ");
+    			logDataBuilder.Append(m_totalSpeciesCounts[generation, 1].ToString() + ", "); 
+    			logDataBuilder.Append(m_totalSpeciesCounts[generation, 2].ToString() + ", "); 
+    			logDataBuilder.Append(m_totalSpeciesCounts[generation, 3].ToString() + ", "); 
+    			logDataBuilder.Append(m_totalSpeciesCounts[generation, 4].ToString() + ", "); 
+    			logDataBuilder.Append(m_totalSpeciesCounts[generation, 5].ToString()); 
+    			if (generation != m_generations - 1)
+    			{
+    				logDataBuilder.Append("\n");
+    			}
+    		}
+		}
+    	logData = logDataBuilder.ToString();		
+    	print(logData);
+    	return logData;
 	}
+	
+	
 	#endregion
 		
 	#region Visualization functions
@@ -441,23 +517,23 @@ public class TreePlanterScript : MonoBehaviour
 		//Generate summary statistics for the currently viewed generation
 	}
 	
-	void ClearLog()
-	{
-		//Delete all logged data
-		m_loggedGenerations = new List<int>();
-	}
+//	void ClearLog()
+//	{
+//		//Delete all logged data
+//		m_loggedGenerations = new List<int>();
+//	}
 	
-	void LogSummaryStatistics(int generation)
-	{
-		//Stores a list of the generations that have been logged so we can display
-		//Statistics for those generations when requested
-		m_loggedGenerations.Add(generation);
-	}
+//	void LogSummaryStatistics(int generation)
+//	{
+//		//Stores a list of the generations that have been logged so we can display
+//		//Statistics for those generations when requested
+//		m_loggedGenerations.Add(generation);
+//	}
 	
-	void ShowLog()
-	{
-		//Display logged summary statistics
-	}
+//	void ShowLog()
+//	{
+//		//Display logged summary statistics
+//	}
 	
 	void DisplaySummaryStatistics(string hudString)
 	{
@@ -482,10 +558,10 @@ public class TreePlanterScript : MonoBehaviour
 				m_errorText += "Unpacked success\n";
 				DeleteAllTrees();
 				m_errorText += "DeleteTrees success\n";
-				ClearLog();
-				m_errorText += "ClearLog success\n";
 				RunSimulation();
 				m_errorText += "RunSimulation success\n";
+				m_logString = GetLogData(false);
+				m_errorText += "GetLogData success\n";
 				VisualizeGeneration(0);
 				m_errorText += "VisualizeGeneration success\n";
 				m_chosenGeneration = m_displayedGeneration.ToString();
