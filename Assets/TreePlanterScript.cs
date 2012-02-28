@@ -8,7 +8,7 @@ public class TreePlanterScript : MonoBehaviour
 {
 	System.Random m_random = new System.Random();
 	string m_simulationId = "none";
-	int m_generations = 30; //Number of time steps to simulate
+	int m_generations = 201; //Number of time steps to simulate
 	int[,,] m_cellStatus; //Tree species for each cell in each generation [gen,x,y]
 	bool[,] m_permanentDisturbanceMap; //Whether each cell is marked as permanently disturbed
 	int[] m_speciesList = new int[6] {-1, 2, 13, 14, 17, 19}; //Unity tree prototypes to include in the community (-1 represents a gap with no tree)
@@ -134,39 +134,42 @@ public class TreePlanterScript : MonoBehaviour
 		bool focusBusterButton = GUI.Button(new Rect(-10, -10, 1, 1),
 											new GUIContent("", 
 										  	""));
-		bool randomizeButton = GUI.Button(new Rect(10, 35, 145, 20), 
-										  new GUIContent("Load Default", 
-										  "Load the default (random) community"));
-		m_chosenSimulationId = GUI.TextField(new Rect(10, 60, 80, 20),
+		bool defaultsButton = GUI.Button(new Rect(10, 35, 60, 20), 
+										  new GUIContent("Defaults", 
+										  "Load the default ecosystem"));
+		bool createButton = GUI.Button(new Rect(75, 35, 80, 20), 
+										  new GUIContent("Create new", 
+										  "Create a new ecosystem"));					
+		m_chosenSimulationId = GUI.TextField(new Rect(10, 60, 90, 20),
 									m_chosenSimulationId, 10);
-		bool loadButton = GUI.Button(new Rect(95, 60, 60, 20),
+		bool loadButton = GUI.Button(new Rect(105, 60, 50, 20),
 									 new GUIContent("Load",
-									 "Load parameters from the web"));
+									 "Load new ecosystem parameters"));
 		bool firstButton = GUI.Button(new Rect (10, 95, 22, 20),
 										new GUIContent("[<",
-										"First simulation step"));										  
+										"First time step"));										  
 		bool reverse10Button = GUI.Button(new Rect (34, 95, 25, 20),
 										new GUIContent("<<",
-										"Skip backward 10 simulation steps"));
+										"Skip backward 10 time steps"));
 		bool reverseButton = GUI.Button(new Rect (61, 95, 20, 20),
 										new GUIContent("<",
-										"Previous simulation step"));
+										"Previous time step"));
 		bool forwardButton = GUI.Button(new Rect (83, 95, 20, 20),
 										new GUIContent(">",
-										"Next simulation step"));
+										"Next time step"));
 		bool forward10Button = GUI.Button(new Rect (105, 95, 25, 20),
 										new GUIContent(">>",
-										"Skip forward 10 simulation steps"));
+										"Skip forward 10 time steps"));
 		bool lastButton = GUI.Button(new Rect (132, 95, 22, 20),
 										new GUIContent(">]",
-										"Last simulation step"));								
+										"Last time step"));								
 		GUI.Label(new Rect(10, 120, 35, 20), "Step:");
 		m_chosenGeneration = GUI.TextField(new Rect(42, 120, 40, 20),
 									m_chosenGeneration, 4);
 		GUI.Label(new Rect(83, 120, 35, 20), "/ " + (m_generations - 1).ToString());
 		bool goButton = GUI.Button(new Rect(120, 120, 35, 20),
 											 new GUIContent("Go",
-											 "View the selected simulation step")); 
+											 "View the selected time step")); 
 		GUI.Label(new Rect(10, 145, 135, 100), m_currentDataString);
 		bool logButton = GUI.Button(new Rect(10, 250, 40, 20), 
 										new GUIContent("Log", 
@@ -177,7 +180,11 @@ public class TreePlanterScript : MonoBehaviour
 		bool debugButton = GUI.Button(new Rect(10, 275, 60, 20),
 									  new GUIContent("Debug",
 									  "Show/Hide debug messages"));
-		GUI.Label(new Rect(165, 35, 250, 250), GUI.tooltip);
+		if (!System.String.IsNullOrEmpty(GUI.tooltip))
+		{
+        	GUI.Box(new Rect(165 , 35, 220, 20),"");
+		}
+		GUI.Label(new Rect(170, 35, 210, 20), GUI.tooltip);
 		if (m_showLogWindow)
 		{
 			m_logWindow = GUI.Window(0, m_logWindow, DisplayLogWindow, "Log data");
@@ -186,7 +193,7 @@ public class TreePlanterScript : MonoBehaviour
 		{
 			m_debugWindow = GUI.Window(0, m_debugWindow, DisplayDebugWindow, "Debug");
 		}
-		if (randomizeButton)
+		if (defaultsButton)
 		{
 			DeleteAllTrees();
 			GenerateRandomCommunity();
@@ -196,6 +203,10 @@ public class TreePlanterScript : MonoBehaviour
 			m_chosenGeneration = m_displayedGeneration.ToString();
 			m_chosenSimulationId = m_simulationId;
 			GUI.FocusControl("focusBuster");
+		}
+		if (createButton)
+		{
+			Application.ExternalCall("window.open('http://vpcsim.appspot.com','_blank')");
 		}
 		if (loadButton)
 		{
