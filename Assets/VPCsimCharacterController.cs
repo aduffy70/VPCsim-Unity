@@ -10,16 +10,16 @@ using System.Collections;
 
 public class VPCsimCharacterController : MonoBehaviour
 {
-	float rotationSpeedY = 0.75f;
-	float minimumY = -90f;
-	float maximumY = 90f;
-	float rotationY = 0;
-	float speed = 11.0f;
-	float minimumSpeed = 1.0f;
-	float maximumSpeed = 91.0f;
-	float acceleration = 10.0f;
-	float rotationSpeedHorizontal = 50.0f;
-	bool isWalking;
+	float m_rotationSpeedY = 0.75f;
+	float m_minimumY = -90f;
+	float m_maximumY = 90f;
+	float m_rotationY = 0;
+	float m_speed = 11.0f;
+	float m_minimumSpeed = 1.0f;
+	float m_maximumSpeed = 91.0f;
+	float m_acceleration = 10.0f;
+	float m_rotationSpeedHorizontal = 50.0f;
+	bool m_isWalking;
 
 	// Use this for initialization
 	void Start()
@@ -29,7 +29,7 @@ public class VPCsimCharacterController : MonoBehaviour
 		{
 			rigidbody.freezeRotation = true;
 			rigidbody.useGravity = true;
-			isWalking = true;
+			m_isWalking = true;
 		}
 	}
 		
@@ -39,16 +39,16 @@ public class VPCsimCharacterController : MonoBehaviour
 		//'q' & 'z' acceleration
 		if (Input.GetKeyDown("q"))
 		{
-			speed += acceleration;
+			m_speed += m_acceleration;
 		}
 		else if (Input.GetKeyDown("z"))
 		{
-			speed -= acceleration;
+			m_speed -= m_acceleration;
 		}
-		speed = Mathf.Clamp(speed, minimumSpeed, maximumSpeed);
+		m_speed = Mathf.Clamp(m_speed, m_minimumSpeed, m_maximumSpeed);
 		//Arrow key movement and rotation
-		float translation = Input.GetAxis("Vertical") * speed;
-        float rotation = Input.GetAxis("Horizontal") * rotationSpeedHorizontal;
+		float translation = Input.GetAxis("Vertical") * m_speed;
+        float rotation = Input.GetAxis("Horizontal") * m_rotationSpeedHorizontal;
         translation *= Time.deltaTime;
         rotation *= Time.deltaTime;
         transform.Translate(0, 0, translation);
@@ -56,14 +56,14 @@ public class VPCsimCharacterController : MonoBehaviour
         //'e' & 'x' rotation
         if (Input.GetKey("e"))
 		{
-			rotationY += rotationSpeedY;
+			m_rotationY += m_rotationSpeedY;
 		}
 		else if (Input.GetKey("x"))
 		{
-			rotationY -= rotationSpeedY;
+			m_rotationY -= m_rotationSpeedY;
 		}
-		rotationY = Mathf.Clamp(rotationY, minimumY, maximumY);	
-		transform.localEulerAngles = new Vector3(-rotationY, transform.localEulerAngles.y, 0);	
+		m_rotationY = Mathf.Clamp(m_rotationY, m_minimumY, m_maximumY);	
+		transform.localEulerAngles = new Vector3(-m_rotationY, transform.localEulerAngles.y, 0);	
 	}
 	
 	string buttonText = "Fly";
@@ -72,7 +72,7 @@ public class VPCsimCharacterController : MonoBehaviour
 	void OnGUI()
 	{
 		Vector3 position = transform.position;
-		int displayedSpeed = ((int)speed / 10) + 1;
+		int displayedSpeed = ((int)m_speed / 10) + 1;
 		GUI.Box(new Rect(5, 325, 155, 110), "Movement");
 		GUI.Label(new Rect(10, 350, 60, 20), boxText);
 		bool walkFlyButton = GUI.Button(new Rect(75, 350, 45, 20), new GUIContent(buttonText));
@@ -82,9 +82,9 @@ public class VPCsimCharacterController : MonoBehaviour
 											"\nAltitude: " + ((int)position.y).ToString());
 		if (walkFlyButton)
 		{
-			isWalking = !isWalking;
-			rigidbody.useGravity = isWalking;
-			if (isWalking)
+			m_isWalking = !m_isWalking;
+			rigidbody.useGravity = m_isWalking;
+			if (m_isWalking)
 			{
 				buttonText = "Fly";
 				boxText = "Walking...";
