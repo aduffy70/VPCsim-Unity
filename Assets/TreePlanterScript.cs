@@ -82,7 +82,6 @@ public class TreePlanterScript : MonoBehaviour
 	int m_displayedGeneration = 0; //Which generation number is currently visualized
 	string m_chosenGeneration = "0";
 	string m_chosenSimulationId = "";
-//	List<int> m_loggedGenerations = new List<int>();
 	string m_logString = "";
 	bool m_showLogWindow = false;
 	string m_parameterPath = "http://vpcsim.appspot.com";
@@ -167,21 +166,15 @@ public class TreePlanterScript : MonoBehaviour
 		bool goButton = GUI.Button(new Rect(120, 110, 35, 20),
 											 new GUIContent("Go",
 											 "View the selected simulation step")); 
-//		bool logButton = GUI.Button(new Rect(10, 135, 40, 20), 
-//										new GUIContent("Log", 
-//										"Store data for the current simulation step"));
-//		bool clearButton = GUI.Button(new Rect(55, 135, 45, 20), 
-//										new GUIContent("Clear", 
-//										"Clear all logged data"));
-		bool showButton = GUI.Button(new Rect(105, 135, 45, 20), 
+		bool logButton = GUI.Button(new Rect(10, 135, 40, 20), 
 										new GUIContent("Log", 
-										"Show logged data"));
+										"Show log data"));
+		bool plotButton = GUI.Button(new Rect(55, 135, 45, 20),
+									 new GUIContent("Plots",
+									 "Show data plots"));
 		bool debugButton = GUI.Button(new Rect(10, 160, 60, 20),
 									  new GUIContent("Debug",
 									  "Show/Hide debug messages"));
-		bool plotButton = GUI.Button(new Rect(75, 160, 60, 20),
-									 new GUIContent("Plots",
-									 "Show data plots"));
 		GUI.Label(new Rect(165, 35, 200, 100), GUI.tooltip);
 		if (m_showLogWindow)
 		{
@@ -327,28 +320,10 @@ public class TreePlanterScript : MonoBehaviour
 			m_chosenGeneration = m_displayedGeneration.ToString();
 			GUI.FocusControl("focusBuster");
 		}
-//		//if (logButton)
-//		//{
-//		//	LogSummaryStatistics(m_displayedGeneration);
-//		//	m_chosenGeneration = m_displayedGeneration.ToString();
-//		//	GUI.FocusControl("focusBuster");
-//		}
-//		if (clearButton)
-//		{
-//			ClearLog();
-//			m_chosenGeneration = m_displayedGeneration.ToString();
-//			GUI.FocusControl("focusBuster");
-//		}
-		if (showButton)
+		if (logButton)
 		{
 			m_showLogWindow = !m_showLogWindow;
-//			ShowLog();
 			m_chosenGeneration = m_displayedGeneration.ToString();
-			GUI.FocusControl("focusBuster");
-		}
-		if (debugButton)
-		{
-			m_debugMode = !m_debugMode;
 			GUI.FocusControl("focusBuster");
 		}
 		if (plotButton)
@@ -357,6 +332,11 @@ public class TreePlanterScript : MonoBehaviour
 			{
 				DisplayPlots();
 			}
+			GUI.FocusControl("focusBuster");
+		}
+		if (debugButton)
+		{
+			m_debugMode = !m_debugMode;
 			GUI.FocusControl("focusBuster");
 		}
 	}
@@ -375,7 +355,6 @@ public class TreePlanterScript : MonoBehaviour
 		}
 		if (m_simulationId != "none")
 		{
-//			string logData = GetLogData(false);
 			GUI.TextArea(new Rect(5, 20, 390, 350), m_logString);
 		}
 		else
@@ -400,6 +379,7 @@ public class TreePlanterScript : MonoBehaviour
 		string logData;
 		if (isForPlotting)
 		{
+			//Generate string for sending out for plotting
        		logDataBuilder.Append("\"time step,Gaps,");
     		for (int i=1; i<6; i++)
     		{
@@ -428,6 +408,7 @@ public class TreePlanterScript : MonoBehaviour
 		}
 		else
 		{
+			//Generate string for displaying to humans
 			logDataBuilder.Append("Time_step, Gaps, ");
     		for (int i=1; i<6; i++)
     		{
@@ -476,7 +457,6 @@ public class TreePlanterScript : MonoBehaviour
                 int newTreeSpecies = m_cellStatus[generation, x, z];
                 int newTreePrototype = m_speciesList[newTreeSpecies];
                 Vector3 newTreeLocation = m_cellPositions[x, z];
-                //AddTree(newTreeLocation, newTreePrototype);
                 AddTree(newTreeLocation, newTreeSpecies, m_age[generation, x, z]);
             }
         }
@@ -516,25 +496,7 @@ public class TreePlanterScript : MonoBehaviour
 	{
 		//Generate summary statistics for the currently viewed generation
 	}
-	
-//	void ClearLog()
-//	{
-//		//Delete all logged data
-//		m_loggedGenerations = new List<int>();
-//	}
-	
-//	void LogSummaryStatistics(int generation)
-//	{
-//		//Stores a list of the generations that have been logged so we can display
-//		//Statistics for those generations when requested
-//		m_loggedGenerations.Add(generation);
-//	}
-	
-//	void ShowLog()
-//	{
-//		//Display logged summary statistics
-//	}
-	
+		
 	void DisplaySummaryStatistics(string hudString)
 	{
 		//Display summary statistics on the HUD
@@ -546,6 +508,7 @@ public class TreePlanterScript : MonoBehaviour
 
 	IEnumerator GetNewSimulationParameters(string fileName)
 	{
+		//Get simulation parameters from the VPCsim webapp
 		string url = System.IO.Path.Combine(m_parameterPath,"data?id=" + fileName);
 		m_www = new WWW(url);
 		yield return m_www;
@@ -603,13 +566,11 @@ public class TreePlanterScript : MonoBehaviour
 				string parameterName = reader.GetAttribute("name");
 				string parameterValue = reader.ReadString();
 				newParameters.Add(parameterName, parameterValue);
-				//print(parameterName + ": " + parameterValue);
 			}
 		}
 		//Store all parameters
 		m_simulationId = newParameters["id"];
 		m_terrainMap = System.Int32.Parse(newParameters["terrain"]);
-		//LoadTerrain(m_terrainMap);
 		m_waterLevel = System.Int32.Parse(newParameters["water_level"]);
 		m_lightLevel = System.Int32.Parse(newParameters["light_level"]);
 		m_temperatureLevel = System.Int32.Parse(newParameters["temperature_level"]);
@@ -701,8 +662,6 @@ public class TreePlanterScript : MonoBehaviour
                 //dieoff early in the simulation, but skew the distribution 
                 //of ages downward or we will start with a dieoff because a 
                 //random selection of ages has many more old ages than expected.
-                //TODO - there is probably a distribution we could draw from to
-                //do this better.
                 m_age[0, x, z] = Random.Range(0, m_lifespans[newSpecies] / 3);             
                 m_totalSpeciesCounts[0, newSpecies]++;
             }
@@ -718,7 +677,6 @@ public class TreePlanterScript : MonoBehaviour
             if (generation % 100 == 0)
             {
                 //Provide status updates every 100 generations
-                //print("Generation# " + generation); //TODO- this needs to be on the hud
             }
             int nextGeneration = generation + 1;
             int rowabove;
@@ -1086,7 +1044,3 @@ public class TreePlanterScript : MonoBehaviour
 	#endregion
 }
 
-
-
-//Code I may not need but don't want to lose:
-//if (Terrain.activeTerrain.terrainData.GetSteepness(location.x, location.z) < 45f)
