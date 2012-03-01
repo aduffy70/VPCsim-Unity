@@ -126,16 +126,20 @@ public class VPCsimCharacterController : MonoBehaviour
 		bool homeButton = false;
 		if (m_movementMode != "Walking...")
 		{
-			walkButton = GUI.Button(new Rect(10, 350, 40, 20), "Walk");
+			walkButton = GUI.Button(new Rect(10, 350, 40, 20), new GUIContent("Walk",
+									"Enter 'Walking' mode"));
 		}
 		if (m_movementMode != "Flying..." )
 		{
-			flyButton = GUI.Button(new Rect(55, 350, 40, 20), "Fly");
+			flyButton = GUI.Button(new Rect(55, 350, 40, 20), new GUIContent("Fly",
+								   "Enter 'Flying' mode"));
 		}
 		if (m_movementMode != "Sampling...")
 		{
-			samplingButton = GUI.Button(new Rect(100, 350, 55, 20), "Sample");
-			homeButton = GUI.Button(new Rect(85, 380, 70, 20), "Go home");
+			samplingButton = GUI.Button(new Rect(100, 350, 55, 20), new GUIContent("Sample",
+										"Enter 'Sampling' mode"));
+			homeButton = GUI.Button(new Rect(85, 380, 70, 20), new GUIContent("Go home",
+									"Return to the starting position"));
 		}
 		else
 		{
@@ -145,6 +149,11 @@ public class VPCsimCharacterController : MonoBehaviour
 		GUI.Label(new Rect(10, 405, 130, 50), "Position: " + ((int)position.x).ToString() +
 											", " + ((int)position.z).ToString() +
 											"\nAltitude: " + ((int)position.y).ToString());
+		if (!System.String.IsNullOrEmpty(GUI.tooltip))
+		{
+        	GUI.Box(new Rect(165 , 330, 185, 20),"");
+		}
+		GUI.Label(new Rect(170, 330, 210, 20), GUI.tooltip);
 		if (walkButton)
 		{
 			m_movementMode = "Walking...";
