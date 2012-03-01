@@ -32,8 +32,7 @@ public class VPCsimCharacterController : MonoBehaviour
 		// Make the rigid body not change rotation
 		if (rigidbody)
 		{
-			transform.position = m_homePosition;
-			transform.eulerAngles = m_homeRotation;
+			GoToHomePosition();
 			rigidbody.freezeRotation = true;
 			rigidbody.useGravity = true;
 		}
@@ -78,8 +77,7 @@ public class VPCsimCharacterController : MonoBehaviour
 				if ((-1 > transform.position.x) || (transform.position.x > 2001) || 
 					(-1 > transform.position.z) || (transform.position.z > 2001))
 				{
-					transform.position = m_homePosition;
-					transform.eulerAngles = m_homeRotation;
+					GoToHomePosition();
 				}
 			}
 		}
@@ -171,8 +169,14 @@ public class VPCsimCharacterController : MonoBehaviour
 		}
 		if (homeButton)
 		{
-			transform.position = m_homePosition;
-			transform.eulerAngles = m_homeRotation;
+			GoToHomePosition();
 		}
+	}
+	
+	void GoToHomePosition()
+	{
+		transform.position = m_homePosition;
+		transform.eulerAngles = m_homeRotation;
+		m_rotationY = 0;
 	}
 }
