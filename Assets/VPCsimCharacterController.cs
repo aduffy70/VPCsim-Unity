@@ -10,6 +10,8 @@ using System.Collections;
 
 public class VPCsimCharacterController : MonoBehaviour
 {
+	Vector3 m_homePosition = new Vector3(1000, 100, 1000);
+	Vector3 m_homeRotation = new Vector3(0, 0, 0);
 	float m_rotationSpeedY = 0.75f;
 	float m_minimumY = -90f;
 	float m_maximumY = 90f;
@@ -30,6 +32,8 @@ public class VPCsimCharacterController : MonoBehaviour
 		// Make the rigid body not change rotation
 		if (rigidbody)
 		{
+			transform.position = m_homePosition;
+			transform.eulerAngles = m_homeRotation;
 			rigidbody.freezeRotation = true;
 			rigidbody.useGravity = true;
 		}
@@ -69,6 +73,15 @@ public class VPCsimCharacterController : MonoBehaviour
 			}
 			m_rotationY = Mathf.Clamp(m_rotationY, m_minimumY, m_maximumY);	
 			transform.localEulerAngles = new Vector3(-m_rotationY, transform.localEulerAngles.y, 0);
+			if (m_movementMode == "Walking...")
+			{
+				if ((-1 > transform.position.x) || (transform.position.x > 2001) || 
+					(-1 > transform.position.z) || (transform.position.z > 2001))
+				{
+					transform.position = m_homePosition;
+					transform.eulerAngles = m_homeRotation;
+				}
+			}
 		}
 		else
 		{	
@@ -105,29 +118,31 @@ public class VPCsimCharacterController : MonoBehaviour
 	{
 		Vector3 position = transform.position;
 		int displayedSpeed = ((int)m_speed / 10) + 1;
-		GUI.Box(new Rect(5, 315, 155, 135), "Movement");
-		GUI.Label(new Rect(10, 340, 150, 20), "Mode: " + m_movementMode);
+		GUI.Box(new Rect(5, 310, 155, 135), "Movement");
+		GUI.Label(new Rect(10, 330, 150, 20), "Mode: " + m_movementMode);
 		bool walkButton = false;
 		bool flyButton = false;
 		bool samplingButton = false;
+		bool homeButton = false;
 		if (m_movementMode != "Walking...")
 		{
-			walkButton = GUI.Button(new Rect(10, 360, 40, 20), "Walk");
+			walkButton = GUI.Button(new Rect(10, 350, 40, 20), "Walk");
 		}
 		if (m_movementMode != "Flying..." )
 		{
-			flyButton = GUI.Button(new Rect(55, 360, 40, 20), "Fly");
+			flyButton = GUI.Button(new Rect(55, 350, 40, 20), "Fly");
 		}
 		if (m_movementMode != "Sampling...")
 		{
-			samplingButton = GUI.Button(new Rect(100, 360, 55, 20), "Sample");
+			samplingButton = GUI.Button(new Rect(100, 350, 55, 20), "Sample");
+			homeButton = GUI.Button(new Rect(85, 380, 70, 20), "Go home");
 		}
 		else
 		{
-			GUI.Label(new Rect(100, 415, 130, 50), "\nHAT: " + ((int)m_distanceToGround).ToString());
+			GUI.Label(new Rect(100, 405, 130, 50), "\nHAT: " + ((int)m_distanceToGround).ToString());
 		}
-		GUI.Label(new Rect(10, 390, 100, 25), "Speed: " + displayedSpeed.ToString());
-		GUI.Label(new Rect(10, 415, 130, 50), "Position: " + ((int)position.x).ToString() +
+		GUI.Label(new Rect(10, 380, 100, 25), "Speed: " + displayedSpeed.ToString());
+		GUI.Label(new Rect(10, 405, 130, 50), "Position: " + ((int)position.x).ToString() +
 											", " + ((int)position.z).ToString() +
 											"\nAltitude: " + ((int)position.y).ToString());
 		if (walkButton)
@@ -144,6 +159,11 @@ public class VPCsimCharacterController : MonoBehaviour
 		{
 			m_movementMode = "Sampling...";
 			rigidbody.useGravity = false;
+		}
+		if (homeButton)
+		{
+			transform.position = m_homePosition;
+			transform.eulerAngles = m_homeRotation;
 		}
 	}
 }
