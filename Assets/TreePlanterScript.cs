@@ -520,16 +520,6 @@ public class TreePlanterScript : MonoBehaviour
 		Terrain.activeTerrain.terrainData.treeInstances = new TreeInstance[0];
 		Terrain.activeTerrain.Flush();
 	}
-	
-	void CalculateSummaryStatistics(int generation, int lastVisualizedGeneration, bool needToLog)
-	{
-		//Generate summary statistics for the currently viewed generation
-	}
-		
-	void DisplaySummaryStatistics(string hudString)
-	{
-		//Display summary statistics on the HUD
-	}
 		
 	#endregion
 
