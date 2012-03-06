@@ -489,7 +489,6 @@ public class TreePlanterScript : MonoBehaviour
             }
         }
         Terrain.activeTerrain.Flush();
-        CalculateSummaryStatistics(generation, m_displayedGeneration, true);
         m_displayedGeneration = generation;
         m_currentDataString = GetCurrentData();
     }
