@@ -34,50 +34,75 @@ public class TreePlanterScript : MonoBehaviour
                                                    {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
                                                    {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
                                                    {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
-                                                   {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f}};  
+                                                   {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f}};
                                                    //Equivalent to all M's
-    int[] m_lifespans = new int[6] {0, 25, 25, 25, 25, 25}; //Maximum age for each species
-    //Optimal values and shape parameters for each species
-    float[] m_altitudeOptimums = new float[6] {0f, 35f, 35f, 35f, 35f, 35f};
-    float[] m_altitudeEffects = new float[6] {0f, 0f, 0f, 0f, 0f, 0f};
-    float[] m_salinityOptimums = new float[6] {0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f};
-    float[] m_salinityEffects = new float[6] {0f, 0f, 0f, 0f, 0f, 0f};
-    float[] m_drainageOptimums = new float[6] {0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f};
-    float[] m_drainageEffects = new float[6] {0f, 0f, 0f, 0f, 0f, 0f};
-    float[] m_fertilityOptimums = new float[6] {0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f};
-    float[] m_fertilityEffects = new float[6] {0f, 0f, 0f, 0f, 0f, 0f};
+    //Store the human-readable plant names so we can display them later
+    string[] m_prototypeNames = new string[20] {"Alder", "Bamboo", "Grass", "Banyan",
+                                       "Bush1", "Bush2", "Bush3", "Bush4",
+                                       "Bush5", "Bush5a", "Bush6", "Bush6a",
+                                       "Bush7", "Fern", "Maple", "Mimosa",
+                                       "Palm", "Pine", "Sycamore", "Willow"};
+    float[] m_prototypeScales = new float[20] {1.2f, 1.0f, 3.0f, 80.0f,
+                                               5.0f, 7.0f, 6.0f, 7.0f,
+                                               5.0f, 2.0f, 5.0f, 2.0f,
+                                               7.0f, 3.0f, 0.5f, 0.3f,
+                                               75.0f, 1.0f, 1.2f, 1.5f};
+    //Maximum age for each prototype
+    int[] m_lifespans = new int[20] {25, 25, 25, 25,
+                                     25, 25, 25, 25,
+                                     25, 25, 25, 25,
+                                     25, 25, 25, 25,
+                                     25, 25, 25, 25};
+    //Optimal values and shape parameters for each prototype
+    float[] m_altitudeOptimums = new float[20] {35f, 35f, 35f, 35f,
+                                                35f, 35f, 35f, 35f,
+                                                35f, 35f, 35f, 35f,
+                                                35f, 35f, 35f, 35f,
+                                                35f, 35f, 35f, 35f};
+    float[] m_altitudeEffects = new float[20] {0.0f, 0.0f, 0.0f, 0.0f,
+                                               0.0f, 0.0f, 0.0f, 0.0f,
+                                               0.0f, 0.0f, 0.0f, 0.0f,
+                                               0.0f, 0.0f, 0.0f, 0.0f,
+                                               0.0f, 0.0f, 0.0f, 0.0f};
+    float[] m_waterLevelOptimums = new float[20] {0.5f, 0.5f, 0.5f, 0.5f,
+                                                  0.5f, 0.5f, 0.5f, 0.5f,
+                                                  0.5f, 0.5f, 0.5f, 0.5f,
+                                                  0.5f, 0.5f, 0.5f, 0.5f,
+                                                  0.5f, 0.5f, 0.5f, 0.5f,};
+    float[] m_waterLevelEffects = new float[20] {0f, 0f, 0f, 0f,
+                                                 0f, 0f, 0f, 0f,
+                                                 0f, 0f, 0f, 0f,
+                                                 0f, 0f, 0f, 0f,
+                                                 0f, 0f, 0f, 0f};
+    float[] m_lightLevelOptimums = new float[20] {0.5f, 0.5f, 0.5f, 0.5f,
+                                                  0.5f, 0.5f, 0.5f, 0.5f,
+                                                  0.5f, 0.5f, 0.5f, 0.5f,
+                                                  0.5f, 0.5f, 0.5f, 0.5f,
+                                                  0.5f, 0.5f, 0.5f, 0.5f,};
+    float[] m_lightLevelEffects = new float[20] {0f, 0f, 0f, 0f,
+                                                 0f, 0f, 0f, 0f,
+                                                 0f, 0f, 0f, 0f,
+                                                 0f, 0f, 0f, 0f,
+                                                 0f, 0f, 0f, 0f};
+    float[] m_temperatureLevelOptimums = new float[20] {0.5f, 0.5f, 0.5f, 0.5f,
+                                                   0.5f, 0.5f, 0.5f, 0.5f,
+                                                   0.5f, 0.5f, 0.5f, 0.5f,
+                                                   0.5f, 0.5f, 0.5f, 0.5f,
+                                                   0.5f, 0.5f, 0.5f, 0.5f,};
+    float[] m_temperatureLevelEffects = new float[20] {0f, 0f, 0f, 0f,
+                                                  0f, 0f, 0f, 0f,
+                                                  0f, 0f, 0f, 0f,
+                                                  0f, 0f, 0f, 0f,
+                                                  0f, 0f, 0f, 0f};
     float m_ongoingDisturbanceRate = 0.0f;
-    int m_terrainMap = 0; //Which terrain map we are using
-    //These levels range from 0-4.  Default to 2 (mid-range or normal)
-    int m_waterLevel = 2;
-    int m_lightLevel = 2;
-    int m_temperatureLevel = 2;
+    //int m_terrainMap = 0; //Which terrain map we are using
+    //These levels range from 0-1.0.  Default to 0.5 (mid-range or normal)
+    float m_waterLevel = 0.5f;
+    float m_lightLevel = 0.5f;
+    float m_temperatureLevel = 0.5f;
     //Number of x and z cells (horizontal plane is xz in Unity3D)
     int m_xCells = 150;
     int m_zCells = 150;
-    //Default scale for each tree prototype.
-    float m_scale0 = 1.2f; //Alder
-    float m_scale1 = 1.0f; //Bamboo
-    float m_scale2 = 3.0f; //Grass leaves
-    float m_scale3 = 80.0f; //Banyan
-    float m_scale4 = 5.0f; //Bush1
-    float m_scale5 = 7.0f; //Bush2
-    float m_scale6 = 6.0f; //Bush3
-    float m_scale7 = 7.0f; //Bush4
-    float m_scale8 = 5.0f; //Bush5
-    float m_scale9 = 2.0f; //Bush5 Low Poly
-    float m_scale10 = 5.0f; //Bush6
-    float m_scale11 = 2.0f; //Bush6 Low Poly
-    float m_scale12 = 7.0f; //Bush7
-    float m_scale13 = 3.0f; //Fern
-    float m_scale14 = 0.5f; //Japanese Maple
-    float m_scale15 = 0.3f; //Mimosa
-    float m_scale16 = 75.0f; //Palm (group)
-    float m_scale17 = 1.0f; //Cots Pinetype
-    float m_scale18 = 1.2f; //Sycamore
-    float m_scale19 = 1.5f; //Willow
-    string[] m_prototypeNames;
-    float[] m_prototypeScales;
     int[,,] m_age; //Tracks the age of each plant in each generation.
     int[,] m_totalSpeciesCounts; //Total species counts for each generation.
     Vector3[,] m_cellPositions; //Keeps track of the region coordinates where each plant will
@@ -97,6 +122,10 @@ public class TreePlanterScript : MonoBehaviour
     //Convert values from the webform to numbers the simulation can use
     //Ongoing disturbance values - None, Very Low, Low, High, Very High
     float[] m_convertDisturbance = new float[5] {0f, 0.01f, 0.03f, 0.1f, 0.25f};
+    //Environmental parameter values - Very Low, Low, Normal, High, Very High
+    float[] m_convertWaterLevel = new float[5] {0f, 0.25f, 0.5f, 0.75f, 1.0f};
+    float[] m_convertLightLevel = new float[5] {0f, 0.25f, 0.5f, 0.75f, 1.0f};
+    float[] m_convertTemperatureLevel = new float[5] {0f, 0.25f, 0.5f, 0.75f, 1.0f};
 
 
     #region Unity3D specific functions
@@ -104,20 +133,6 @@ public class TreePlanterScript : MonoBehaviour
     void Start()
     {
         m_errorText += "Start\n"; //Debug
-        //Initialize the list of prototype scales
-        m_prototypeScales = new float[20] {m_scale0, m_scale1, m_scale2,
-                                           m_scale3, m_scale4, m_scale5,
-                                           m_scale6, m_scale7, m_scale8,
-                                           m_scale9, m_scale10, m_scale11,
-                                           m_scale12, m_scale13, m_scale14,
-                                           m_scale15, m_scale16, m_scale17,
-                                           m_scale18, m_scale19};
-        //Store the human-readable plant names so we can display them later
-        m_prototypeNames = new string[20] {"Alder", "Bamboo", "Grass", "Banyan",
-                                           "Bush1", "Bush2", "Bush3", "Bush4",
-                                           "Bush5", "Bush5a", "Bush6", "Bush6a",
-                                           "Bush7", "Fern", "Maple", "Mimosa",
-                                           "Palm", "Pine", "Sycamore", "Willow"};
         //There shouldn't be trees in the scene at startup, but just in case...
         DeleteAllTrees();
     }
@@ -218,10 +233,11 @@ public class TreePlanterScript : MonoBehaviour
         if (loadButton)
         {
             bool isValidId = false;
-            int newSimulationId;
             try
             {
-                newSimulationId = System.Int32.Parse(m_chosenSimulationId);
+                //Make sure the new simulation id can be converted to an integer (it is
+                //supposed to be a datecode.)
+                int newSimulationId = System.Int32.Parse(m_chosenSimulationId);
                 isValidId = true;
                 m_errorText += "Valid ID\n";
             }
@@ -490,7 +506,6 @@ public class TreePlanterScript : MonoBehaviour
             for (int x=0; x<m_xCells; x++)
             {
                 int newTreeSpecies = m_cellStatus[generation, x, z];
-                int newTreePrototype = m_speciesList[newTreeSpecies];
                 Vector3 newTreeLocation = m_cellPositions[x, z];
                 AddTree(newTreeLocation, newTreeSpecies, m_age[generation, x, z]);
             }
@@ -592,10 +607,13 @@ public class TreePlanterScript : MonoBehaviour
         }
         //Store all parameters
         m_simulationId = newParameters["id"];
-        m_terrainMap = System.Int32.Parse(newParameters["terrain"]);
-        m_waterLevel = System.Int32.Parse(newParameters["water_level"]);
-        m_lightLevel = System.Int32.Parse(newParameters["light_level"]);
-        m_temperatureLevel = System.Int32.Parse(newParameters["temperature_level"]);
+        //m_terrainMap = System.Int32.Parse(newParameters["terrain"]);
+        int waterLevelCode = System.Int32.Parse(newParameters["water_level"]);
+        m_waterLevel = m_convertWaterLevel[waterLevelCode];
+        int lightLevelCode = System.Int32.Parse(newParameters["light_level"]);
+        m_lightLevel = m_convertLightLevel[lightLevelCode];
+        int temperatureLevelCode = System.Int32.Parse(newParameters["temperature_level"]);
+        m_temperatureLevel = m_convertTemperatureLevel[temperatureLevelCode];
         string[] speciesList = newParameters["plant_types"].Split(',');
         for (int i = 1; i<6; i++) //Start at index 1 so index 0 stays "None" to represent gaps
         {
@@ -623,8 +641,8 @@ public class TreePlanterScript : MonoBehaviour
                 //Store the coordinates of each position so we don't have to recalculate them
                 m_cellPositions[x, z] = position;
                 int newSpecies;
-                int currentCell = (z * m_xCells) + x;
-                //The world has a 150x150 matrix of plants but the form to control it is only 50x50 so we need to make a conversion
+                //The world has a 150x150 matrix of plants but the form to control it
+                //is only 50x50 so we need to make a conversion
                 int startingMatrixCell = ((z/3) * (m_xCells/3)) + (x/3);
                 if (startingPlants[startingMatrixCell] == 'R')
                 {
@@ -643,7 +661,7 @@ public class TreePlanterScript : MonoBehaviour
                 else
                 {
                     //A numbered plant type (or a gap for 0)
-                    newSpecies = System.Int32.Parse(startingPlants[startingMatrixCell].ToString()); //Have to convert char to string to int because we can't go straight from char to int?
+                    newSpecies = System.Int32.Parse(startingPlants[startingMatrixCell].ToString());
                     m_cellStatus[0, x, z] = newSpecies;
                     m_age[0, x, z] = Random.Range(0, m_lifespans[newSpecies] / 3);
                     m_totalSpeciesCounts[0, newSpecies]++;
@@ -904,23 +922,25 @@ public class TreePlanterScript : MonoBehaviour
         }
         else
         {
+            int prototypeIndex = m_speciesList[species];
             //Generate a float from 0-1.0 representing the probability of
-            //survival based on plant age, and altitude
-            float ageHealth = CalculateAgeHealth(age, m_lifespans[species]);
+            //survival based on plant age, altitude, water level, light level, and temperature level
+            float ageHealth = CalculateAgeHealth(age, m_lifespans[prototypeIndex]);
             float altitudeHealth = CalculateAltitudeHealth(coordinates.y,
-                                   m_altitudeOptimums[species], m_altitudeEffects[species]);
-            //Get the soil values for the plant's coordinates and calculate a
-            //probability of survival based on those values
-            Vector3 soilType = GetSoilType(coordinates);
-            float salinityHealth = CalculateSoilHealth(soilType.x, m_salinityOptimums[species],
-                                   m_salinityEffects[species]);
-            float drainageHealth = CalculateSoilHealth(soilType.y, m_drainageOptimums[species],
-                                   m_drainageEffects[species]);
-            float fertilityHealth = CalculateSoilHealth(soilType.z, m_fertilityOptimums[species],
-                                    m_fertilityEffects[species]);
+                                   m_altitudeOptimums[prototypeIndex],
+                                   m_altitudeEffects[prototypeIndex]);
+            float waterHealth = CalculateHealth(m_waterLevel,
+                                                m_waterLevelOptimums[prototypeIndex],
+                                                m_waterLevelEffects[prototypeIndex]);
+            float lightHealth = CalculateHealth(m_lightLevel,
+                                                m_lightLevelOptimums[prototypeIndex],
+                                                m_lightLevelEffects[prototypeIndex]);
+            float temperatureHealth = CalculateHealth(m_temperatureLevel,
+                                                      m_temperatureLevelOptimums[prototypeIndex],
+                                                      m_temperatureLevelEffects[prototypeIndex]);
             //Overall survival probability is the product of these separate survival probabilities
-            float survivalProbability = (ageHealth * altitudeHealth * salinityHealth *
-                                         drainageHealth * fertilityHealth);
+            float survivalProbability = (ageHealth * altitudeHealth * waterHealth *
+                                         lightHealth * temperatureHealth);
             //Select a random float from 0-1.0.  Plant survives if
             //random number <= probability of survival
             float randomFloat = (float)m_random.NextDouble();
@@ -966,6 +986,28 @@ public class TreePlanterScript : MonoBehaviour
         //50m to 0.0 at 0m.  Lower values for shape flatten the 'fitness curve'.
         //With shape <= 0, health will always equal 1.0.
         float health = 1.0f - (System.Math.Abs(((optimal - actual) / 50f)) * shape);
+        //Don't allow return values >1 or <0
+        if (health > 1.0f)
+        {
+            health = 1.0f;
+        }
+        if (health < 0f)
+        {
+            health = 0f;
+        }
+        return health;
+    }
+
+    float CalculateHealth(float actual, float optimal, float shape)
+    {
+        //Returns a value from 0-1.0 representing the health of an individual
+        //with an 'actual' value for some environmental parameter given the
+        //optimal value and shape. This function works for any parameter where
+        //the actual values will range from 0-1.0 (or can be converted to that
+        //range.  With an optimal of 1.0 and a shape of 1,  values range from
+        //1.0 at 1.0 to 0.0 at 0.0.  Lower values for shape flatten the
+        //'fitness curve'. With shape <= 0, health will always equal 1.
+        float health = 1.0f - (System.Math.Abs(optimal - actual) * shape);
         //Don't allow return values >1 or <0
         if (health > 1.0f)
         {
@@ -1034,36 +1076,6 @@ public class TreePlanterScript : MonoBehaviour
             //same species.
             return -1;
         }
-    }
-
-    public Vector3 GetSoilType(Vector3 location)
-    {
-        //Return the soiltype vector (salinity, drainage, fertility) for a location.
-        Vector3 soil = new Vector3(0f,0f,0f);
-        return soil;
-    }
-
-    float CalculateSoilHealth(float actual, float optimal, float shape)
-    {
-        //Returns a value from 0-1.0 representing the health of an individual
-        //with an 'actual' value for some environmental parameter given the
-        //optimal value and shape. This function works for things like soil
-        //values where the actual values will range from 0-1.0.  It doesn't
-        //have to be soil values. With an optimal of 1.0 and a shape of 1,
-        //values range (linearly) from 1.0 at 1.0 to 0.0 at 0.0.  Lower values
-        //for shape flatten the 'fitness curve'. With shape <= 0, health will
-        //always equal 1.
-        float health = 1.0f - (System.Math.Abs(optimal - actual) * shape);
-        //Don't allow return values >1 or <0
-        if (health > 1.0f)
-        {
-            health = 1.0f;
-        }
-        if (health < 0f)
-        {
-            health = 0f;
-        }
-        return health;
     }
 
     #endregion
