@@ -11,7 +11,9 @@ public class TreePlanterScript : MonoBehaviour
     int m_generations = 201; //Number of time steps to simulate
     int[,,] m_cellStatus; //Tree species for each cell in each generation [gen,x,y]
     bool[,] m_permanentDisturbanceMap; //Whether each cell is marked as permanently disturbed
-    int[] m_speciesList = new int[6] {-1, 2, 13, 14, 17, 19}; //Unity tree prototypes to include in the community (-1 represents a gap with no tree)
+    int[] m_speciesList = new int[6] {-1, 2, 13, 14, 17, 19}; //Unity tree prototypes to include
+                                                              //in the community (-1 represents a
+                                                              //gap with no tree)
     //Replacement Matrix.  The probability of replacement of a tree of one species
     //by another species if it is entirely surrounded by the other species.
     //Example [1,2] is the probability that species 2
@@ -78,7 +80,8 @@ public class TreePlanterScript : MonoBehaviour
     float[] m_prototypeScales;
     int[,,] m_age; //Tracks the age of each plant in each generation.
     int[,] m_totalSpeciesCounts; //Total species counts for each generation.
-    Vector3[,] m_cellPositions; //Keeps track of the region coordinates where each plant will be placed so we only have to calculate them once per simulation.
+    Vector3[,] m_cellPositions; //Keeps track of the region coordinates where each plant will
+                                //be placed so we only have to calculate them once per simulation.
     int m_displayedGeneration = 0; //Which generation number is currently visualized
     string m_chosenGeneration = "0";
     string m_chosenSimulationId = "";
@@ -91,6 +94,10 @@ public class TreePlanterScript : MonoBehaviour
     Rect m_debugWindow = new Rect(300, 10, 400, 400);
     Rect m_logWindow = new Rect(200, 5, 400, 400);
     string m_currentDataString = "";
+    //Convert values from the webform to numbers the simulation can use
+    //Ongoing disturbance values - None, Very Low, Low, High, Very High
+    float[] m_convertDisturbance = new float[5] {0f, 0.01f, 0.03f, 0.1f, 0.25f};
+
 
     #region Unity3D specific functions
 
@@ -594,7 +601,8 @@ public class TreePlanterScript : MonoBehaviour
         {
             m_speciesList[i] = System.Int32.Parse(speciesList[i - 1]);
         }
-        m_ongoingDisturbanceRate = System.Int32.Parse(newParameters["disturbance_level"]);
+        int ongoingDisturbanceCode = System.Int32.Parse(newParameters["disturbance_level"]);
+        m_ongoingDisturbanceRate = m_convertDisturbance[ongoingDisturbanceCode];
         char[]startingPlants = newParameters["starting_matrix"].ToCharArray();
         m_cellStatus = new int[m_generations, m_xCells, m_zCells];
         m_permanentDisturbanceMap = new bool[m_xCells, m_zCells];
@@ -689,16 +697,15 @@ public class TreePlanterScript : MonoBehaviour
         //Generate the simulation data
         for (int generation=0; generation<m_generations - 1; generation++)
         {
-            if (generation % 100 == 0)
-            {
-                //Provide status updates every 100 generations
-            }
+            //Setup some variables we will need later
             int nextGeneration = generation + 1;
             int rowabove;
             int rowbelow;
             int colleft;
             int colright;
+            //Calculate a disturbance map for this next generation
             bool[,] disturbance = CalculateDisturbance();
+            //Step through the cells of the matrix and determine which plant should go in each
             for (int z=0; z<m_zCells; z++)
             {
                 rowabove = z + 1;
@@ -712,9 +719,10 @@ public class TreePlanterScript : MonoBehaviour
                     {
                         if (disturbance[x, z])
                         {
+                            //This will be a gap because it was decided by the ongoing disturbance rate
                             m_cellStatus[nextGeneration, x, z] = 0;
                             m_totalSpeciesCounts[nextGeneration, 0]++;
-                            m_age[nextGeneration, x, z] = 0;
+                            m_age[nextGeneration, x, z] = 0; //We don't track the age of gaps
                         }
                         else
                         {
