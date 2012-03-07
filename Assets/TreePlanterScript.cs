@@ -525,7 +525,7 @@ public class TreePlanterScript : MonoBehaviour
             tree.position = position;
             tree.prototypeIndex = treePrototype;
             //Vary the height and width of individual trees according to age
-            float scale = m_prototypeScales[treePrototype] * ((age / (float)m_lifespans[treeSpecies]) + 0.5f);
+            float scale = m_prototypeScales[treePrototype] * ((age / (float)m_lifespans[treePrototype]) + 0.5f);
             tree.widthScale = scale;
             tree.heightScale = scale;
             tree.color = Color.white;
@@ -649,7 +649,7 @@ public class TreePlanterScript : MonoBehaviour
                     //Randomly select the plant type
                     newSpecies = Random.Range(0,6);
                     m_cellStatus[0, x, z] = newSpecies;
-                    m_age[0, x, z] = Random.Range(0, m_lifespans[newSpecies] / 3);
+                    m_age[0, x, z] = Random.Range(0, m_lifespans[m_speciesList[newSpecies]] / 3);
                     m_totalSpeciesCounts[0, newSpecies]++;
                 }
                 else if (startingPlants[startingMatrixCell] == 'N')
@@ -663,7 +663,7 @@ public class TreePlanterScript : MonoBehaviour
                     //A numbered plant type (or a gap for 0)
                     newSpecies = System.Int32.Parse(startingPlants[startingMatrixCell].ToString());
                     m_cellStatus[0, x, z] = newSpecies;
-                    m_age[0, x, z] = Random.Range(0, m_lifespans[newSpecies] / 3);
+                    m_age[0, x, z] = Random.Range(0, m_lifespans[m_speciesList[newSpecies]] / 3);
                     m_totalSpeciesCounts[0, newSpecies]++;
                 }
             }
@@ -676,7 +676,8 @@ public class TreePlanterScript : MonoBehaviour
     {
         //Generate starting matrix with random species and determine the
         //region x,y,z coordinates where each tree will be placed
-        m_speciesList = new int[6] {-1, 2, 13, 14, 17, 19}; //Unity tree prototypes to include in the default community (-1 represents a gap with no tree)
+        //Unity tree prototypes to include in the default community (-1 represents a gap with no tree)
+        m_speciesList = new int[6] {-1, 2, 13, 14, 17, 19};
         m_cellStatus = new int[m_generations, m_xCells, m_zCells];
         m_age = new int[m_generations, m_xCells, m_zCells];
         m_totalSpeciesCounts = new int[m_generations, 6];
@@ -703,7 +704,7 @@ public class TreePlanterScript : MonoBehaviour
                 //dieoff early in the simulation, but skew the distribution
                 //of ages downward or we will start with a dieoff because a
                 //random selection of ages has many more old ages than expected.
-                m_age[0, x, z] = Random.Range(0, m_lifespans[newSpecies] / 3);
+                m_age[0, x, z] = Random.Range(0, m_lifespans[m_speciesList[newSpecies]] / 3);
                 m_totalSpeciesCounts[0, newSpecies]++;
             }
         }
