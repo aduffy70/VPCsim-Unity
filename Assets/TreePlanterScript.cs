@@ -704,7 +704,14 @@ public class TreePlanterScript : MonoBehaviour
                 //dieoff early in the simulation, but skew the distribution
                 //of ages downward or we will start with a dieoff because a
                 //random selection of ages has many more old ages than expected.
-                m_age[0, x, z] = Random.Range(0, m_lifespans[m_speciesList[newSpecies]] / 3);
+                if (newSpecies != 0)
+                {
+                  m_age[0, x, z] = Random.Range(0, m_lifespans[m_speciesList[newSpecies]] / 3);
+                }
+                else
+                {
+                  m_age[0, x, z] = 0;
+                }
                 m_totalSpeciesCounts[0, newSpecies]++;
             }
         }
