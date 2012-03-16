@@ -161,7 +161,7 @@ public class TreePlanterScript : MonoBehaviour
     void OnGUI()
     {
         //Generate the GUI controls and HUD
-        GUI.Box(new Rect(5, 10, 155, 290), "Simulation");
+        GUI.Box(new Rect(5, 10, 155, 330), "Simulation");
         //Create an unused button off-screen so we can move focus out of the TextFields
         GUI.SetNextControlName("focusBuster");
         bool focusBusterButton = GUI.Button(new Rect(-10, -10, 1, 1),
@@ -207,14 +207,28 @@ public class TreePlanterScript : MonoBehaviour
                                    "View the selected time step"));
         GUI.Label(new Rect(10, 145, 135, 100), m_currentDataString);
         //Buttons to display log data or plots
-        bool countLogButton = GUI.Button(new Rect(10, 250, 40, 20),
-                                    new GUIContent("Counts",
-                                    "Show species count log data"));
-        bool countPlotButton = GUI.Button(new Rect(55, 250, 45, 20),
+        GUI.Label(new Rect(10, 250, 35, 20), "Plots:");
+        bool countPlotButton = GUI.Button(new Rect(10, 270, 43, 20),
                                      new GUIContent("Count",
                                      "Show species count plots"));
+        bool agePlotButton = GUI.Button(new Rect(55, 270, 35, 20),
+                                     new GUIContent("Age",
+                                     "Show average age plots"));
+        bool biomassPlotButton = GUI.Button(new Rect(92, 270, 63, 20),
+                                     new GUIContent("Biomass",
+                                     "Show biomass plots"));
+        GUI.Label(new Rect(10, 290, 35, 20), "Logs:");
+        bool countLogButton = GUI.Button(new Rect(10, 310, 43, 20),
+                                    new GUIContent("Count",
+                                    "Show species count log data"));
+        bool ageLogButton = GUI.Button(new Rect(55, 310, 35, 20),
+                                     new GUIContent("Age",
+                                     "Show average age log data"));
+        bool biomassLogButton = GUI.Button(new Rect(92, 310, 63, 20),
+                                     new GUIContent("Biomass",
+                                     "Show biomass log data"));
         //Button to display debug messages - TODO: Remove?  This is not for students.
-        bool debugButton = GUI.Button(new Rect(10, 275, 60, 20),
+        bool debugButton = GUI.Button(new Rect(10, 490, 60, 20),
                                       new GUIContent("Debug",
                                       "Show/Hide debug messages"));
         if (!System.String.IsNullOrEmpty(GUI.tooltip))
@@ -225,7 +239,7 @@ public class TreePlanterScript : MonoBehaviour
         if (m_showCountLogWindow)
         {
             //Setup species count log data window
-            m_countLogWindow = GUI.Window(0, m_countLogWindow, DisplayCountLogWindow, "Species Count Log data");
+            m_countLogWindow = GUI.Window(0, m_countLogWindow, DisplayCountLogWindow, "Species Counts");
         }
         if (countLogButton)
         {
