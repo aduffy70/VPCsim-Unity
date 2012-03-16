@@ -121,9 +121,9 @@ public class TreePlanterScript : MonoBehaviour
     int m_displayedGeneration = 0; //Which generation number is currently visualized
     string m_chosenGeneration = "0"; //The generation number the user selects from the GUI
     string m_chosenSimulationId = "";
-    string m_logString = "";
-    bool m_showLogWindow = false; //Whether to display the window with log data
-    Rect m_logWindow = new Rect(200, 5, 400, 400);
+    string m_countLogString = "";
+    bool m_showCountLogWindow = false; //Whether to display the window with species count log data
+    Rect m_countLogWindow = new Rect(200, 5, 400, 400);
     string m_parameterPath = "http://vpcsim.appspot.com"; //Base URL of parameter webapp
     string m_debugString = ""; //Debug errors to display on the HUD
     WWW m_www; //Stores xml data downloaded from the web
@@ -207,12 +207,12 @@ public class TreePlanterScript : MonoBehaviour
                                    "View the selected time step"));
         GUI.Label(new Rect(10, 145, 135, 100), m_currentDataString);
         //Buttons to display log data or plots
-        bool logButton = GUI.Button(new Rect(10, 250, 40, 20),
-                                    new GUIContent("Log",
-                                    "Show log data"));
-        bool plotButton = GUI.Button(new Rect(55, 250, 45, 20),
-                                     new GUIContent("Plots",
-                                     "Show data plots"));
+        bool countLogButton = GUI.Button(new Rect(10, 250, 40, 20),
+                                    new GUIContent("Counts",
+                                    "Show species count log data"));
+        bool countPlotButton = GUI.Button(new Rect(55, 250, 45, 20),
+                                     new GUIContent("Count",
+                                     "Show species count plots"));
         //Button to display debug messages - TODO: Remove?  This is not for students.
         bool debugButton = GUI.Button(new Rect(10, 275, 60, 20),
                                       new GUIContent("Debug",
@@ -222,15 +222,15 @@ public class TreePlanterScript : MonoBehaviour
             GUI.Box(new Rect(165 , 35, 220, 20),"");
         }
         GUI.Label(new Rect(170, 35, 210, 20), GUI.tooltip);
-        if (m_showLogWindow)
+        if (m_showCountLogWindow)
         {
-            //Setup log data window
-            m_logWindow = GUI.Window(0, m_logWindow, DisplayLogWindow, "Log data");
+            //Setup species count log data window
+            m_countLogWindow = GUI.Window(0, m_countLogWindow, DisplayCountLogWindow, "Species Count Log data");
         }
-        if (logButton)
+        if (countLogButton)
         {
             //Show or hide the log data window
-            m_showLogWindow = !m_showLogWindow;
+            m_showCountLogWindow = !m_showCountLogWindow;
             m_chosenGeneration = m_displayedGeneration.ToString();
             GUI.FocusControl("focusBuster");
         }
@@ -251,7 +251,7 @@ public class TreePlanterScript : MonoBehaviour
             DeleteAllTrees();
             GenerateRandomCommunity();
             RunSimulation();
-            m_logString = GetLogData(false);
+            m_countLogString = GetCountLogData(false);
             VisualizeGeneration(0);
             m_chosenGeneration = m_displayedGeneration.ToString();
             m_chosenSimulationId = m_simulationId;
@@ -389,39 +389,39 @@ public class TreePlanterScript : MonoBehaviour
             m_chosenGeneration = m_displayedGeneration.ToString();
             GUI.FocusControl("focusBuster");
         }
-        if (plotButton)
+        if (countPlotButton)
         {
             //Display plots of the simulation data
             if (m_simulationId != "none")
             {
-                DisplayPlots();
+                DisplayCountPlot();
             }
             GUI.FocusControl("focusBuster");
         }
     }
 
-    void DisplayPlots()
+    void DisplayCountPlot()
     {
-        //Send logdata to the surrounding web page where it will be redirected to the webapp
+        //Send species count logdata to the surrounding web page where it will be redirected to the webapp
         //which will generate plots in a new browser window or tab.
         //TODO - generate plots of other data types (age, biomass, etc)
-        string logData = GetLogData(true);
+        string logData = GetCountLogData(true);
         Application.ExternalCall("OpenCountsPlotPage", logData);
     }
 
-    void DisplayLogWindow(int windowID)
+    void DisplayCountLogWindow(int windowID)
     {
         if (GUI.Button(new Rect(330,370,50,20), "Close"))
         {
-            m_showLogWindow = !m_showLogWindow;
+            m_showCountLogWindow = !m_showCountLogWindow;
         }
         if (m_simulationId != "none")
         {
-            GUI.TextArea(new Rect(5, 20, 390, 350), m_logString);
+            GUI.TextArea(new Rect(5, 20, 390, 350), m_countLogString);
         }
         else
         {
-            GUI.TextArea(new Rect(5, 20, 390, 350), "You haven't logged any data yet");
+            GUI.TextArea(new Rect(5, 20, 390, 350), "No simulation loaded");
         }
         GUI.DragWindow();
     }
@@ -448,7 +448,7 @@ public class TreePlanterScript : MonoBehaviour
         return currentData;
     }
 
-    string GetLogData(bool isForPlotting)
+    string GetCountLogData(bool isForPlotting)
     {
         //Generates a string of log data suitable for either displaying to humans or
         //for sending out for plotting
@@ -587,8 +587,7 @@ public class TreePlanterScript : MonoBehaviour
                 DeleteAllTrees();
                 RunSimulation();
                 m_debugString += "RunSimulation success\n";
-                m_logString = GetLogData(false);
-                m_debugString += "GetLogData success\n";
+                m_countLogString = GetCountLogData(false);
                 VisualizeGeneration(0);
                 m_debugString += "VisualizeGeneration success\n";
                 m_chosenGeneration = m_displayedGeneration.ToString();
