@@ -9,15 +9,14 @@ public class TreePlanterScript : MonoBehaviour
     System.Random m_random = new System.Random();
     string m_simulationId = "none";
     int m_generations = 201; //Number of time steps to simulate
-    int[,,] m_cellStatus; //Tree species for each cell in each generation [gen,x,y]
+    int[,,] m_cellStatus; //Tree species for each cell in each generation [gen,x,z]
     bool[,] m_permanentDisturbanceMap; //Whether each cell is marked as permanently disturbed
     int[] m_speciesList = new int[6]; //Unity tree prototypes to include in the community
                                       //(-1 represents a gap with no tree)
     //Replacement Matrix.  The probability of replacement of a tree of one prototype
     //by another prototype if it is entirely surrounded by the other species.
-    //Example [1,2] is the probability that species 2
-    //will be replaced by species 1, if species 2 is entirely surrounded by
-    //species 1.
+    //Example [1,2] is the probability that species 2 will be replaced by species 1, if
+    //species 2 is entirely surrounded by species 1.  Row one is all 0.0 because gaps don't replace plants.
     //Row  and column indices are 1+ the prototype number (because row 1 and column 1 are for gaps.)
     float[,] m_masterReplacementMatrix = new float[21,21]{
         {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
@@ -40,8 +39,7 @@ public class TreePlanterScript : MonoBehaviour
         {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
         {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
         {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
-        {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f}
-    };
+        {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f}};
     //This smaller replacement matrix is for convenience.  We only have to dig through
     //the master replacement matrix once (to generate this smaller matrix) when we
     //import simulation settings rather than everytime we need a replacement value.
@@ -55,6 +53,7 @@ public class TreePlanterScript : MonoBehaviour
                                        "Bush5", "Bush5a", "Bush6", "Bush6a",
                                        "Bush7", "Fern", "Maple", "Mimosa",
                                        "Palm", "Pine", "Sycamore", "Willow"};
+    //Adjust the default sizes of the plants
     float[] m_prototypeScales = new float[20] {1.2f, 1.0f, 3.0f, 80.0f,
                                                5.0f, 7.0f, 6.0f, 7.0f,
                                                5.0f, 2.0f, 5.0f, 2.0f,
@@ -118,21 +117,20 @@ public class TreePlanterScript : MonoBehaviour
     int m_zCells = 150;
     int[,,] m_age; //Tracks the age of each plant in each generation.
     int[,] m_totalSpeciesCounts; //Total species counts for each generation.
-    Vector3[,] m_cellPositions; //Keeps track of the region coordinates where each plant will
-                                //be placed so we only have to calculate them once per simulation.
+    Vector3[,] m_cellPositions; //Keeps track of the region coordinates where each plant will be placed.
     int m_displayedGeneration = 0; //Which generation number is currently visualized
-    string m_chosenGeneration = "0";
+    string m_chosenGeneration = "0"; //The generation number the user selects from the GUI
     string m_chosenSimulationId = "";
     string m_logString = "";
-    bool m_showLogWindow = false;
-    string m_parameterPath = "http://vpcsim.appspot.com";
-    string m_errorText = ""; //Debug errors to display on the HUD - DEBUG
-    WWW m_www; //Stores xml data downloaded from the web
-    bool m_debugMode = false; //Turn the debug window on and off
-    Rect m_debugWindow = new Rect(300, 10, 400, 400);
+    bool m_showLogWindow = false; //Whether to display the window with log data
     Rect m_logWindow = new Rect(200, 5, 400, 400);
+    string m_parameterPath = "http://vpcsim.appspot.com"; //Base URL of parameter webapp
+    string m_debugString = ""; //Debug errors to display on the HUD
+    WWW m_www; //Stores xml data downloaded from the web
+    bool m_showDebugWindow = false; //Whether to display the window with debug messages
+    Rect m_debugWindow = new Rect(300, 10, 400, 400);
     string m_currentDataString = "";
-    //Convert values from the webform to numbers the simulation can use
+    //Convert values from the webapp to numbers the simulation can use
     //Ongoing disturbance values - None, Very Low, Low, High, Very High
     float[] m_convertDisturbance = new float[5] {0f, 0.01f, 0.03f, 0.1f, 0.25f};
     //Environmental parameter values - Very Low, Low, Normal, High, Very High
@@ -145,7 +143,7 @@ public class TreePlanterScript : MonoBehaviour
 
     void Start()
     {
-        m_errorText += "Start\n"; //Debug
+        m_debugString += "Start\n"; //Debug
         //There shouldn't be trees in the scene at startup, but just in case...
         DeleteAllTrees();
     }
@@ -164,11 +162,12 @@ public class TreePlanterScript : MonoBehaviour
     {
         //Generate the GUI controls and HUD
         GUI.Box(new Rect(5, 10, 155, 290), "Simulation");
-        //Create an unused button off-screen so we have someplace to move focus out of the TextFields
+        //Create an unused button off-screen so we can move focus out of the TextFields
         GUI.SetNextControlName("focusBuster");
         bool focusBusterButton = GUI.Button(new Rect(-10, -10, 1, 1),
                                             new GUIContent("",
                                             ""));
+        //Buttons to run a simulation
         bool defaultsButton = GUI.Button(new Rect(10, 35, 60, 20),
                                          new GUIContent("Defaults",
                                          "Load the default ecosystem"));
@@ -180,6 +179,7 @@ public class TreePlanterScript : MonoBehaviour
         bool loadButton = GUI.Button(new Rect(105, 60, 50, 20),
                                      new GUIContent("Load",
                                      "Load new ecosystem parameters"));
+        //Buttons to move between simulation steps
         bool firstButton = GUI.Button(new Rect (10, 95, 22, 20),
                                       new GUIContent("[<",
                                       "First time step"));
@@ -206,12 +206,14 @@ public class TreePlanterScript : MonoBehaviour
                                    new GUIContent("Go",
                                    "View the selected time step"));
         GUI.Label(new Rect(10, 145, 135, 100), m_currentDataString);
+        //Buttons to display log data or plots
         bool logButton = GUI.Button(new Rect(10, 250, 40, 20),
                                     new GUIContent("Log",
                                     "Show log data"));
         bool plotButton = GUI.Button(new Rect(55, 250, 45, 20),
                                      new GUIContent("Plots",
                                      "Show data plots"));
+        //Button to display debug messages - TODO: Remove?  This is not for students.
         bool debugButton = GUI.Button(new Rect(10, 275, 60, 20),
                                       new GUIContent("Debug",
                                       "Show/Hide debug messages"));
@@ -222,14 +224,30 @@ public class TreePlanterScript : MonoBehaviour
         GUI.Label(new Rect(170, 35, 210, 20), GUI.tooltip);
         if (m_showLogWindow)
         {
+            //Setup log data window
             m_logWindow = GUI.Window(0, m_logWindow, DisplayLogWindow, "Log data");
         }
-        if (m_debugMode)
+        if (logButton)
         {
+            //Show or hide the log data window
+            m_showLogWindow = !m_showLogWindow;
+            m_chosenGeneration = m_displayedGeneration.ToString();
+            GUI.FocusControl("focusBuster");
+        }
+        if (m_showDebugWindow)
+        {
+            //Setup the debug message window
             m_debugWindow = GUI.Window(0, m_debugWindow, DisplayDebugWindow, "Debug");
+        }
+        if (debugButton)
+        {
+            //Show or hide the debug message window
+            m_showDebugWindow = !m_showDebugWindow;
+            GUI.FocusControl("focusBuster");
         }
         if (defaultsButton)
         {
+            //Run a simulation using the default settings
             DeleteAllTrees();
             GenerateRandomCommunity();
             RunSimulation();
@@ -241,10 +259,12 @@ public class TreePlanterScript : MonoBehaviour
         }
         if (createButton)
         {
+            //Open the parameters webapp in a new browser window or tab
             Application.ExternalCall("window.open('http://vpcsim.appspot.com','_blank')");
         }
         if (loadButton)
         {
+            //Run a simulation using the parameters for the simulation id entered in the textbox
             bool isValidId = false;
             try
             {
@@ -252,12 +272,12 @@ public class TreePlanterScript : MonoBehaviour
                 //supposed to be a datecode.)
                 int newSimulationId = System.Int32.Parse(m_chosenSimulationId);
                 isValidId = true;
-                m_errorText += "Valid ID\n";
+                m_debugString += "Valid ID\n";
             }
             catch
             {
                 isValidId = false;
-                m_errorText += "Not Valid ID\n";
+                m_debugString += "Not Valid ID\n";
             }
             if (isValidId)
             {
@@ -369,29 +389,22 @@ public class TreePlanterScript : MonoBehaviour
             m_chosenGeneration = m_displayedGeneration.ToString();
             GUI.FocusControl("focusBuster");
         }
-        if (logButton)
-        {
-            m_showLogWindow = !m_showLogWindow;
-            m_chosenGeneration = m_displayedGeneration.ToString();
-            GUI.FocusControl("focusBuster");
-        }
         if (plotButton)
         {
+            //Display plots of the simulation data
             if (m_simulationId != "none")
             {
                 DisplayPlots();
             }
             GUI.FocusControl("focusBuster");
         }
-        if (debugButton)
-        {
-            m_debugMode = !m_debugMode;
-            GUI.FocusControl("focusBuster");
-        }
     }
 
     void DisplayPlots()
     {
+        //Send logdata to the surrounding web page where it will be redirected to the webapp
+        //which will generate plots in a new browser window or tab.
+        //TODO - generate plots of other data types (age, biomass, etc)
         string logData = GetLogData(true);
         Application.ExternalCall("OpenCountsPlotPage", logData);
     }
@@ -415,11 +428,11 @@ public class TreePlanterScript : MonoBehaviour
 
     void DisplayDebugWindow(int windowID)
     {
-        GUI.TextArea(new Rect(5, 20, 390, 350), m_errorText);
+        GUI.TextArea(new Rect(5, 20, 390, 350), m_debugString);
         GUI.DragWindow();
     }
 
-    string GetCurrentData()
+    string GetCurrentCounts()
     {
         //Generates a string to display the current species counts formatted for the HUD
         StringBuilder currentDataBuilder = new StringBuilder();
@@ -511,9 +524,9 @@ public class TreePlanterScript : MonoBehaviour
     void VisualizeGeneration(int generation)
     {
         //Update the visualization with plants from a particular generation.
-        //Remove old trees from the terrain
+        //Remove old trees
         Terrain.activeTerrain.terrainData.treeInstances = new TreeInstance[0];
-        //Add new trees to the terrain
+        //Add new trees
         for (int z=0; z<m_zCells; z++)
         {
             for (int x=0; x<m_xCells; x++)
@@ -525,13 +538,13 @@ public class TreePlanterScript : MonoBehaviour
         }
         Terrain.activeTerrain.Flush();
         m_displayedGeneration = generation;
-        m_currentDataString = GetCurrentData();
+        m_currentDataString = GetCurrentCounts();
     }
 
     void AddTree(Vector3 position, int treeSpecies, int age)
     {
         //Add a tree to the terrain sized according to its age
-        if (treeSpecies != 0) // -1 would be a gap (no tree)
+        if (treeSpecies != 0) // 0 would be a gap (no tree)
         {
             int treePrototype = m_speciesList[treeSpecies];
             TreeInstance tree = new TreeInstance();
@@ -560,49 +573,47 @@ public class TreePlanterScript : MonoBehaviour
 
     IEnumerator GetNewSimulationParameters(string fileName)
     {
-        //Get simulation parameters from the VPCsim webapp
+        //Get simulation parameters from the parameters webapp
         string url = System.IO.Path.Combine(m_parameterPath,"data?id=" + fileName);
         m_www = new WWW(url);
         yield return m_www;
         if (m_www.isDone)
         {
-            m_errorText += "WWW read isDone\n";
+            m_debugString += "WWW read isDone\n";
             bool unpackSuccess = UnpackParameters();
             if (unpackSuccess)
             {
-                m_errorText += "Unpacked success\n";
+                m_debugString += "Unpacked success\n";
                 DeleteAllTrees();
-                m_errorText += "DeleteTrees success\n";
                 RunSimulation();
-                m_errorText += "RunSimulation success\n";
+                m_debugString += "RunSimulation success\n";
                 m_logString = GetLogData(false);
-                m_errorText += "GetLogData success\n";
+                m_debugString += "GetLogData success\n";
                 VisualizeGeneration(0);
-                m_errorText += "VisualizeGeneration success\n";
+                m_debugString += "VisualizeGeneration success\n";
                 m_chosenGeneration = m_displayedGeneration.ToString();
                 m_chosenSimulationId = m_simulationId;
             }
             else
             {
-                m_errorText += "Unpack fail\n";
+                m_debugString += "Unpack fail\n";
             }
         }
         else
         {
-            m_errorText += "WWW not isDone\n";
+            m_debugString += "WWW not isDone\n";
         }
     }
 
     bool UnpackParameters()
     {
-        m_errorText += "Unpacking\n";
-        //Unpack the xml data into appropriate variables
+        //Unpack the parameter data into appropriate variables
         Dictionary<string, string> newParameters = new Dictionary<string, string>();
         XmlTextReader reader;
         try
         {
             reader = new XmlTextReader(new System.IO.StringReader(m_www.text));
-            m_errorText += "opened stream\n";
+            m_debugString += "opened stream\n";
             reader.WhitespaceHandling = WhitespaceHandling.Significant;
         }
         catch
@@ -618,7 +629,6 @@ public class TreePlanterScript : MonoBehaviour
                 newParameters.Add(parameterName, parameterValue);
             }
         }
-        //Store all parameters
         m_simulationId = newParameters["id"];
         //m_terrainMap = System.Int32.Parse(newParameters["terrain"]);
         int waterLevelCode = System.Int32.Parse(newParameters["water_level"]);
@@ -1142,4 +1152,3 @@ public class TreePlanterScript : MonoBehaviour
 
     #endregion
 }
-
