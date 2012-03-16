@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 
 /// VPCsimCharacterController provides first person character movement:
-///		Up & down arrows (or 'w' & 's') move forward and back in the 
+///		Up & down arrows (or 'w' & 's') move forward and back in the
 ///		direction being faced
 ///   	Left & right arrows (or 'a' & 'd') rotate left and right.
 ///   	'e' & 'x' rotate up and down
@@ -37,7 +37,7 @@ public class VPCsimCharacterController : MonoBehaviour
 			rigidbody.useGravity = true;
 		}
 	}
-		
+
 	// Update is called once per frame
 	void Update()
 	{
@@ -70,11 +70,11 @@ public class VPCsimCharacterController : MonoBehaviour
 			{
 				m_rotationY -= m_rotationSpeedY;
 			}
-			m_rotationY = Mathf.Clamp(m_rotationY, m_minimumY, m_maximumY);	
+			m_rotationY = Mathf.Clamp(m_rotationY, m_minimumY, m_maximumY);
 			transform.localEulerAngles = new Vector3(-m_rotationY, transform.localEulerAngles.y, 0);
 			if (m_movementMode == "Walking...")
 			{
-				if ((-1 > transform.position.x) || (transform.position.x > 2001) || 
+				if ((-1 > transform.position.x) || (transform.position.x > 2001) ||
 					(-1 > transform.position.z) || (transform.position.z > 2001))
 				{
 					GoToHomePosition();
@@ -82,7 +82,7 @@ public class VPCsimCharacterController : MonoBehaviour
 			}
 		}
 		else
-		{	
+		{
 			//Sampling-mode movement
 			//Facing down with North at top of screen.
 			//Arrow keys move N,S,E,W while maintaining fixed height above terrain.
@@ -111,47 +111,47 @@ public class VPCsimCharacterController : MonoBehaviour
 			transform.eulerAngles = new Vector3(90, 0, 0);
 		}
 	}
-		
+
 	void OnGUI()
 	{
 		Vector3 position = transform.position;
 		int displayedSpeed = ((int)m_speed / 10) + 1;
-		GUI.Box(new Rect(5, 310, 155, 135), "Movement");
-		GUI.Label(new Rect(10, 330, 150, 20), "Mode: " + m_movementMode);
+		GUI.Box(new Rect(5, 350, 155, 135), "Movement");
+		GUI.Label(new Rect(10, 370, 150, 20), "Mode: " + m_movementMode);
 		bool walkButton = false;
 		bool flyButton = false;
 		bool samplingButton = false;
 		bool homeButton = false;
 		if (m_movementMode != "Walking...")
 		{
-			walkButton = GUI.Button(new Rect(10, 350, 40, 20), new GUIContent("Walk",
+			walkButton = GUI.Button(new Rect(10, 390, 40, 20), new GUIContent("Walk",
 									"Enter 'Walking' mode"));
 		}
 		if (m_movementMode != "Flying..." )
 		{
-			flyButton = GUI.Button(new Rect(55, 350, 40, 20), new GUIContent("Fly",
+			flyButton = GUI.Button(new Rect(55, 390, 40, 20), new GUIContent("Fly",
 								   "Enter 'Flying' mode"));
 		}
 		if (m_movementMode != "Sampling...")
 		{
-			samplingButton = GUI.Button(new Rect(100, 350, 55, 20), new GUIContent("Sample",
+			samplingButton = GUI.Button(new Rect(100, 390, 55, 20), new GUIContent("Sample",
 										"Enter 'Sampling' mode"));
-			homeButton = GUI.Button(new Rect(85, 380, 70, 20), new GUIContent("Go home",
+			homeButton = GUI.Button(new Rect(85, 420, 70, 20), new GUIContent("Go home",
 									"Return to the starting position"));
 		}
 		else
 		{
-			GUI.Label(new Rect(100, 405, 130, 50), "\nHAT: " + ((int)m_distanceToGround).ToString());
+			GUI.Label(new Rect(100, 445, 130, 50), "\nHAT: " + ((int)m_distanceToGround).ToString());
 		}
-		GUI.Label(new Rect(10, 380, 100, 25), "Speed: " + displayedSpeed.ToString());
-		GUI.Label(new Rect(10, 405, 130, 50), "Position: " + ((int)position.x).ToString() +
+		GUI.Label(new Rect(10, 420, 100, 25), "Speed: " + displayedSpeed.ToString());
+		GUI.Label(new Rect(10, 445, 130, 50), "Position: " + ((int)position.x).ToString() +
 											", " + ((int)position.z).ToString() +
 											"\nAltitude: " + ((int)position.y).ToString());
 		if (!System.String.IsNullOrEmpty(GUI.tooltip))
 		{
-        	GUI.Box(new Rect(165 , 330, 185, 20),"");
+        	GUI.Box(new Rect(165 , 370, 185, 20),"");
 		}
-		GUI.Label(new Rect(170, 330, 210, 20), GUI.tooltip);
+		GUI.Label(new Rect(170, 370, 210, 20), GUI.tooltip);
 		if (walkButton)
 		{
 			m_movementMode = "Walking...";
@@ -172,7 +172,7 @@ public class VPCsimCharacterController : MonoBehaviour
 			GoToHomePosition();
 		}
 	}
-	
+
 	void GoToHomePosition()
 	{
 		transform.position = m_homePosition;
