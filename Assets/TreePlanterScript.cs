@@ -11,31 +11,44 @@ public class TreePlanterScript : MonoBehaviour
     int m_generations = 201; //Number of time steps to simulate
     int[,,] m_cellStatus; //Tree species for each cell in each generation [gen,x,y]
     bool[,] m_permanentDisturbanceMap; //Whether each cell is marked as permanently disturbed
-    int[] m_speciesList = new int[6] {-1, 2, 13, 14, 17, 19}; //Unity tree prototypes to include
-                                                              //in the community (-1 represents a
-                                                              //gap with no tree)
-    //Replacement Matrix.  The probability of replacement of a tree of one species
-    //by another species if it is entirely surrounded by the other species.
+    int[] m_speciesList = new int[6]; //Unity tree prototypes to include in the community
+                                      //(-1 represents a gap with no tree)
+    //Replacement Matrix.  The probability of replacement of a tree of one prototype
+    //by another prototype if it is entirely surrounded by the other species.
     //Example [1,2] is the probability that species 2
     //will be replaced by species 1, if species 2 is entirely surrounded by
     //species 1.
-    //NOTE: Row zero is always 0's and does not effect the simulation because
-    //gaps (communityMember 0's) do not 'replace' trees.  Gaps occur when an
-    //individual dies due to its environment/age or through disturbance.
-    //Row zero only exists to keep the array indexes meaningful
-    //(row index 1= species 1, row index 2 = species 2, etc).
-    //Column zero IS significant.  It represents the probability that a
-    //species will colonize a gap if the gap is entirely surrounded by that
-    //species.  When we calculate replacement values, we make the
-    //colonization values a multiple of the other values since colonization
-    //of a gap should be more likely than replacement of an existing tree.
-    float[,] m_replacementMatrix = new float[6,6] {{0.0f, 0f, 0f, 0f, 0f, 0f},
-                                                   {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
-                                                   {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
-                                                   {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
-                                                   {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
-                                                   {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f}};
-                                                   //Equivalent to all M's
+    //Row  and column indices are 1+ the prototype number (because row 1 and column 1 are for gaps.)
+    float[,] m_masterReplacementMatrix = new float[21,21]{
+        {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
+        {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
+        {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
+        {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
+        {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
+        {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
+        {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
+        {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
+        {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
+        {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
+        {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
+        {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
+        {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
+        {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
+        {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
+        {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
+        {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
+        {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
+        {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
+        {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
+        {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f}
+    };
+    //This smaller replacement matrix is for convenience.  We only have to dig through
+    //the master replacement matrix once (to generate this smaller matrix) when we
+    //import simulation settings rather than everytime we need a replacement value.
+    //The first row will always be zero's because a gap never replaces a plant (that
+    //only happens when the plant dies due to age or environment). But by having that
+    //row of zero's the index numbers can correspond to the species numbers.
+    float[,] m_replacementMatrix = new float[6,6];
     //Store the human-readable plant names so we can display them later
     string[] m_prototypeNames = new string[20] {"Alder", "Bamboo", "Grass", "Banyan",
                                        "Bush1", "Bush2", "Bush3", "Bush4",
@@ -619,6 +632,7 @@ public class TreePlanterScript : MonoBehaviour
         {
             m_speciesList[i] = System.Int32.Parse(speciesList[i - 1]);
         }
+        GenerateReplacementMatrix();
         int ongoingDisturbanceCode = System.Int32.Parse(newParameters["disturbance_level"]);
         m_ongoingDisturbanceRate = m_convertDisturbance[ongoingDisturbanceCode];
         char[]startingPlants = newParameters["starting_matrix"].ToCharArray();
@@ -649,7 +663,14 @@ public class TreePlanterScript : MonoBehaviour
                     //Randomly select the plant type
                     newSpecies = Random.Range(0,6);
                     m_cellStatus[0, x, z] = newSpecies;
-                    m_age[0, x, z] = Random.Range(0, m_lifespans[m_speciesList[newSpecies]] / 3);
+                    if (newSpecies != 0)
+                    {
+                        m_age[0, x, z] = Random.Range(0, m_lifespans[m_speciesList[newSpecies]] / 3);
+                    }
+                    else
+                    {
+                        m_age[0, x, z] = 0;
+                    }
                     m_totalSpeciesCounts[0, newSpecies]++;
                 }
                 else if (startingPlants[startingMatrixCell] == 'N')
@@ -671,6 +692,38 @@ public class TreePlanterScript : MonoBehaviour
         return true;
     }
 
+    void GenerateReplacementMatrix()
+    {
+        //Pulls from the masterReplacementMatrix to create a replacement matrix
+        //for just the species included in this simulation.  In future steps it
+        //is much less confusing to work from this smaller matrix where both
+        //row and column indices correspond to the species numbers.
+        int rowPrototype;
+        int columnPrototype;
+        for (int i=0; i<6; i++)
+        {
+            if (i == 0)
+            {
+                rowPrototype = -1;
+            }
+            else
+            {
+                rowPrototype = m_speciesList[i];
+            }
+            for (int j=0; j<6; j++)
+            {
+                if (j == 0)
+                {
+                    columnPrototype = -1;
+                }
+                else
+                {
+                    columnPrototype = m_speciesList[j];
+                }
+                m_replacementMatrix[i, j] = m_masterReplacementMatrix[rowPrototype + 1, columnPrototype + 1];
+            }
+        }
+    }
 
     void GenerateRandomCommunity()
     {
@@ -678,6 +731,7 @@ public class TreePlanterScript : MonoBehaviour
         //region x,y,z coordinates where each tree will be placed
         //Unity tree prototypes to include in the default community (-1 represents a gap with no tree)
         m_speciesList = new int[6] {-1, 2, 13, 14, 17, 19};
+        GenerateReplacementMatrix();
         m_cellStatus = new int[m_generations, m_xCells, m_zCells];
         m_age = new int[m_generations, m_xCells, m_zCells];
         m_totalSpeciesCounts = new int[m_generations, 6];
