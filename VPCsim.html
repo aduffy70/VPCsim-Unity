@@ -24,6 +24,25 @@
             myForm.submit();
             document.body.removeChild(myForm);
         }
+        function OpenAgePlotPage(arg)
+        {
+            //Request a Counts plot from the VPCsim webapp and open it in a new window
+            var myForm = document.createElement("form");
+            myForm.method = "post";
+            myForm.action = "http://vpcsim.appspot.com/requestplot";
+            var myInput = document.createElement("input");
+            myInput.setAttribute("name", "data_string");
+            myInput.setAttribute("value", arg);
+            myForm.appendChild(myInput);
+            var myInput2 = document.createElement("input");
+            myInput2.setAttribute("name", "plot_type");
+            myInput2.setAttribute("value", "age");
+            myForm.appendChild(myInput2);
+            document.body.appendChild(myForm);
+            myForm.setAttribute("target", "_blank");
+            myForm.submit();
+            document.body.removeChild(myForm);
+        }
 		function GetUnity() {
 			if (typeof unityObject != "undefined") {
 				return unityObject.getObjectById("unityPlayer");

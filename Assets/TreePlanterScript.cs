@@ -117,13 +117,17 @@ public class TreePlanterScript : MonoBehaviour
     int m_zCells = 150;
     int[,,] m_age; //Tracks the age of each plant in each generation.
     int[,] m_totalSpeciesCounts; //Total species counts for each generation.
+    float[,] m_averageSpeciesAges; //Species average ages for each generation
     Vector3[,] m_cellPositions; //Keeps track of the region coordinates where each plant will be placed.
     int m_displayedGeneration = 0; //Which generation number is currently visualized
     string m_chosenGeneration = "0"; //The generation number the user selects from the GUI
     string m_chosenSimulationId = "";
     string m_countLogString = "";
+    string m_ageLogString = "";
     bool m_showCountLogWindow = false; //Whether to display the window with species count log data
+    bool m_showAgeLogWindow = false; //Whether to display the window with age log data
     Rect m_countLogWindow = new Rect(200, 5, 400, 400);
+    Rect m_ageLogWindow = new Rect(210, 5, 400, 400);
     string m_parameterPath = "http://vpcsim.appspot.com"; //Base URL of parameter webapp
     string m_debugString = ""; //Debug errors to display on the HUD
     WWW m_www; //Stores xml data downloaded from the web
@@ -241,10 +245,22 @@ public class TreePlanterScript : MonoBehaviour
             //Setup species count log data window
             m_countLogWindow = GUI.Window(0, m_countLogWindow, DisplayCountLogWindow, "Species Counts");
         }
+        if (m_showAgeLogWindow)
+        {
+            //Setup age log data window
+            m_countLogWindow = GUI.Window(0, m_ageLogWindow, DisplayAgeLogWindow, "Average Ages");
+        }
         if (countLogButton)
         {
-            //Show or hide the log data window
+            //Show or hide the count log data window
             m_showCountLogWindow = !m_showCountLogWindow;
+            m_chosenGeneration = m_displayedGeneration.ToString();
+            GUI.FocusControl("focusBuster");
+        }
+        if (ageLogButton)
+        {
+            //Show or hide the age log data window
+            m_showAgeLogWindow = !m_showAgeLogWindow;
             m_chosenGeneration = m_displayedGeneration.ToString();
             GUI.FocusControl("focusBuster");
         }
@@ -266,6 +282,7 @@ public class TreePlanterScript : MonoBehaviour
             GenerateRandomCommunity();
             RunSimulation();
             m_countLogString = GetCountLogData(false);
+            m_ageLogString = GetAgeLogData(false);
             VisualizeGeneration(0);
             m_chosenGeneration = m_displayedGeneration.ToString();
             m_chosenSimulationId = m_simulationId;
@@ -405,10 +422,19 @@ public class TreePlanterScript : MonoBehaviour
         }
         if (countPlotButton)
         {
-            //Display plots of the simulation data
+            //Display plots of the species count data
             if (m_simulationId != "none")
             {
                 DisplayCountPlot();
+            }
+            GUI.FocusControl("focusBuster");
+        }
+        if (agePlotButton)
+        {
+            //Display plots of the average age data
+            if (m_simulationId != "none")
+            {
+                DisplayAgePlot();
             }
             GUI.FocusControl("focusBuster");
         }
@@ -423,6 +449,15 @@ public class TreePlanterScript : MonoBehaviour
         Application.ExternalCall("OpenCountsPlotPage", logData);
     }
 
+    void DisplayAgePlot()
+    {
+        //Send average age logdata to the surrounding web page where it will be redirected to the webapp
+        //which will generate plots in a new browser window or tab.
+        //TODO - generate plots of other data types (biomass)
+        string logData = GetAgeLogData(true);
+        Application.ExternalCall("OpenAgePlotPage", logData);
+    }
+
     void DisplayCountLogWindow(int windowID)
     {
         if (GUI.Button(new Rect(330,370,50,20), "Close"))
@@ -432,6 +467,23 @@ public class TreePlanterScript : MonoBehaviour
         if (m_simulationId != "none")
         {
             GUI.TextArea(new Rect(5, 20, 390, 350), m_countLogString);
+        }
+        else
+        {
+            GUI.TextArea(new Rect(5, 20, 390, 350), "No simulation loaded");
+        }
+        GUI.DragWindow();
+    }
+
+    void DisplayAgeLogWindow(int windowID)
+    {
+        if (GUI.Button(new Rect(330,370,50,20), "Close"))
+        {
+            m_showAgeLogWindow = !m_showAgeLogWindow;
+        }
+        if (m_simulationId != "none")
+        {
+            GUI.TextArea(new Rect(5, 20, 390, 350), m_ageLogString);
         }
         else
         {
@@ -530,6 +582,72 @@ public class TreePlanterScript : MonoBehaviour
         return logData;
     }
 
+    string GetAgeLogData(bool isForPlotting)
+    {
+        //Generates a string of log data suitable for either displaying to humans or
+        //for sending out for plotting
+        StringBuilder logDataBuilder = new StringBuilder();
+        string logData;
+        if (isForPlotting)
+        {
+            //Generate string for sending out for plotting
+            logDataBuilder.Append("\"time step,");
+            for (int i=1; i<6; i++)
+            {
+                logDataBuilder.Append(m_prototypeNames[m_speciesList[i]]);
+                if (i != 5)
+                {
+                    logDataBuilder.Append(",");
+                }
+            }
+            logDataBuilder.Append("\\\n\" + ");
+            for(int generation=0; generation<m_generations; generation++)
+            {
+                logDataBuilder.Append("\"");
+                logDataBuilder.Append(generation.ToString() + ',');
+                logDataBuilder.Append(m_averageSpeciesAges[generation, 1].ToString() + ",");
+                logDataBuilder.Append(m_averageSpeciesAges[generation, 2].ToString() + ",");
+                logDataBuilder.Append(m_averageSpeciesAges[generation, 3].ToString() + ",");
+                logDataBuilder.Append(m_averageSpeciesAges[generation, 4].ToString() + ",");
+                logDataBuilder.Append(m_averageSpeciesAges[generation, 5].ToString() + "\\\n\"");
+                if (generation != m_generations - 1)
+                {
+                    logDataBuilder.Append(" + ");
+                }
+            }
+        }
+        else
+        {
+            //Generate string for displaying to humans
+            logDataBuilder.Append("Time_step, ");
+            for (int i=1; i<6; i++)
+            {
+                logDataBuilder.Append(m_prototypeNames[m_speciesList[i]]);
+                if (i != 5)
+                {
+                    logDataBuilder.Append(", ");
+                }
+            }
+            logDataBuilder.Append("\n");
+            for(int generation=0; generation<m_generations; generation++)
+            {
+                logDataBuilder.Append(generation.ToString() + ", ");
+                logDataBuilder.Append(m_averageSpeciesAges[generation, 1].ToString() + ", ");
+                logDataBuilder.Append(m_averageSpeciesAges[generation, 2].ToString() + ", ");
+                logDataBuilder.Append(m_averageSpeciesAges[generation, 3].ToString() + ", ");
+                logDataBuilder.Append(m_averageSpeciesAges[generation, 4].ToString() + ", ");
+                logDataBuilder.Append(m_averageSpeciesAges[generation, 5].ToString());
+                if (generation != m_generations - 1)
+                {
+                    logDataBuilder.Append("\n");
+                }
+            }
+        }
+        logData = logDataBuilder.ToString();
+        print(logData);
+        return logData;
+    }
+
 
     #endregion
 
@@ -602,6 +720,7 @@ public class TreePlanterScript : MonoBehaviour
                 RunSimulation();
                 m_debugString += "RunSimulation success\n";
                 m_countLogString = GetCountLogData(false);
+                m_ageLogString = GetAgeLogData(false);
                 VisualizeGeneration(0);
                 m_debugString += "VisualizeGeneration success\n";
                 m_chosenGeneration = m_displayedGeneration.ToString();
@@ -663,6 +782,7 @@ public class TreePlanterScript : MonoBehaviour
         m_permanentDisturbanceMap = new bool[m_xCells, m_zCells];
         m_age = new int[m_generations, m_xCells, m_zCells];
         m_totalSpeciesCounts = new int[m_generations, 6];
+        m_averageSpeciesAges = new float[m_generations, 6];
         m_cellPositions = new Vector3[m_xCells, m_zCells];
         for (int z=0; z<m_zCells; z++)
         {
@@ -758,9 +878,11 @@ public class TreePlanterScript : MonoBehaviour
         m_cellStatus = new int[m_generations, m_xCells, m_zCells];
         m_age = new int[m_generations, m_xCells, m_zCells];
         m_totalSpeciesCounts = new int[m_generations, 6];
+        m_averageSpeciesAges = new float[m_generations, 6];
         m_cellPositions = new Vector3[m_xCells, m_zCells];
         //Make a default disturbance map with no permanent disturbances
         m_permanentDisturbanceMap = new bool[m_xCells, m_zCells];
+        int[] speciesAgeSums = new int[6] {0, 0, 0, 0, 0, 0};
         for (int z=0; z<m_zCells; z++)
         {
             for (int x=0; x<m_xCells; x++)
@@ -783,13 +905,28 @@ public class TreePlanterScript : MonoBehaviour
                 //random selection of ages has many more old ages than expected.
                 if (newSpecies != 0)
                 {
-                  m_age[0, x, z] = Random.Range(0, m_lifespans[m_speciesList[newSpecies]] / 3);
+                    int age = Random.Range(0, m_lifespans[m_speciesList[newSpecies]] / 3);
+                    m_age[0, x, z] = age;
+                    speciesAgeSums[newSpecies] = speciesAgeSums[newSpecies] + age;
                 }
                 else
                 {
-                  m_age[0, x, z] = 0;
+                    m_age[0, x, z] = 0;
                 }
                 m_totalSpeciesCounts[0, newSpecies]++;
+            }
+        }
+        for (int i=0; i<6; i++)
+        {
+            int speciesCount = m_totalSpeciesCounts[0, i];
+            //Avoid divide-by-zero errors
+            if (speciesCount != 0)
+            {
+                m_averageSpeciesAges[0, i] = (float)System.Math.Round((double)speciesAgeSums[i] / (double)speciesCount, 2);
+            }
+            else
+            {
+                m_averageSpeciesAges[0, i] = 0f;
             }
         }
         m_simulationId = "default";
@@ -800,6 +937,7 @@ public class TreePlanterScript : MonoBehaviour
         //Generate the simulation data
         for (int generation=0; generation<m_generations - 1; generation++)
         {
+            int[] speciesAgeSums = new int[6] {0, 0, 0, 0, 0, 0};
             //Setup some variables we will need later
             int nextGeneration = generation + 1;
             int rowabove;
@@ -850,9 +988,11 @@ public class TreePlanterScript : MonoBehaviour
                                 if (newSpecies == -1)
                                 {
                                     //The old plant is still there
-                                    m_age[nextGeneration, x, z] = m_age[generation, x, z] + 1;
+                                    int age = m_age[generation, x, z] + 1;
+                                    m_age[nextGeneration, x, z] = age;
                                     m_cellStatus[nextGeneration, x, z] = currentSpecies;
                                     m_totalSpeciesCounts[nextGeneration, currentSpecies]++;
+                                    speciesAgeSums[currentSpecies] = speciesAgeSums[currentSpecies] + age;
                                 }
                                 else
                                 {
@@ -892,6 +1032,20 @@ public class TreePlanterScript : MonoBehaviour
                         //Permanent gaps stay gaps
                         m_cellStatus[nextGeneration, x, z] = -1;
                     }
+                }
+            }
+            //Store the average age of each species in this generation
+            for (int i=0; i<6; i++)
+            {
+                int speciesCount = m_totalSpeciesCounts[nextGeneration, i];
+                //Avoid divide-by-zero errors
+                if (speciesCount != 0)
+                {
+                    m_averageSpeciesAges[nextGeneration, i] = (float)System.Math.Round((double)speciesAgeSums[i] / (double)speciesCount, 2);
+                }
+                else
+                {
+                    m_averageSpeciesAges[nextGeneration, i] = 0f;
                 }
             }
         }
