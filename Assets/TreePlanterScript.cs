@@ -172,12 +172,15 @@ public class TreePlanterScript : MonoBehaviour
                                             new GUIContent("",
                                             ""));
         //Buttons to run a simulation
-        bool defaultsButton = GUI.Button(new Rect(10, 35, 60, 20),
-                                         new GUIContent("Defaults",
+        bool defaultsButton = GUI.Button(new Rect(10, 35, 55, 20),
+                                         new GUIContent("Default",
                                          "Load the default ecosystem"));
-        bool createButton = GUI.Button(new Rect(75, 35, 80, 20),
-                                       new GUIContent("Create new",
+        bool createButton = GUI.Button(new Rect(68, 35, 40, 20),
+                                       new GUIContent("New",
                                        "Create a new ecosystem"));
+        bool showParametersButton = GUI.Button(new Rect(111, 35, 44, 20),
+                                               new GUIContent("Show",
+                                               "Show ecosystem parameters"));
         m_chosenSimulationId = GUI.TextField(new Rect(10, 60, 90, 20),
                                              m_chosenSimulationId, 10);
         bool loadButton = GUI.Button(new Rect(105, 60, 50, 20),
@@ -292,6 +295,11 @@ public class TreePlanterScript : MonoBehaviour
         {
             //Open the parameters webapp in a new browser window or tab
             Application.ExternalCall("window.open('http://vpcsim.appspot.com','_blank')");
+        }
+        if (showParametersButton)
+        {
+            //Open the parameters webapp to show the current parameters in a new browser window or tab
+            Application.ExternalCall("window.open('http://vpcsim.appspot.com/show?id=" + m_chosenSimulationId + "','_blank')");
         }
         if (loadButton)
         {
