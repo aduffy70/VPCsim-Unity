@@ -22,7 +22,7 @@ public class TreePlanterScript : MonoBehaviour
         {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
         {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
         {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
-        {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
+        {0.5f, 0.12f, 0.1f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f},
         {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
         {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
         {0.4f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},
@@ -48,11 +48,11 @@ public class TreePlanterScript : MonoBehaviour
     //row of zero's the index numbers can correspond to the species numbers.
     float[,] m_replacementMatrix = new float[6,6];
     //Store the human-readable plant names so we can display them later
-    string[] m_prototypeNames = new string[20] {"Alder", "Bamboo", "Grass", "Banyan",
-                                       "Bush1", "Bush2", "Bush3", "Bush4",
-                                       "Bush5", "Bush5a", "Bush6", "Bush6a",
-                                       "Bush7", "Fern", "Maple", "Mimosa",
-                                       "Palm", "Pine", "Sycamore", "Willow"};
+    string[] m_prototypeNames = new string[20] {"Alder", "Aspen", "Starthistle", "Juniper",
+                                       "Serviceberry", "Sagebrush", "Sumac", "Obsolete1",
+                                       "Obsolete2", "Obsolete3", "Obsolete4", "Obsolete5",
+                                       "Wildrose", "Fern", "Maple", "Elderberry",
+                                       "Obsolete6", "Pine", "Cottonwood", "Willow"};
     //Adjust the default sizes of the plants
     float[] m_prototypeScales = new float[20] {1.2f, 1.0f, 3.0f, 80.0f,
                                                5.0f, 7.0f, 6.0f, 7.0f,
@@ -79,13 +79,13 @@ public class TreePlanterScript : MonoBehaviour
     float[] m_waterLevelOptimums = new float[20] {0.5f, 0.5f, 0.5f, 0.5f,
                                                   0.5f, 0.5f, 0.5f, 0.5f,
                                                   0.5f, 0.5f, 0.5f, 0.5f,
-                                                  0.5f, 0.5f, 0.5f, 0.5f,
+                                                  0.75f, 0.5f, 0.5f, 0.5f,
                                                   0.5f, 0.5f, 0.5f, 0.5f,};
-    float[] m_waterLevelEffects = new float[20] {0f, 0f, 0f, 0f,
-                                                 0f, 0f, 0f, 0f,
-                                                 0f, 0f, 0f, 0f,
-                                                 0f, 0f, 0f, 0f,
-                                                 0f, 0f, 0f, 0f};
+    float[] m_waterLevelEffects = new float[20] {0.1f, 0.1f, 0.1f, 0.1f,
+                                                 0.1f, 0.1f, 0.1f, 0.1f,
+                                                 0.1f, 0.1f, 0.1f, 0.1f,
+                                                 0.1f, 0.1f, 0.1f, 0.1f,
+                                                 0.1f, 0.1f, 0.1f, 0.1f};
     float[] m_lightLevelOptimums = new float[20] {0.5f, 0.5f, 0.5f, 0.5f,
                                                   0.5f, 0.5f, 0.5f, 0.5f,
                                                   0.5f, 0.5f, 0.5f, 0.5f,
@@ -881,7 +881,7 @@ public class TreePlanterScript : MonoBehaviour
         //Generate starting matrix with random species and determine the
         //region x,y,z coordinates where each tree will be placed
         //Unity tree prototypes to include in the default community (-1 represents a gap with no tree)
-        m_speciesList = new int[6] {-1, 2, 13, 14, 17, 19};
+        m_speciesList = new int[6] {-1, 1, 13, 14, 17, 19};
         GenerateReplacementMatrix();
         m_cellStatus = new int[m_generations, m_xCells, m_zCells];
         m_age = new int[m_generations, m_xCells, m_zCells];
