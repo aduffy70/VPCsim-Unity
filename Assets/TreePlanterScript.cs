@@ -453,7 +453,7 @@ public class TreePlanterScript : MonoBehaviour
         //which will generate plots in a new browser window or tab.
         //TODO - generate plots of other data types (age, biomass, etc)
         string logData = GetCountLogData(true);
-        Application.ExternalCall("OpenCountsPlotPage", logData);
+        Application.ExternalCall("OpenCountsPlotPage", m_simulationId, logData);
     }
 
     void DisplayAgePlot()
@@ -462,7 +462,7 @@ public class TreePlanterScript : MonoBehaviour
         //which will generate plots in a new browser window or tab.
         //TODO - generate plots of other data types (biomass)
         string logData = GetAgeLogData(true);
-        Application.ExternalCall("OpenAgePlotPage", logData);
+        Application.ExternalCall("OpenAgePlotPage", m_simulationId, logData);
     }
 
     void DisplayCountLogWindow(int windowID)

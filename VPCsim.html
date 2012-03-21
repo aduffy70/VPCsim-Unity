@@ -5,7 +5,7 @@
 		<script type="text/javascript" src="http://webplayer.unity3d.com/download_webplayer-3.x/3.0/uo/UnityObject.js"></script>
 		<script type="text/javascript">
 		<!--
-		function OpenCountsPlotPage(arg)
+		function OpenCountsPlotPage(simulation_id, data_string)
         {
             //Request a Counts plot from the VPCsim webapp and open it in a new window
             var myForm = document.createElement("form");
@@ -13,18 +13,22 @@
             myForm.action = "http://vpcsim.appspot.com/requestplot";
             var myInput = document.createElement("input");
             myInput.setAttribute("name", "data_string");
-            myInput.setAttribute("value", arg);
+            myInput.setAttribute("value", data_string);
             myForm.appendChild(myInput);
             var myInput2 = document.createElement("input");
             myInput2.setAttribute("name", "plot_type");
             myInput2.setAttribute("value", "counts");
             myForm.appendChild(myInput2);
+            var myInput3 = document.createElement("input");
+            myInput3.setAttribute("name", "simulation_id");
+            myInput3.setAttribute("value", simulation_id);
+            myForm.appendChild(myInput3);
             document.body.appendChild(myForm);
             myForm.setAttribute("target", "_blank");
             myForm.submit();
             document.body.removeChild(myForm);
         }
-        function OpenAgePlotPage(arg)
+        function OpenAgePlotPage(simulation_id, data_string)
         {
             //Request a Counts plot from the VPCsim webapp and open it in a new window
             var myForm = document.createElement("form");
@@ -32,12 +36,16 @@
             myForm.action = "http://vpcsim.appspot.com/requestplot";
             var myInput = document.createElement("input");
             myInput.setAttribute("name", "data_string");
-            myInput.setAttribute("value", arg);
+            myInput.setAttribute("value", data_string);
             myForm.appendChild(myInput);
             var myInput2 = document.createElement("input");
             myInput2.setAttribute("name", "plot_type");
             myInput2.setAttribute("value", "age");
             myForm.appendChild(myInput2);
+            var myInput3 = document.createElement("input");
+            myInput3.setAttribute("name", "simulation_id");
+            myInput3.setAttribute("value", simulation_id);
+            myForm.appendChild(myInput3);
             document.body.appendChild(myForm);
             myForm.setAttribute("target", "_blank");
             myForm.submit();
