@@ -188,29 +188,29 @@ public class TreePlanterScript : MonoBehaviour
         //Buttons to move between simulation steps
         bool firstButton = GUI.Button(new Rect (10, 95, 22, 20),
                                       new GUIContent("[<",
-                                      "First time step"));
+                                      "First year"));
         bool reverse10Button = GUI.Button(new Rect (34, 95, 25, 20),
                                           new GUIContent("<<",
-                                          "Skip backward 10 time steps"));
+                                          "Skip backward 10 years"));
         bool reverseButton = GUI.Button(new Rect (61, 95, 20, 20),
                                         new GUIContent("<",
-                                        "Previous time step"));
+                                        "Previous year"));
         bool forwardButton = GUI.Button(new Rect (83, 95, 20, 20),
                                         new GUIContent(">",
-                                        "Next time step"));
+                                        "Next year"));
         bool forward10Button = GUI.Button(new Rect (105, 95, 25, 20),
                                           new GUIContent(">>",
-                                          "Skip forward 10 time steps"));
+                                          "Skip forward 10 years"));
         bool lastButton = GUI.Button(new Rect (132, 95, 22, 20),
                                      new GUIContent(">]",
-                                     "Last time step"));
-        GUI.Label(new Rect(10, 120, 35, 20), "Step:");
+                                     "Last year"));
+        GUI.Label(new Rect(10, 120, 35, 20), "Year:");
         m_chosenGeneration = GUI.TextField(new Rect(42, 120, 40, 20),
                                            m_chosenGeneration, 4);
         GUI.Label(new Rect(83, 120, 35, 20), "/ " + (m_generations - 1).ToString());
         bool goButton = GUI.Button(new Rect(120, 120, 35, 20),
                                    new GUIContent("Go",
-                                   "View the selected time step"));
+                                   "View the selected year"));
         GUI.Label(new Rect(10, 145, 135, 100), m_currentDataString);
         //Buttons to display log data or plots
         GUI.Label(new Rect(10, 250, 35, 20), "Plots:");
@@ -530,7 +530,7 @@ public class TreePlanterScript : MonoBehaviour
         if (isForPlotting)
         {
             //Generate string for sending out for plotting
-            logDataBuilder.Append("\"time step,Gaps,");
+            logDataBuilder.Append("\"year,Gaps,");
             for (int i=1; i<6; i++)
             {
                 logDataBuilder.Append(m_prototypeNames[m_speciesList[i]]);
@@ -559,7 +559,7 @@ public class TreePlanterScript : MonoBehaviour
         else
         {
             //Generate string for displaying to humans
-            logDataBuilder.Append("Time_step, Gaps, ");
+            logDataBuilder.Append("Year, Gaps, ");
             for (int i=1; i<6; i++)
             {
                 logDataBuilder.Append(m_prototypeNames[m_speciesList[i]]);
@@ -598,7 +598,7 @@ public class TreePlanterScript : MonoBehaviour
         if (isForPlotting)
         {
             //Generate string for sending out for plotting
-            logDataBuilder.Append("\"time step,");
+            logDataBuilder.Append("\"year,");
             for (int i=1; i<6; i++)
             {
                 logDataBuilder.Append(m_prototypeNames[m_speciesList[i]]);
@@ -626,7 +626,7 @@ public class TreePlanterScript : MonoBehaviour
         else
         {
             //Generate string for displaying to humans
-            logDataBuilder.Append("Time_step, ");
+            logDataBuilder.Append("Year, ");
             for (int i=1; i<6; i++)
             {
                 logDataBuilder.Append(m_prototypeNames[m_speciesList[i]]);
