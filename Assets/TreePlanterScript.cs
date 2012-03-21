@@ -180,9 +180,9 @@ public class TreePlanterScript : MonoBehaviour
         bool showParametersButton = GUI.Button(new Rect(111, 35, 44, 20),
                                                new GUIContent("Show",
                                                "Show ecosystem parameters"));
-        m_chosenSimulationId = GUI.TextField(new Rect(10, 60, 90, 20),
-                                             m_chosenSimulationId, 10);
-        bool loadButton = GUI.Button(new Rect(105, 60, 50, 20),
+        m_chosenSimulationId = GUI.TextField(new Rect(10, 60, 103, 20),
+                                             m_chosenSimulationId, 14);
+        bool loadButton = GUI.Button(new Rect(115, 60, 40, 20),
                                      new GUIContent("Load",
                                      "Load new ecosystem parameters"));
         //Buttons to move between simulation steps
@@ -306,9 +306,9 @@ public class TreePlanterScript : MonoBehaviour
             bool isValidId = false;
             try
             {
-                //Make sure the new simulation id can be converted to an integer (it is
+                //Make sure the new simulation id can be converted to a long integer (it is
                 //supposed to be a datecode.)
-                int newSimulationId = System.Int32.Parse(m_chosenSimulationId);
+                long newSimulationId = System.Int64.Parse(m_chosenSimulationId);
                 isValidId = true;
                 m_debugString += "Valid ID\n";
             }
