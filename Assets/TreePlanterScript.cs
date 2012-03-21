@@ -107,7 +107,6 @@ public class TreePlanterScript : MonoBehaviour
                                                   0f, 0f, 0f, 0f,
                                                   0f, 0f, 0f, 0f};
     float m_ongoingDisturbanceRate = 0.0f;
-    //int m_terrainMap = 0; //Which terrain map we are using
     //These levels range from 0-1.0.  Default to 0.5 (mid-range or normal)
     float m_waterLevel = 0.5f;
     float m_lightLevel = 0.5f;
@@ -770,7 +769,6 @@ public class TreePlanterScript : MonoBehaviour
             }
         }
         m_simulationId = newParameters["id"];
-        //m_terrainMap = System.Int32.Parse(newParameters["terrain"]);
         int waterLevelCode = System.Int32.Parse(newParameters["water_level"]);
         m_waterLevel = m_convertWaterLevel[waterLevelCode];
         int lightLevelCode = System.Int32.Parse(newParameters["light_level"]);
