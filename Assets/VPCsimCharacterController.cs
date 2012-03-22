@@ -24,6 +24,17 @@ public class VPCsimCharacterController : MonoBehaviour
 	string m_movementMode = "Walking...";
 	float m_distanceToGround = 0f;
 	float m_sampleHeight = 50f;
+	bool m_showHelpWindow = true; //Whether to display the window with movement instructions
+    Rect m_helpWindow = new Rect(250, 110, 400, 255);
+    string m_helpString = "\n\t\t\t\t\t\t\t** Movement Instructions **\n\n" +
+    					  "Walk and Fly modes:\n" +
+    					  "    Arrow keys  -  Forward / Back / Turn left / Turn right\n" +
+    					  "    e / x  -  Look up / Look down\n" +
+    					  "    q / z  -  Speed up / Slow down\n\n" +
+    					  "Sample mode:\n" +
+    					  "    Arrow keys  -  North / South / West / East\n" +
+    					  "    e / x  -  Increase / Decrease Height Above Terrain (HAT)\n" +
+    					  "    q / z  -  Speed up / Slow down";
 
 
 	// Use this for initialization
@@ -149,6 +160,7 @@ public class VPCsimCharacterController : MonoBehaviour
 		GUI.Label(new Rect(10, 445, 130, 50), "Position: " + ((int)position.x).ToString() +
 											", " + ((int)position.z).ToString() +
 											"\nAltitude: " + ((int)position.y).ToString());
+		bool helpButton = GUI.Button(new Rect(10, 515, 60, 20), new GUIContent("Help", "Movement instructions"));
 		if (!System.String.IsNullOrEmpty(GUI.tooltip))
 		{
         	GUI.Box(new Rect(165 , 370, 185, 20),"");
@@ -173,7 +185,27 @@ public class VPCsimCharacterController : MonoBehaviour
 		{
 			GoToHomePosition();
 		}
+		if (m_showHelpWindow)
+        {
+            //Setup the help message window
+            m_helpWindow = GUI.Window(0, m_helpWindow, DisplayHelpWindow, "Help");
+        }
+        if (helpButton)
+        {
+            //Show or hide the help message window
+            m_showHelpWindow = !m_showHelpWindow;
+        }
 	}
+
+	void DisplayHelpWindow(int windowID)
+    {
+    	if (GUI.Button(new Rect(330,230,50,20), "Close"))
+        {
+            m_showHelpWindow = !m_showHelpWindow;
+        }
+        GUI.TextArea(new Rect(5, 20, 390, 205), m_helpString);
+        GUI.DragWindow();
+    }
 
 	void GoToHomePosition()
 	{
