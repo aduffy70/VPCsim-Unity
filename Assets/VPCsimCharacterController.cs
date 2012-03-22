@@ -95,7 +95,9 @@ public class VPCsimCharacterController : MonoBehaviour
 			{
 				m_sampleHeight -= 0.05f;
 			}
-			m_sampleHeight = Mathf.Clamp(m_sampleHeight, 10, 500.5f);
+			//Sampling above 150m HAT is useless because you can't see smaller plants.
+			//Sampling below 10m is useless because trees are further apart than what you can see on screen at once.
+			m_sampleHeight = Mathf.Clamp(m_sampleHeight, 10, 150.5f);
 			float xTranslation = Input.GetAxis("Horizontal") * m_speed;
 			float zTranslation = Input.GetAxis("Vertical") * m_speed;
 			float yTranslation = 0;
