@@ -154,12 +154,12 @@ public class VPCsimCharacterController : MonoBehaviour
 		}
 		else
 		{
-			GUI.Label(new Rect(100, 445, 130, 50), "\nHAT: " + ((int)m_distanceToGround).ToString());
+			GUI.Label(new Rect(100, 445, 130, 50), "\nHAT: " + ((int)m_distanceToGround).ToString() + "m");
 		}
 		GUI.Label(new Rect(10, 420, 100, 25), "Speed: " + displayedSpeed.ToString());
-		GUI.Label(new Rect(10, 445, 130, 50), "Position: " + ((int)position.x).ToString() +
-											", " + ((int)position.z).ToString() +
-											"\nAltitude: " + ((int)position.y).ToString());
+		GUI.Label(new Rect(10, 445, 130, 50), "Position: " + ((int)position.x).ToString() + "E" +
+											", " + ((int)position.z).ToString() + "N" +
+											"\nAltitude: " + ((int)position.y).ToString() + "m");
 		bool helpButton = GUI.Button(new Rect(10, 515, 60, 20), new GUIContent("Help", "Movement instructions"));
 		if (!System.String.IsNullOrEmpty(GUI.tooltip))
 		{
