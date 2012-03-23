@@ -10,7 +10,7 @@ using System.Collections;
 
 public class VPCsimCharacterController : MonoBehaviour
 {
-	Vector3 m_homePosition = new Vector3(1000, 100, 1000);
+	Vector3 m_homePosition = new Vector3(500, 50, 500);
 	Vector3 m_homeRotation = new Vector3(0, 0, 0);
 	float m_rotationSpeedY = 0.75f;
 	float m_minimumY = -90f;
@@ -85,8 +85,8 @@ public class VPCsimCharacterController : MonoBehaviour
 			transform.localEulerAngles = new Vector3(-m_rotationY, transform.localEulerAngles.y, 0);
 			if (m_movementMode == "Walking...")
 			{
-				if ((-1 > transform.position.x) || (transform.position.x > 2001) ||
-					(-1 > transform.position.z) || (transform.position.z > 2001))
+				if ((-1 > transform.position.x) || (transform.position.x > 1001) ||
+					(-1 > transform.position.z) || (transform.position.z > 1001))
 				{
 					GoToHomePosition();
 				}

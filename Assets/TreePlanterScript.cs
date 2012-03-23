@@ -205,8 +205,8 @@ public class TreePlanterScript : MonoBehaviour
     float m_lightLevel = 0.5f;
     float m_temperatureLevel = 0.5f;
     //Number of x and z cells (horizontal plane is xz in Unity3D)
-    int m_xCells = 150;
-    int m_zCells = 150;
+    int m_xCells = 100;
+    int m_zCells = 100;
     int[,,] m_age; //Tracks the age of each plant in each generation.
     int[,] m_totalSpeciesCounts; //Total species counts for each generation.
     float[,] m_averageSpeciesAges; //Species average ages for each generation
@@ -897,9 +897,9 @@ public class TreePlanterScript : MonoBehaviour
                 //Store the coordinates of each position so we don't have to recalculate them
                 m_cellPositions[x, z] = position;
                 int newSpecies;
-                //The world has a 150x150 matrix of plants but the form to control it
+                //The world has a 100x100 matrix of plants but the form to control it
                 //is only 50x50 so we need to make a conversion
-                int startingMatrixCell = ((z/3) * (m_xCells/3)) + (x/3);
+                int startingMatrixCell = ((z/2) * (m_xCells/2)) + (x/2);
                 if (startingPlants[startingMatrixCell] == 'R')
                 {
                     //Randomly select the plant type
