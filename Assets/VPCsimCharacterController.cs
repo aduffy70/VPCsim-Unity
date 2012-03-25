@@ -129,43 +129,43 @@ public class VPCsimCharacterController : MonoBehaviour
 	{
 		Vector3 position = transform.position;
 		int displayedSpeed = ((int)m_speed / 10) + 1;
-		GUI.Box(new Rect(5, 350, 155, 135), "Movement");
-		GUI.Label(new Rect(10, 370, 150, 20), "Mode: " + m_movementMode);
+		GUI.Box(new Rect(5, 430, 165, 135), "Movement");
+		GUI.Label(new Rect(10, 450, 150, 20), "Mode: " + m_movementMode);
 		bool walkButton = false;
 		bool flyButton = false;
 		bool samplingButton = false;
 		bool homeButton = false;
 		if (m_movementMode != "Walking...")
 		{
-			walkButton = GUI.Button(new Rect(10, 390, 40, 20), new GUIContent("Walk",
+			walkButton = GUI.Button(new Rect(10, 470, 44, 20), new GUIContent("Walk",
 									"Enter 'Walking' mode"));
 		}
 		if (m_movementMode != "Flying..." )
 		{
-			flyButton = GUI.Button(new Rect(55, 390, 40, 20), new GUIContent("Fly",
+			flyButton = GUI.Button(new Rect(59, 470, 42, 20), new GUIContent("Fly",
 								   "Enter 'Flying' mode"));
 		}
 		if (m_movementMode != "Sampling...")
 		{
-			samplingButton = GUI.Button(new Rect(100, 390, 55, 20), new GUIContent("Sample",
+			samplingButton = GUI.Button(new Rect(107, 470, 57, 20), new GUIContent("Sample",
 										"Enter 'Sampling' mode"));
-			homeButton = GUI.Button(new Rect(85, 420, 70, 20), new GUIContent("Go home",
+			homeButton = GUI.Button(new Rect(90, 535, 75, 20), new GUIContent("Go home",
 									"Return to the starting position"));
 		}
 		else
 		{
-			GUI.Label(new Rect(100, 445, 130, 50), "\nHAT: " + ((int)m_distanceToGround).ToString() + "m");
+			GUI.Label(new Rect(100, 495, 130, 50), "\nHAT: " + ((int)m_distanceToGround).ToString() + "m");
 		}
-		GUI.Label(new Rect(10, 420, 100, 25), "Speed: " + displayedSpeed.ToString());
-		GUI.Label(new Rect(10, 445, 130, 50), "Position: " + ((int)position.x).ToString() + "E" +
-											", " + ((int)position.z).ToString() + "N" +
-											"\nAltitude: " + ((int)position.y).ToString() + "m");
-		bool helpButton = GUI.Button(new Rect(10, 515, 60, 20), new GUIContent("Help", "Movement instructions"));
+		GUI.Label(new Rect(10, 535, 100, 25), "Speed: " + displayedSpeed.ToString());
+		GUI.Label(new Rect(10, 495, 145, 50), "Position: N" + ((int)position.z).ToString() + "  E" +
+                                              ((int)position.x).ToString() +
+											  "\nAltitude: " + ((int)position.y).ToString() + "m");
+		bool helpButton = GUI.Button(new Rect(10, 575, 60, 20), new GUIContent("Help", "Movement instructions"));
 		if (!System.String.IsNullOrEmpty(GUI.tooltip))
 		{
-        	GUI.Box(new Rect(165 , 370, 185, 20),"");
+        	GUI.Box(new Rect(175 , 450, 185, 20),"");
 		}
-		GUI.Label(new Rect(170, 370, 210, 20), GUI.tooltip);
+		GUI.Label(new Rect(180, 450, 210, 20), GUI.tooltip);
 		if (walkButton)
 		{
 			m_movementMode = "Walking...";
