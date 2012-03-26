@@ -221,11 +221,14 @@ public class TreePlanterScript : MonoBehaviour
     Rect m_countLogWindow = new Rect(200, 5, 400, 400);
     Rect m_ageLogWindow = new Rect(210, 5, 400, 400);
     string m_parameterPath = "http://vpcsim.appspot.com"; //Base URL of parameter webapp
-    string m_debugString = ""; //Debug errors to display on the HUD
+    //string m_debugString = ""; //Debug errors to display on the HUD
     WWW m_www; //Stores xml data downloaded from the web
-    bool m_showDebugWindow = false; //Whether to display the window with debug messages
-    Rect m_debugWindow = new Rect(300, 10, 400, 400);
+    //bool m_showDebugWindow = false; //Whether to display the window with debug messages
+    //Rect m_debugWindow = new Rect(300, 10, 400, 400);
     string m_currentDataString = "Not Available.\nLoad a simulation.";
+    bool m_showErrorWindow = false; //Whether to display the window with error messages
+    Rect m_errorWindow = new Rect(250, 110, 250, 150);
+    string m_errorString = "";
     //Convert values from the webapp to numbers the simulation can use
     //Ongoing disturbance values - None, Very Low, Low, High, Very High
     float[] m_convertDisturbance = new float[5] {0f, 0.01f, 0.03f, 0.1f, 0.25f};
@@ -239,7 +242,7 @@ public class TreePlanterScript : MonoBehaviour
 
     void Start()
     {
-        m_debugString += "Start\n"; //Debug
+        //m_debugString += "Start\n"; //Debug
         //There shouldn't be trees in the scene at startup, but just in case...
         DeleteAllTrees();
     }
@@ -263,7 +266,7 @@ public class TreePlanterScript : MonoBehaviour
                                             new GUIContent("",
                                             ""));
         //Buttons to run a simulation
-        GUI.Box(new Rect(5, 5, 165, 100), "Settings");
+        GUI.Box(new Rect(5, 5, 165, 100), "Simulation settings");
         bool defaultsButton = GUI.Button(new Rect(10, 30, 70, 20),
                                          new GUIContent("Defaults",
                                          "Load the default ecosystem"));
@@ -329,9 +332,9 @@ public class TreePlanterScript : MonoBehaviour
                                      new GUIContent("Biomass",
                                      "Show biomass log data"));
         //Button to display debug messages - TODO: Remove?  This is not for students.
-        bool debugButton = GUI.Button(new Rect(100, 575, 60, 20),
-                                      new GUIContent("Debug",
-                                      "Show/Hide debug messages"));
+        //bool debugButton = GUI.Button(new Rect(100, 575, 60, 20),
+        //                              new GUIContent("Debug",
+        //                              "Show/Hide debug messages"));
         if (!System.String.IsNullOrEmpty(GUI.tooltip))
         {
             GUI.Box(new Rect(175 , 30, 220, 20),"");
@@ -361,17 +364,22 @@ public class TreePlanterScript : MonoBehaviour
             m_chosenGeneration = m_displayedGeneration.ToString();
             GUI.FocusControl("focusBuster");
         }
-        if (m_showDebugWindow)
+        //if (m_showDebugWindow)
+        //{
+        //    //Setup the debug message window
+        //    m_debugWindow = GUI.Window(0, m_debugWindow, DisplayDebugWindow, "Debug");
+        //}
+        if (m_showErrorWindow)
         {
-            //Setup the debug message window
-            m_debugWindow = GUI.Window(0, m_debugWindow, DisplayDebugWindow, "Debug");
+            //Setup the error message window
+            m_errorWindow = GUI.Window(0, m_errorWindow, DisplayErrorWindow, "***  Error!  ***");
         }
-        if (debugButton)
-        {
-            //Show or hide the debug message window
-            m_showDebugWindow = !m_showDebugWindow;
-            GUI.FocusControl("focusBuster");
-        }
+        //if (debugButton)
+        //{
+        //    //Show or hide the debug message window
+        //    m_showDebugWindow = !m_showDebugWindow;
+        //    GUI.FocusControl("focusBuster");
+        //}
         if (defaultsButton)
         {
             //Run a simulation using the default settings
@@ -405,21 +413,19 @@ public class TreePlanterScript : MonoBehaviour
                 //supposed to be a datecode.)
                 long newSimulationId = System.Int64.Parse(m_chosenSimulationId);
                 isValidId = true;
-                m_debugString += "Valid ID\n";
+                //m_debugString += "Valid ID\n";
             }
             catch
             {
                 isValidId = false;
-                m_debugString += "Not Valid ID\n";
+                //m_debugString += "Not Valid ID\n";
+                m_errorString = "Invalid simulation id.";
+                m_showErrorWindow = true;
             }
             if (isValidId)
             {
                 //Retrieve simulation parameters from the web
                 StartCoroutine(GetNewSimulationParameters(m_chosenSimulationId));
-            }
-            else
-            {
-                //TODO - Error message: Invalid simulation ID
             }
             GUI.FocusControl("focusBuster");
         }
@@ -560,6 +566,16 @@ public class TreePlanterScript : MonoBehaviour
         Application.ExternalCall("OpenAgePlotPage", m_simulationId, logData);
     }
 
+    void DisplayErrorWindow(int windowID)
+    {
+        if (GUI.Button(new Rect(105, 125, 50, 20), "OK"))
+        {
+            m_showErrorWindow = false;
+        }
+        GUI.TextArea(new Rect(5, 20, 240, 105), m_errorString);
+        GUI.DragWindow();
+    }
+
     void DisplayCountLogWindow(int windowID)
     {
         if (GUI.Button(new Rect(330,370,50,20), "Close"))
@@ -594,11 +610,11 @@ public class TreePlanterScript : MonoBehaviour
         GUI.DragWindow();
     }
 
-    void DisplayDebugWindow(int windowID)
-    {
-        GUI.TextArea(new Rect(5, 20, 390, 350), m_debugString);
-        GUI.DragWindow();
-    }
+    //void DisplayDebugWindow(int windowID)
+    //{
+    //    GUI.TextArea(new Rect(5, 20, 390, 350), m_debugString);
+    //    GUI.DragWindow();
+    //}
 
     string GetCurrentCounts()
     {
@@ -757,22 +773,31 @@ public class TreePlanterScript : MonoBehaviour
 
     void VisualizeGeneration(int generation)
     {
-        //Update the visualization with plants from a particular generation.
-        //Remove old trees
-        Terrain.activeTerrain.terrainData.treeInstances = new TreeInstance[0];
-        //Add new trees
-        for (int z=0; z<m_zCells; z++)
+        if (m_simulationId != "none")
         {
-            for (int x=0; x<m_xCells; x++)
+            //Update the visualization with plants from a particular generation.
+            //Remove old trees
+            Terrain.activeTerrain.terrainData.treeInstances = new TreeInstance[0];
+            //Add new trees
+            for (int z=0; z<m_zCells; z++)
             {
-                int newTreeSpecies = m_cellStatus[generation, x, z];
-                Vector3 newTreeLocation = m_cellPositions[x, z];
-                AddTree(newTreeLocation, newTreeSpecies, m_age[generation, x, z]);
+                for (int x=0; x<m_xCells; x++)
+                {
+                    int newTreeSpecies = m_cellStatus[generation, x, z];
+                    Vector3 newTreeLocation = m_cellPositions[x, z];
+                    AddTree(newTreeLocation, newTreeSpecies, m_age[generation, x, z]);
+                }
             }
+            Terrain.activeTerrain.Flush();
+            m_displayedGeneration = generation;
+            m_currentDataString = GetCurrentCounts();
         }
-        Terrain.activeTerrain.Flush();
-        m_displayedGeneration = generation;
-        m_currentDataString = GetCurrentCounts();
+        else
+        {
+            //We can't view a generation if we haven't loaded a simulation.
+            m_errorString = "Cannot view.\nNo simulation is loaded.";
+            m_showErrorWindow = true;
+        }
     }
 
     void AddTree(Vector3 position, int treeSpecies, int age)
@@ -813,29 +838,27 @@ public class TreePlanterScript : MonoBehaviour
         yield return m_www;
         if (m_www.isDone)
         {
-            m_debugString += "WWW read isDone\n";
+            //m_debugString += "WWW read isDone\n";
             bool unpackSuccess = UnpackParameters();
             if (unpackSuccess)
             {
-                m_debugString += "Unpacked success\n";
+                //m_debugString += "Unpacked success\n";
                 DeleteAllTrees();
                 RunSimulation();
-                m_debugString += "RunSimulation success\n";
+                //m_debugString += "RunSimulation success\n";
                 m_countLogString = GetCountLogData(false);
                 m_ageLogString = GetAgeLogData(false);
                 VisualizeGeneration(0);
-                m_debugString += "VisualizeGeneration success\n";
+                //m_debugString += "VisualizeGeneration success\n";
                 m_chosenGeneration = m_displayedGeneration.ToString();
                 m_chosenSimulationId = m_simulationId;
-            }
-            else
-            {
-                m_debugString += "Unpack fail\n";
             }
         }
         else
         {
-            m_debugString += "WWW not isDone\n";
+            //m_debugString += "WWW not isDone\n";
+            m_errorString = "Unable to retrieve settings.\nWWW read failed?";
+            m_showErrorWindow = true;
         }
     }
 
@@ -847,93 +870,113 @@ public class TreePlanterScript : MonoBehaviour
         try
         {
             reader = new XmlTextReader(new System.IO.StringReader(m_www.text));
-            m_debugString += "opened stream\n";
+            //m_debugString += "opened stream\n";
             reader.WhitespaceHandling = WhitespaceHandling.Significant;
         }
         catch
         {
+            m_errorString = "Unable to retrieve settings.\nCould not open xml stream?";
+            m_showErrorWindow = true;
             return false;
         }
-        while (reader.Read())
+        try
         {
-            if (reader.Name == "property")
+            while (reader.Read())
             {
-                string parameterName = reader.GetAttribute("name");
-                string parameterValue = reader.ReadString();
-                newParameters.Add(parameterName, parameterValue);
+                if (reader.Name == "property")
+                {
+                    string parameterName = reader.GetAttribute("name");
+                    string parameterValue = reader.ReadString();
+                    newParameters.Add(parameterName, parameterValue);
+                }
             }
         }
-        m_simulationId = newParameters["id"];
-        int waterLevelCode = System.Int32.Parse(newParameters["water_level"]);
-        m_waterLevel = m_convertWaterLevel[waterLevelCode];
-        int lightLevelCode = System.Int32.Parse(newParameters["light_level"]);
-        m_lightLevel = m_convertLightLevel[lightLevelCode];
-        int temperatureLevelCode = System.Int32.Parse(newParameters["temperature_level"]);
-        m_temperatureLevel = m_convertTemperatureLevel[temperatureLevelCode];
-        string[] speciesList = newParameters["plant_types"].Split(',');
-        for (int i = 1; i<6; i++) //Start at index 1 so index 0 stays "None" to represent gaps
+        catch
         {
-            m_speciesList[i] = System.Int32.Parse(speciesList[i - 1]);
+            m_errorString = "Unable to retrieve settings.\nUnrecognized simulation ID or no connection to webapp?";
+            m_showErrorWindow = true;
+            return false;
         }
-        GenerateReplacementMatrix();
-        int ongoingDisturbanceCode = System.Int32.Parse(newParameters["disturbance_level"]);
-        m_ongoingDisturbanceRate = m_convertDisturbance[ongoingDisturbanceCode];
-        char[]startingPlants = newParameters["starting_matrix"].ToCharArray();
-        m_cellStatus = new int[m_generations, m_xCells, m_zCells];
-        m_permanentDisturbanceMap = new bool[m_xCells, m_zCells];
-        m_age = new int[m_generations, m_xCells, m_zCells];
-        m_totalSpeciesCounts = new int[m_generations, 6];
-        m_averageSpeciesAges = new float[m_generations, 6];
-        m_cellPositions = new Vector3[m_xCells, m_zCells];
-        for (int z=0; z<m_zCells; z++)
+        try
         {
-            for (int x=0; x<m_xCells; x++)
+            m_simulationId = newParameters["id"];
+            int waterLevelCode = System.Int32.Parse(newParameters["water_level"]);
+            m_waterLevel = m_convertWaterLevel[waterLevelCode];
+            int lightLevelCode = System.Int32.Parse(newParameters["light_level"]);
+            m_lightLevel = m_convertLightLevel[lightLevelCode];
+            int temperatureLevelCode = System.Int32.Parse(newParameters["temperature_level"]);
+            m_temperatureLevel = m_convertTemperatureLevel[temperatureLevelCode];
+            string[] speciesList = newParameters["plant_types"].Split(',');
+            for (int i = 1; i<6; i++) //Start at index 1 so index 0 stays "None" to represent gaps
             {
-                //Randomize about the cell position a bit
-                //Coordinates for trees on the terrain range from 0-1.0
-                //To evenly space trees on each axis we need to divide 1.0 by
-                //the number of x or z cells
-                Vector3 position = new Vector3(x * (1.0f / m_xCells) + Random.Range(-0.01f, 0.01f),
-                                               0.0f,
-                                               z * (1.0f / m_zCells) + Random.Range(-0.01f, 0.01f));
-                //Store the coordinates of each position so we don't have to recalculate them
-                m_cellPositions[x, z] = position;
-                int newSpecies;
-                //The world has a 100x100 matrix of plants but the form to control it
-                //is only 50x50 so we need to make a conversion
-                int startingMatrixCell = ((z/2) * (m_xCells/2)) + (x/2);
-                if (startingPlants[startingMatrixCell] == 'R')
+                m_speciesList[i] = System.Int32.Parse(speciesList[i - 1]);
+            }
+            GenerateReplacementMatrix();
+            int ongoingDisturbanceCode = System.Int32.Parse(newParameters["disturbance_level"]);
+            m_ongoingDisturbanceRate = m_convertDisturbance[ongoingDisturbanceCode];
+            char[]startingPlants = newParameters["starting_matrix"].ToCharArray();
+            m_cellStatus = new int[m_generations, m_xCells, m_zCells];
+            m_permanentDisturbanceMap = new bool[m_xCells, m_zCells];
+            m_age = new int[m_generations, m_xCells, m_zCells];
+            m_totalSpeciesCounts = new int[m_generations, 6];
+            m_averageSpeciesAges = new float[m_generations, 6];
+            m_cellPositions = new Vector3[m_xCells, m_zCells];
+            for (int z=0; z<m_zCells; z++)
+            {
+                for (int x=0; x<m_xCells; x++)
                 {
-                    //Randomly select the plant type
-                    newSpecies = Random.Range(0,6);
-                    m_cellStatus[0, x, z] = newSpecies;
-                    if (newSpecies != 0)
+                    //Randomize about the cell position a bit
+                    //Coordinates for trees on the terrain range from 0-1.0
+                    //To evenly space trees on each axis we need to divide 1.0 by
+                    //the number of x or z cells
+                    Vector3 position = new Vector3(x * (1.0f / m_xCells) + Random.Range(-0.01f, 0.01f),
+                                                   0.0f,
+                                                   z * (1.0f / m_zCells) + Random.Range(-0.01f, 0.01f));
+                    //Store the coordinates of each position so we don't have to recalculate them
+                    m_cellPositions[x, z] = position;
+                    int newSpecies;
+                    //The world has a 100x100 matrix of plants but the form to control it
+                    //is only 50x50 so we need to make a conversion
+                    int startingMatrixCell = ((z/2) * (m_xCells/2)) + (x/2);
+                    if (startingPlants[startingMatrixCell] == 'R')
                     {
-                        m_age[0, x, z] = Random.Range(0, m_lifespans[m_speciesList[newSpecies]] / 3);
+                        //Randomly select the plant type
+                        newSpecies = Random.Range(0,6);
+                        m_cellStatus[0, x, z] = newSpecies;
+                        if (newSpecies != 0)
+                        {
+                            m_age[0, x, z] = Random.Range(0, m_lifespans[m_speciesList[newSpecies]] / 3);
+                        }
+                        else
+                        {
+                            m_age[0, x, z] = 0;
+                        }
+                        m_totalSpeciesCounts[0, newSpecies]++;
+                    }
+                    else if (startingPlants[startingMatrixCell] == 'N')
+                    {
+                        //Permanent gap
+                        m_cellStatus[0, x, z] = 0;
+                        m_permanentDisturbanceMap[x, z] = true;
                     }
                     else
                     {
-                        m_age[0, x, z] = 0;
+                        //A numbered plant type (or a gap for 0)
+                        newSpecies = System.Int32.Parse(startingPlants[startingMatrixCell].ToString());
+                        m_cellStatus[0, x, z] = newSpecies;
+                        m_age[0, x, z] = Random.Range(0, m_lifespans[m_speciesList[newSpecies]] / 3);
+                        m_totalSpeciesCounts[0, newSpecies]++;
                     }
-                    m_totalSpeciesCounts[0, newSpecies]++;
-                }
-                else if (startingPlants[startingMatrixCell] == 'N')
-                {
-                    //Permanent gap
-                    m_cellStatus[0, x, z] = 0;
-                    m_permanentDisturbanceMap[x, z] = true;
-                }
-                else
-                {
-                    //A numbered plant type (or a gap for 0)
-                    newSpecies = System.Int32.Parse(startingPlants[startingMatrixCell].ToString());
-                    m_cellStatus[0, x, z] = newSpecies;
-                    m_age[0, x, z] = Random.Range(0, m_lifespans[m_speciesList[newSpecies]] / 3);
-                    m_totalSpeciesCounts[0, newSpecies]++;
                 }
             }
+            return true;
         }
-        return true;
+        catch
+        {
+            m_errorString = "Unable to retrieve settings.\nError in settings string from webapp?";
+            m_showErrorWindow = true;
+            return false;
+        }
     }
 
     void GenerateReplacementMatrix()
