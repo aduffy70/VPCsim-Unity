@@ -225,7 +225,7 @@ public class TreePlanterScript : MonoBehaviour
     WWW m_www; //Stores xml data downloaded from the web
     bool m_showDebugWindow = false; //Whether to display the window with debug messages
     Rect m_debugWindow = new Rect(300, 10, 400, 400);
-    string m_currentDataString = "";
+    string m_currentDataString = "Not Available.\nLoad a simulation.";
     //Convert values from the webapp to numbers the simulation can use
     //Ongoing disturbance values - None, Very Low, Low, High, Very High
     float[] m_convertDisturbance = new float[5] {0f, 0.01f, 0.03f, 0.1f, 0.25f};
