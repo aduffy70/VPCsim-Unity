@@ -282,53 +282,53 @@ public class TreePlanterScript : MonoBehaviour
                                      new GUIContent("Load",
                                      "Load new ecosystem parameters"));
         //Buttons to move between simulation steps
-        GUI.Box(new Rect(5, 115, 165, 75), "Time view");
-        bool firstButton = GUI.Button(new Rect (10, 140, 23, 20),
+        GUI.Box(new Rect(5, 110, 165, 75), "Time view");
+        bool firstButton = GUI.Button(new Rect (10, 135, 23, 20),
                                       new GUIContent("[<",
                                       "First year"));
-        bool reverse10Button = GUI.Button(new Rect (36, 140, 26, 20),
+        bool reverse10Button = GUI.Button(new Rect (36, 135, 26, 20),
                                           new GUIContent("<<",
                                           "Skip backward 10 years"));
-        bool reverseButton = GUI.Button(new Rect (65, 140, 21, 20),
+        bool reverseButton = GUI.Button(new Rect (65, 135, 21, 20),
                                         new GUIContent("<",
                                         "Previous year"));
-        bool forwardButton = GUI.Button(new Rect (89, 140, 21, 20),
+        bool forwardButton = GUI.Button(new Rect (89, 135, 21, 20),
                                         new GUIContent(">",
                                         "Next year"));
-        bool forward10Button = GUI.Button(new Rect (113, 140, 26, 20),
+        bool forward10Button = GUI.Button(new Rect (113, 135, 26, 20),
                                           new GUIContent(">>",
                                           "Skip forward 10 years"));
-        bool lastButton = GUI.Button(new Rect (142, 140, 23, 20),
+        bool lastButton = GUI.Button(new Rect (142, 135, 23, 20),
                                      new GUIContent(">]",
                                      "Last year"));
-        GUI.Label(new Rect(10, 165, 35, 20), "Year:");
-        m_chosenGeneration = GUI.TextField(new Rect(42, 165, 40, 20),
+        GUI.Label(new Rect(10, 160, 35, 20), "Year:");
+        m_chosenGeneration = GUI.TextField(new Rect(42, 160, 40, 20),
                                            m_chosenGeneration, 4);
-        GUI.Label(new Rect(83, 165, 35, 20), "/ " + (m_generations - 1).ToString());
-        bool goButton = GUI.Button(new Rect(125, 165, 40, 20),
+        GUI.Label(new Rect(83, 160, 35, 20), "/ " + (m_generations - 1).ToString());
+        bool goButton = GUI.Button(new Rect(125, 160, 40, 20),
                                    new GUIContent("Go",
                                    "View the selected year"));
         //Buttons to display log data or plots
-        GUI.Box(new Rect(5, 200, 165, 215), "Data");
-        GUI.Label(new Rect(10, 225, 135, 100), m_currentDataString);
-        GUI.Label(new Rect(10, 330, 35, 20), "Plots:");
-        bool countPlotButton = GUI.Button(new Rect(10, 350, 46, 20),
+        GUI.Box(new Rect(5, 190, 165, 215), "Data");
+        GUI.Label(new Rect(10, 215, 135, 100), m_currentDataString);
+        GUI.Label(new Rect(10, 320, 35, 20), "Plots:");
+        bool countPlotButton = GUI.Button(new Rect(10, 340, 46, 20),
                                      new GUIContent("Count",
                                      "Show species count plots"));
-        bool agePlotButton = GUI.Button(new Rect(58, 350, 38, 20),
+        bool agePlotButton = GUI.Button(new Rect(58, 340, 38, 20),
                                      new GUIContent("Age",
                                      "Show average age plots"));
-        bool biomassPlotButton = GUI.Button(new Rect(98, 350, 66, 20),
+        bool biomassPlotButton = GUI.Button(new Rect(98, 340, 66, 20),
                                      new GUIContent("Biomass",
                                      "Show biomass plots"));
-        GUI.Label(new Rect(10, 370, 35, 20), "Logs:");
-        bool countLogButton = GUI.Button(new Rect(10, 390, 46, 20),
+        GUI.Label(new Rect(10, 360, 35, 20), "Logs:");
+        bool countLogButton = GUI.Button(new Rect(10, 380, 46, 20),
                                     new GUIContent("Count",
                                     "Show species count log data"));
-        bool ageLogButton = GUI.Button(new Rect(58, 390, 38, 20),
+        bool ageLogButton = GUI.Button(new Rect(58, 380, 38, 20),
                                      new GUIContent("Age",
                                      "Show average age log data"));
-        bool biomassLogButton = GUI.Button(new Rect(98, 390, 66, 20),
+        bool biomassLogButton = GUI.Button(new Rect(98, 380, 66, 20),
                                      new GUIContent("Biomass",
                                      "Show biomass log data"));
         //Button to display debug messages - TODO: Remove?  This is not for students.

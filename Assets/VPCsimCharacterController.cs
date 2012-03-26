@@ -35,6 +35,17 @@ public class VPCsimCharacterController : MonoBehaviour
     					  "    Arrow keys  -  North / South / West / East\n" +
     					  "    e / x  -  Increase / Decrease Height Above Terrain (HAT)\n" +
     					  "    q / z  -  Speed up / Slow down";
+    //Compass related variables
+    public Texture2D m_compassRose;
+    public Texture2D m_compassMarker;
+    float m_compassRadius = 20f;
+    Vector2 m_compassCenter = new Vector2(125, 570);
+    Vector2 m_compassSize = new Vector2(40, 40);
+    Vector2 m_compassMarkerSize = new Vector2(9, 9);
+    float m_cameraRot;
+    float m_compassMarkerX;
+    float m_compassMarkerY;
+    Rect m_compassRect;
 
 
 	// Use this for initialization
@@ -47,6 +58,11 @@ public class VPCsimCharacterController : MonoBehaviour
 			rigidbody.freezeRotation = true;
 			rigidbody.useGravity = true;
 		}
+        //Set up GUI location for compass. Calculate it here so we don't redo it every GUI cycle
+        m_compassRect = new Rect(m_compassCenter.x - m_compassSize.x / 2,
+                                 m_compassCenter.y - m_compassSize.y / 2,
+                                 m_compassSize.x,
+                                 m_compassSize.y);
 	}
 
 	// Update is called once per frame
@@ -129,43 +145,43 @@ public class VPCsimCharacterController : MonoBehaviour
 	{
 		Vector3 position = transform.position;
 		int displayedSpeed = ((int)m_speed / 10) + 1;
-		GUI.Box(new Rect(5, 430, 165, 135), "Movement");
-		GUI.Label(new Rect(10, 450, 150, 20), "Mode: " + m_movementMode);
+		GUI.Box(new Rect(5, 410, 165, 130), "Movement");
+		GUI.Label(new Rect(10, 430, 150, 20), "Mode: " + m_movementMode);
 		bool walkButton = false;
 		bool flyButton = false;
 		bool samplingButton = false;
 		bool homeButton = false;
 		if (m_movementMode != "Walking...")
 		{
-			walkButton = GUI.Button(new Rect(10, 470, 44, 20), new GUIContent("Walk",
+			walkButton = GUI.Button(new Rect(10, 450, 44, 20), new GUIContent("Walk",
 									"Enter 'Walking' mode"));
 		}
 		if (m_movementMode != "Flying..." )
 		{
-			flyButton = GUI.Button(new Rect(59, 470, 42, 20), new GUIContent("Fly",
+			flyButton = GUI.Button(new Rect(59, 450, 42, 20), new GUIContent("Fly",
 								   "Enter 'Flying' mode"));
 		}
 		if (m_movementMode != "Sampling...")
 		{
-			samplingButton = GUI.Button(new Rect(107, 470, 57, 20), new GUIContent("Sample",
+			samplingButton = GUI.Button(new Rect(107, 450, 57, 20), new GUIContent("Sample",
 										"Enter 'Sampling' mode"));
-			homeButton = GUI.Button(new Rect(90, 535, 75, 20), new GUIContent("Go home",
+			homeButton = GUI.Button(new Rect(90, 515, 75, 20), new GUIContent("Go home",
 									"Return to the starting position"));
 		}
 		else
 		{
-			GUI.Label(new Rect(100, 495, 130, 50), "\nHAT: " + ((int)m_distanceToGround).ToString() + "m");
+			GUI.Label(new Rect(100, 475, 130, 50), "\nHAT: " + ((int)m_distanceToGround).ToString() + "m");
 		}
-		GUI.Label(new Rect(10, 535, 100, 25), "Speed: " + displayedSpeed.ToString());
-		GUI.Label(new Rect(10, 495, 145, 50), "Position: N" + ((int)position.z).ToString() + "  E" +
+		GUI.Label(new Rect(10, 515, 100, 25), "Speed: " + displayedSpeed.ToString());
+		GUI.Label(new Rect(10, 475, 145, 50), "Position: N" + ((int)position.z).ToString() + "  E" +
                                               ((int)position.x).ToString() +
 											  "\nAltitude: " + ((int)position.y).ToString() + "m");
-		bool helpButton = GUI.Button(new Rect(10, 575, 60, 20), new GUIContent("Help", "Movement instructions"));
+		bool helpButton = GUI.Button(new Rect(10, 555, 60, 20), new GUIContent("Help", "Movement instructions"));
 		if (!System.String.IsNullOrEmpty(GUI.tooltip))
 		{
-        	GUI.Box(new Rect(175 , 450, 185, 20),"");
+        	GUI.Box(new Rect(175 , 430, 185, 20),"");
 		}
-		GUI.Label(new Rect(180, 450, 210, 20), GUI.tooltip);
+		GUI.Label(new Rect(180, 430, 210, 20), GUI.tooltip);
 		if (walkButton)
 		{
 			m_movementMode = "Walking...";
@@ -195,6 +211,14 @@ public class VPCsimCharacterController : MonoBehaviour
             //Show or hide the help message window
             m_showHelpWindow = !m_showHelpWindow;
         }
+        //Calculate and display compass
+        m_cameraRot = (-90 + transform.eulerAngles.y)* Mathf.Deg2Rad;
+        m_compassMarkerX = m_compassRadius * Mathf.Cos(m_cameraRot);
+        m_compassMarkerY = m_compassRadius * Mathf.Sin(m_cameraRot);
+        GUI.DrawTexture(m_compassRect, m_compassRose);
+        GUI.DrawTexture(new Rect(m_compassCenter.x + m_compassMarkerX - m_compassMarkerSize.x / 2,
+                                 m_compassCenter.y + m_compassMarkerY - m_compassMarkerSize.y/2,
+                                 m_compassMarkerSize.x, m_compassMarkerSize.y), m_compassMarker);
 	}
 
 	void DisplayHelpWindow(int windowID)
