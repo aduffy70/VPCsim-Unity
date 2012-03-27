@@ -757,26 +757,22 @@ public class TreePlanterScript : MonoBehaviour
         if (isForPlotting)
         {
             //Generate string for sending out for plotting
-            logDataBuilder.Append("\"year,Gaps,");
+            logDataBuilder.Append("\"year,");
             for (int i=1; i<6; i++)
             {
-                logDataBuilder.Append(m_prototypeNames[m_speciesList[i]]);
-                if (i != 5)
-                {
-                    logDataBuilder.Append(",");
-                }
+                logDataBuilder.Append(m_prototypeNames[m_speciesList[i]] + ",");
             }
-            logDataBuilder.Append("\\\n\" + ");
+            logDataBuilder.Append("Gaps\\\n\" + ");
             for(int generation=0; generation<m_generations; generation++)
             {
                 logDataBuilder.Append("\"");
                 logDataBuilder.Append(generation.ToString() + ',');
-                logDataBuilder.Append(m_totalSpeciesCounts[generation, 0].ToString() + ",");
                 logDataBuilder.Append(m_totalSpeciesCounts[generation, 1].ToString() + ",");
                 logDataBuilder.Append(m_totalSpeciesCounts[generation, 2].ToString() + ",");
                 logDataBuilder.Append(m_totalSpeciesCounts[generation, 3].ToString() + ",");
                 logDataBuilder.Append(m_totalSpeciesCounts[generation, 4].ToString() + ",");
-                logDataBuilder.Append(m_totalSpeciesCounts[generation, 5].ToString() + "\\\n\"");
+                logDataBuilder.Append(m_totalSpeciesCounts[generation, 5].ToString() + ",");
+                logDataBuilder.Append(m_totalSpeciesCounts[generation, 0].ToString() + "\\\n\"");
                 if (generation != m_generations - 1)
                 {
                     logDataBuilder.Append(" + ");
@@ -786,25 +782,21 @@ public class TreePlanterScript : MonoBehaviour
         else
         {
             //Generate string for displaying to humans
-            logDataBuilder.Append("Year, Gaps, ");
+            logDataBuilder.Append("Year, ");
             for (int i=1; i<6; i++)
             {
-                logDataBuilder.Append(m_prototypeNames[m_speciesList[i]]);
-                if (i != 5)
-                {
-                    logDataBuilder.Append(", ");
-                }
+                logDataBuilder.Append(m_prototypeNames[m_speciesList[i]] + ", ");
             }
-            logDataBuilder.Append("\n");
+            logDataBuilder.Append(" Gaps\n");
             for(int generation=0; generation<m_generations; generation++)
             {
                 logDataBuilder.Append(generation.ToString() + ", ");
-                logDataBuilder.Append(m_totalSpeciesCounts[generation, 0].ToString() + ", ");
                 logDataBuilder.Append(m_totalSpeciesCounts[generation, 1].ToString() + ", ");
                 logDataBuilder.Append(m_totalSpeciesCounts[generation, 2].ToString() + ", ");
                 logDataBuilder.Append(m_totalSpeciesCounts[generation, 3].ToString() + ", ");
                 logDataBuilder.Append(m_totalSpeciesCounts[generation, 4].ToString() + ", ");
-                logDataBuilder.Append(m_totalSpeciesCounts[generation, 5].ToString());
+                logDataBuilder.Append(m_totalSpeciesCounts[generation, 5].ToString() + ", ");
+                logDataBuilder.Append(m_totalSpeciesCounts[generation, 0].ToString());
                 if (generation != m_generations - 1)
                 {
                     logDataBuilder.Append("\n");
