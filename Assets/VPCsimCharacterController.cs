@@ -26,7 +26,7 @@ public class VPCsimCharacterController : MonoBehaviour
 	float m_sampleHeight = 50f;
     //Whether to display the window with movement instructions
 	bool m_showHelpWindow = true;
-    Rect m_helpWindow = new Rect(250, 110, 400, 255);
+    Rect m_helpWindow = new Rect(285, 175, 400, 255);
     string m_helpString = "\n\t\t\t\t\t\t\t** Movement Instructions **\n\n" +
     					  "Walk and Fly modes:\n" +
     					  "    Arrow keys  -  Forward / Back / Turn left / Turn right\n" +
@@ -225,7 +225,7 @@ public class VPCsimCharacterController : MonoBehaviour
 
 	void DisplayHelpWindow(int windowID)
     {
-    	if (GUI.Button(new Rect(330,230,50,20), "Close"))
+    	if (GUI.Button(new Rect(175,230,50,20), "OK"))
         {
             m_showHelpWindow = !m_showHelpWindow;
         }

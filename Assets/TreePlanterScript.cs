@@ -267,8 +267,8 @@ public class TreePlanterScript : MonoBehaviour
     //Whether to display the window with biomass log data
     bool m_showBiomassLogWindow = false;
     Rect m_countLogWindow = new Rect(200, 5, 400, 400);
-    Rect m_ageLogWindow = new Rect(210, 5, 400, 400);
-    Rect m_biomassLogWindow = new Rect(210, 5, 400, 400);
+    Rect m_ageLogWindow = new Rect(230, 30, 400, 400);
+    Rect m_biomassLogWindow = new Rect(260, 55, 400, 400);
     //Base URL of parameter webapp
     string m_parameterPath = "http://vpcsim.appspot.com";
     //string m_debugString = ""; //Debug errors to display on the HUD
@@ -279,7 +279,7 @@ public class TreePlanterScript : MonoBehaviour
     string m_currentDataString = "Not Available.\nLoad a simulation.";
     //Whether to display the window with error messages
     bool m_showErrorWindow = false;
-    Rect m_errorWindow = new Rect(250, 110, 250, 150);
+    Rect m_errorWindow = new Rect(360, 250, 250, 150);
     string m_errorString = "";
     //Convert values from the webapp to numbers the simulation can use
     //Ongoing disturbance values - None, Very Low, Low, High, Very High
@@ -395,17 +395,17 @@ public class TreePlanterScript : MonoBehaviour
         if (m_showCountLogWindow)
         {
             //Setup species count log data window
-            m_countLogWindow = GUI.Window(0, m_countLogWindow, DisplayCountLogWindow, "Species Counts");
+            m_countLogWindow = GUI.Window(1, m_countLogWindow, DisplayCountLogWindow, "Species Counts");
         }
         if (m_showAgeLogWindow)
         {
             //Setup age log data window
-            m_ageLogWindow = GUI.Window(0, m_ageLogWindow, DisplayAgeLogWindow, "Average Ages");
+            m_ageLogWindow = GUI.Window(2, m_ageLogWindow, DisplayAgeLogWindow, "Average Ages");
         }
         if (m_showBiomassLogWindow)
         {
             //Setup biomass log data window
-            m_biomassLogWindow = GUI.Window(0, m_biomassLogWindow, DisplayBiomassLogWindow, "Species Biomass");
+            m_biomassLogWindow = GUI.Window(3, m_biomassLogWindow, DisplayBiomassLogWindow, "Species Biomass");
         }
         if (countLogButton)
         {
@@ -431,12 +431,13 @@ public class TreePlanterScript : MonoBehaviour
         //if (m_showDebugWindow)
         //{
         //    //Setup the debug message window
-        //    m_debugWindow = GUI.Window(0, m_debugWindow, DisplayDebugWindow, "Debug");
+        //    m_debugWindow = GUI.Window(5, m_debugWindow, DisplayDebugWindow, "Debug");
         //}
         if (m_showErrorWindow)
         {
             //Setup the error message window
-            m_errorWindow = GUI.Window(0, m_errorWindow, DisplayErrorWindow, "***  Error!  ***");
+            m_errorWindow = GUI.Window(4, m_errorWindow, DisplayErrorWindow, "***  Error!  ***");
+            GUI.BringWindowToFront(4);
         }
         //if (debugButton)
         //{
