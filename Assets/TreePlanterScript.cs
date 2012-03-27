@@ -89,6 +89,36 @@ public class TreePlanterScript : MonoBehaviour
                                         25,
                                         25,
                                         25};
+    //The biomass of a newly established (age=0) individual of each prototype
+    float[] m_baseBiomass = new float[14] {   100f,
+                                            100f,
+                                            100f,
+                                            100f,
+                                            100f,
+                                            100f,
+                                            100f,
+                                            100f,
+                                            100f,
+                                            100f,
+                                            100f,
+                                            100f,
+                                            100f,
+                                            100f};
+    //The amount of biomass increase per year at maximum health for each prototype
+    float[] m_biomassIncrease = new float[14] { 10f,
+                                                10f,
+                                                10f,
+                                                10f,
+                                                10f,
+                                                10f,
+                                                10f,
+                                                10f,
+                                                10f,
+                                                10f,
+                                                10f,
+                                                10f,
+                                                10f,
+                                                10f};
     //Optimal values and shape parameters for each prototype
     float[] m_altitudeOptimums = new float[14] {35f,
                                                 35f,
@@ -210,12 +240,16 @@ public class TreePlanterScript : MonoBehaviour
     //Number of x and z cells (horizontal plane is xz in Unity3D)
     int m_xCells = 100;
     int m_zCells = 100;
-    //Tracks the age of each plant in each generation.
+    //Tracks the age of each plant in each generation
     int[,,] m_age;
+    //Tracks the biomass of each plant in each generation
+    float[,,] m_biomass;
     //Total species counts for each generation.
     int[,] m_totalSpeciesCounts;
     //Species average ages for each generation
     float[,] m_averageSpeciesAges;
+    //Species total biomass for each generation
+    float[,] m_totalSpeciesBiomass;
     //Keeps track of the region coordinates where each plant will be placed.
     Vector3[,] m_cellPositions;
     //Which generation number is currently visualized
@@ -1036,8 +1070,10 @@ public class TreePlanterScript : MonoBehaviour
         GenerateReplacementMatrix();
         m_cellStatus = new int[m_generations, m_xCells, m_zCells];
         m_age = new int[m_generations, m_xCells, m_zCells];
+        m_biomass = new float[m_generations, m_xCells, m_zCells];
         m_totalSpeciesCounts = new int[m_generations, 6];
         m_averageSpeciesAges = new float[m_generations, 6];
+        m_totalSpeciesBiomass = new float[m_generations, 6];
         m_cellPositions = new Vector3[m_xCells, m_zCells];
         //Make a default disturbance map with no permanent disturbances
         m_permanentDisturbanceMap = new bool[m_xCells, m_zCells];
@@ -1062,15 +1098,23 @@ public class TreePlanterScript : MonoBehaviour
                 //dieoff early in the simulation, but skew the distribution
                 //of ages downward or we will start with a dieoff because a
                 //random selection of ages has many more old ages than expected.
+                //Also assign a random health so we can calculate a starting biomass.
                 if (newSpecies != 0)
                 {
-                    int age = Random.Range(0, m_lifespans[m_speciesList[newSpecies]] / 3);
+                    int prototypeIndex = m_speciesList[newSpecies];
+                    int age = Random.Range(0, m_lifespans[prototypeIndex] / 3);
                     m_age[0, x, z] = age;
                     speciesAgeSums[newSpecies] = speciesAgeSums[newSpecies] + age;
+                    float randomHealth = (float)m_random.NextDouble();
+                    float biomass = (m_baseBiomass[prototypeIndex] +
+                                     (age * randomHealth * m_biomassIncrease[prototypeIndex]));
+                    m_biomass[0, x, z] = biomass;
+                    m_totalSpeciesBiomass[0, newSpecies] += biomass;
                 }
                 else
                 {
                     m_age[0, x, z] = 0;
+                    m_biomass[0, x, z] = 0;
                 }
                 m_totalSpeciesCounts[0, newSpecies]++;
             }
@@ -1123,7 +1167,9 @@ public class TreePlanterScript : MonoBehaviour
                             //This will be a gap because it was decided by the ongoing disturbance rate
                             m_cellStatus[nextGeneration, x, z] = 0;
                             m_totalSpeciesCounts[nextGeneration, 0]++;
-                            m_age[nextGeneration, x, z] = 0; //We don't track the age of gaps
+                            //We don't track the age of gaps and gaps have no biomass
+                            m_age[nextGeneration, x, z] = 0;
+                            m_biomass[nextGeneration, x, z] = 0;
                         }
                         else
                         {
@@ -1131,10 +1177,22 @@ public class TreePlanterScript : MonoBehaviour
                             int[] neighborSpeciesCounts = GetNeighborSpeciesCounts(x, z, rowabove,
                                                                                    rowbelow, colright,
                                                                                    colleft, generation);
-                            //Determine plant survival based on age and environment
-                            bool plantSurvives = CalculateSurvival(currentSpecies,
-                                                                   m_age[generation, x, z],
-                                                                   m_cellPositions[x, z]);
+                            //Determine plant health and survival based on age and environment
+                            float health;
+                            bool plantSurvives;
+                            if (currentSpecies == 0)
+                            {
+                                //gaps don't have health or survival ability
+                                health = 0f;
+                                plantSurvives = false;
+                            }
+                            else
+                            {
+                                health = CalculateHealth(currentSpecies,
+                                                         m_age[generation, x, z],
+                                                         m_cellPositions[x, z]);
+                                plantSurvives = CalculateSurvival(health);
+                            }
                             if (plantSurvives)
                             {
                                 //Calculate replacement probabilities based on current plant
@@ -1153,6 +1211,11 @@ public class TreePlanterScript : MonoBehaviour
                                     m_cellStatus[nextGeneration, x, z] = currentSpecies;
                                     m_totalSpeciesCounts[nextGeneration, currentSpecies]++;
                                     speciesAgeSums[currentSpecies] = speciesAgeSums[currentSpecies] + age;
+                                    int prototypeIndex = m_speciesList[currentSpecies];
+                                    float newBiomass = m_biomassIncrease[prototypeIndex] * health;
+                                    float currentBiomass = newBiomass + m_biomass[generation, x, z];
+                                    m_biomass[nextGeneration, x, z] = currentBiomass;
+                                    m_totalSpeciesBiomass[nextGeneration, currentSpecies] += currentBiomass;
                                 }
                                 else
                                 {
@@ -1161,6 +1224,10 @@ public class TreePlanterScript : MonoBehaviour
                                     m_age[nextGeneration, x, z] = 0;
                                     m_cellStatus[nextGeneration, x, z] = newSpecies;
                                     m_totalSpeciesCounts[nextGeneration, newSpecies]++;
+                                    int prototypeIndex = m_speciesList[currentSpecies];
+                                    float newBiomass = m_baseBiomass[prototypeIndex];
+                                    m_biomass[nextGeneration, x, z] = newBiomass;
+                                    m_totalSpeciesBiomass[nextGeneration, currentSpecies] += newBiomass;
                                 }
                             }
                             else
@@ -1174,15 +1241,19 @@ public class TreePlanterScript : MonoBehaviour
                                 int newSpecies = SelectNextGenerationSpecies(replacementProbability, 0);
                                 if (newSpecies == -1)
                                 {
-                                    //No new plant was selected.  It will still be a gap.
+                                    //No new plant was selected.  It will still be a gap. Age and biomass stay zero.
                                     m_cellStatus[nextGeneration, x, z] = 0;
                                     m_totalSpeciesCounts[nextGeneration, 0]++;
                                 }
                                 else
                                 {
-                                    //Store the new plant status and update the total species counts
+                                    //Store the new plant status and update the total species counts. Age stays zero.
                                     m_cellStatus[nextGeneration, x, z] = newSpecies;
                                     m_totalSpeciesCounts[nextGeneration, newSpecies]++;
+                                    int prototypeIndex = m_speciesList[newSpecies];
+                                    float newBiomass = m_baseBiomass[prototypeIndex];
+                                    m_biomass[nextGeneration, x, z] = newBiomass;
+                                    m_totalSpeciesBiomass[nextGeneration, newSpecies] += newBiomass;
                                 }
                             }
                         }
@@ -1314,50 +1385,51 @@ public class TreePlanterScript : MonoBehaviour
         return disturbanceMatrix;
     }
 
-    bool CalculateSurvival(int species, int age, Vector3 coordinates)
+    float CalculateHealth(int species, int age, Vector3 coordinates)
+    {
+        //Returns a value from 1.0 healthy to 0.0 unhealthy representing the health of the
+        //plant (its probability of survival).
+        int prototypeIndex = m_speciesList[species];
+        //Generate a float from 0-1.0 representing the probability of
+        //survival based on plant age, altitude, water level, light level, and temperature level
+        float ageHealth = CalculateAgeHealth(age, m_lifespans[prototypeIndex]);
+        float altitudeHealth = CalculateAltitudeHealth(coordinates.y,
+                               m_altitudeOptimums[prototypeIndex],
+                               m_altitudeEffects[prototypeIndex]);
+        float waterHealth = CalculateHealth(m_waterLevel,
+                                            m_waterLevelOptimums[prototypeIndex],
+                                            m_waterLevelEffects[prototypeIndex]);
+        float lightHealth = CalculateHealth(m_lightLevel,
+                                            m_lightLevelOptimums[prototypeIndex],
+                                            m_lightLevelEffects[prototypeIndex]);
+        float temperatureHealth = CalculateHealth(m_temperatureLevel,
+                                                  m_temperatureLevelOptimums[prototypeIndex],
+                                                  m_temperatureLevelEffects[prototypeIndex]);
+        //Overall survival probability is the product of these separate survival probabilities
+        float survivalProbability = (ageHealth * altitudeHealth * waterHealth *
+                                     lightHealth * temperatureHealth);
+
+        return survivalProbability;
+    }
+
+    bool CalculateSurvival(float survivalProbability)
     {
         //Return true if the plant survives or false if it does not
-        //If there is no plant it can't possibly survive...
-        if (species == 0)
+        //Select a random float from 0-1.0.  Plant survives if
+        //random number <= probability of survival
+        float randomFloat = (float)m_random.NextDouble();
+        if (randomFloat <= survivalProbability)
         {
-            return false;
+            //Plant survives
+            return true;
         }
         else
         {
-            int prototypeIndex = m_speciesList[species];
-            //Generate a float from 0-1.0 representing the probability of
-            //survival based on plant age, altitude, water level, light level, and temperature level
-            float ageHealth = CalculateAgeHealth(age, m_lifespans[prototypeIndex]);
-            float altitudeHealth = CalculateAltitudeHealth(coordinates.y,
-                                   m_altitudeOptimums[prototypeIndex],
-                                   m_altitudeEffects[prototypeIndex]);
-            float waterHealth = CalculateHealth(m_waterLevel,
-                                                m_waterLevelOptimums[prototypeIndex],
-                                                m_waterLevelEffects[prototypeIndex]);
-            float lightHealth = CalculateHealth(m_lightLevel,
-                                                m_lightLevelOptimums[prototypeIndex],
-                                                m_lightLevelEffects[prototypeIndex]);
-            float temperatureHealth = CalculateHealth(m_temperatureLevel,
-                                                      m_temperatureLevelOptimums[prototypeIndex],
-                                                      m_temperatureLevelEffects[prototypeIndex]);
-            //Overall survival probability is the product of these separate survival probabilities
-            float survivalProbability = (ageHealth * altitudeHealth * waterHealth *
-                                         lightHealth * temperatureHealth);
-            //Select a random float from 0-1.0.  Plant survives if
-            //random number <= probability of survival
-            float randomFloat = (float)m_random.NextDouble();
-            if (randomFloat <= survivalProbability)
-            {
-                //Plant survives
-                return true;
-            }
-            else
-            {
-                //Plant does not survive
-                return false;
-            }
+            //Plant does not survive
+            return false;
         }
     }
+
 
     float CalculateAgeHealth(int actual, int maximumAge)
     {
