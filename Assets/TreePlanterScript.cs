@@ -259,12 +259,16 @@ public class TreePlanterScript : MonoBehaviour
     string m_chosenSimulationId = "";
     string m_countLogString = "";
     string m_ageLogString = "";
+    string m_biomassLogString = "";
     //Whether to display the window with species count log data
     bool m_showCountLogWindow = false;
     //Whether to display the window with age log data
     bool m_showAgeLogWindow = false;
+    //Whether to display the window with biomass log data
+    bool m_showBiomassLogWindow = false;
     Rect m_countLogWindow = new Rect(200, 5, 400, 400);
     Rect m_ageLogWindow = new Rect(210, 5, 400, 400);
+    Rect m_biomassLogWindow = new Rect(210, 5, 400, 400);
     //Base URL of parameter webapp
     string m_parameterPath = "http://vpcsim.appspot.com";
     //string m_debugString = ""; //Debug errors to display on the HUD
@@ -396,7 +400,12 @@ public class TreePlanterScript : MonoBehaviour
         if (m_showAgeLogWindow)
         {
             //Setup age log data window
-            m_countLogWindow = GUI.Window(0, m_ageLogWindow, DisplayAgeLogWindow, "Average Ages");
+            m_ageLogWindow = GUI.Window(0, m_ageLogWindow, DisplayAgeLogWindow, "Average Ages");
+        }
+        if (m_showBiomassLogWindow)
+        {
+            //Setup biomass log data window
+            m_biomassLogWindow = GUI.Window(0, m_biomassLogWindow, DisplayBiomassLogWindow, "Species Biomass");
         }
         if (countLogButton)
         {
@@ -409,6 +418,13 @@ public class TreePlanterScript : MonoBehaviour
         {
             //Show or hide the age log data window
             m_showAgeLogWindow = !m_showAgeLogWindow;
+            m_chosenGeneration = m_displayedGeneration.ToString();
+            GUI.FocusControl("focusBuster");
+        }
+        if (biomassLogButton)
+        {
+            //Show or hide the biomass log data window
+            m_showBiomassLogWindow = !m_showBiomassLogWindow;
             m_chosenGeneration = m_displayedGeneration.ToString();
             GUI.FocusControl("focusBuster");
         }
@@ -436,6 +452,7 @@ public class TreePlanterScript : MonoBehaviour
             RunSimulation();
             m_countLogString = GetCountLogData(false);
             m_ageLogString = GetAgeLogData(false);
+            m_biomassLogString = GetBiomassLogData(false);
             VisualizeGeneration(0);
             m_chosenGeneration = m_displayedGeneration.ToString();
             m_chosenSimulationId = m_simulationId;
@@ -584,6 +601,11 @@ public class TreePlanterScript : MonoBehaviour
             {
                 DisplayCountPlot();
             }
+            else
+            {
+                m_errorString = "Cannot view.\nNo simulation is loaded.";
+                m_showErrorWindow = true;
+            }
             GUI.FocusControl("focusBuster");
         }
         if (agePlotButton)
@@ -592,6 +614,25 @@ public class TreePlanterScript : MonoBehaviour
             if (m_simulationId != "none")
             {
                 DisplayAgePlot();
+            }
+            else
+            {
+                m_errorString = "Cannot view.\nNo simulation is loaded.";
+                m_showErrorWindow = true;
+            }
+            GUI.FocusControl("focusBuster");
+        }
+        if (biomassPlotButton)
+        {
+            //Display plots of species biomass
+            if (m_simulationId != "none")
+            {
+                DisplayBiomassPlot();
+            }
+            else
+            {
+                m_errorString = "Cannot view.\nNo simulation is loaded.";
+                m_showErrorWindow = true;
             }
             GUI.FocusControl("focusBuster");
         }
@@ -613,6 +654,15 @@ public class TreePlanterScript : MonoBehaviour
         //TODO - generate plots of other data types (biomass)
         string logData = GetAgeLogData(true);
         Application.ExternalCall("OpenAgePlotPage", m_simulationId, logData);
+    }
+
+     void DisplayBiomassPlot()
+    {
+        //Send species biomass logdata to the surrounding web page where it will be redirected to the webapp
+        //which will generate plots in a new browser window or tab.
+        //TODO - generate plots of other data types (biomass)
+        string logData = GetBiomassLogData(true);
+        Application.ExternalCall("OpenBiomassPlotPage", m_simulationId, logData);
     }
 
     void DisplayErrorWindow(int windowID)
@@ -651,6 +701,23 @@ public class TreePlanterScript : MonoBehaviour
         if (m_simulationId != "none")
         {
             GUI.TextArea(new Rect(5, 20, 390, 350), m_ageLogString);
+        }
+        else
+        {
+            GUI.TextArea(new Rect(5, 20, 390, 350), "No simulation loaded");
+        }
+        GUI.DragWindow();
+    }
+
+    void DisplayBiomassLogWindow(int windowID)
+    {
+        if (GUI.Button(new Rect(330,370,50,20), "Close"))
+        {
+            m_showBiomassLogWindow = !m_showBiomassLogWindow;
+        }
+        if (m_simulationId != "none")
+        {
+            GUI.TextArea(new Rect(5, 20, 390, 350), m_biomassLogString);
         }
         else
         {
@@ -745,7 +812,7 @@ public class TreePlanterScript : MonoBehaviour
             }
         }
         logData = logDataBuilder.ToString();
-        print(logData);
+        //print(logData);
         return logData;
     }
 
@@ -811,10 +878,78 @@ public class TreePlanterScript : MonoBehaviour
             }
         }
         logData = logDataBuilder.ToString();
-        print(logData);
+        //print(logData);
         return logData;
     }
 
+    string GetBiomassLogData(bool isForPlotting)
+    {
+        print("GettingLogData");
+        //Generates a string of log data suitable for either displaying to humans or
+        //for sending out for plotting
+        StringBuilder logDataBuilder = new StringBuilder();
+        string logData;
+        if (isForPlotting)
+        {
+            print("Logdata for plotting");
+            //Generate string for sending out for plotting
+            logDataBuilder.Append("\"year,");
+            for (int i=1; i<6; i++)
+            {
+                logDataBuilder.Append(m_prototypeNames[m_speciesList[i]]);
+                if (i != 5)
+                {
+                    logDataBuilder.Append(",");
+                }
+            }
+            logDataBuilder.Append("\\\n\" + ");
+            for(int generation=0; generation<m_generations; generation++)
+            {
+                logDataBuilder.Append("\"");
+                logDataBuilder.Append(generation.ToString() + ',');
+                logDataBuilder.Append(m_totalSpeciesBiomass[generation, 1].ToString() + ",");
+                logDataBuilder.Append(m_totalSpeciesBiomass[generation, 2].ToString() + ",");
+                logDataBuilder.Append(m_totalSpeciesBiomass[generation, 3].ToString() + ",");
+                logDataBuilder.Append(m_totalSpeciesBiomass[generation, 4].ToString() + ",");
+                logDataBuilder.Append(m_totalSpeciesBiomass[generation, 5].ToString() + "\\\n\"");
+                if (generation != m_generations - 1)
+                {
+                    logDataBuilder.Append(" + ");
+                }
+            }
+        }
+        else
+        {
+            print("Logdata for humans");
+            //Generate string for displaying to humans
+            logDataBuilder.Append("Year, ");
+            for (int i=1; i<6; i++)
+            {
+                logDataBuilder.Append(m_prototypeNames[m_speciesList[i]]);
+                if (i != 5)
+                {
+                    logDataBuilder.Append(", ");
+                }
+            }
+            logDataBuilder.Append("\n");
+            for(int generation=0; generation<m_generations; generation++)
+            {
+                logDataBuilder.Append(generation.ToString() + ", ");
+                logDataBuilder.Append(m_totalSpeciesBiomass[generation, 1].ToString() + ", ");
+                logDataBuilder.Append(m_totalSpeciesBiomass[generation, 2].ToString() + ", ");
+                logDataBuilder.Append(m_totalSpeciesBiomass[generation, 3].ToString() + ", ");
+                logDataBuilder.Append(m_totalSpeciesBiomass[generation, 4].ToString() + ", ");
+                logDataBuilder.Append(m_totalSpeciesBiomass[generation, 5].ToString());
+                if (generation != m_generations - 1)
+                {
+                    logDataBuilder.Append("\n");
+                }
+            }
+        }
+        logData = logDataBuilder.ToString();
+        print(logData);
+        return logData;
+    }
 
     #endregion
 
