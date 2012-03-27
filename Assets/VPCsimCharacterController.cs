@@ -24,7 +24,8 @@ public class VPCsimCharacterController : MonoBehaviour
 	string m_movementMode = "Walking...";
 	float m_distanceToGround = 0f;
 	float m_sampleHeight = 50f;
-	bool m_showHelpWindow = true; //Whether to display the window with movement instructions
+    //Whether to display the window with movement instructions
+	bool m_showHelpWindow = true;
     Rect m_helpWindow = new Rect(250, 110, 400, 255);
     string m_helpString = "\n\t\t\t\t\t\t\t** Movement Instructions **\n\n" +
     					  "Walk and Fly modes:\n" +

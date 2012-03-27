@@ -8,11 +8,14 @@ public class TreePlanterScript : MonoBehaviour
 {
     System.Random m_random = new System.Random();
     string m_simulationId = "none";
-    int m_generations = 201; //Number of time steps to simulate
-    int[,,] m_cellStatus; //Tree species for each cell in each generation [gen,x,z]
-    bool[,] m_permanentDisturbanceMap; //Whether each cell is marked as permanently disturbed
-    int[] m_speciesList = new int[6]; //Unity tree prototypes to include in the community
-                                      //(-1 represents a gap with no tree)
+    //Number of time steps to simulate
+    int m_generations = 201;
+    //Tree species for each cell in each generation [gen,x,z]
+    int[,,] m_cellStatus;
+    //Whether each cell is marked as permanently disturbed
+    bool[,] m_permanentDisturbanceMap;
+    //Unity tree prototypes to include in the community (-1 represents a gap with no tree)
+    int[] m_speciesList = new int[6];
     //Replacement Matrix.  The probability of replacement of a tree of one prototype
     //by another prototype if it is entirely surrounded by the other species.
     //Example [1,2] is the probability that species 2 will be replaced by species 1, if
@@ -207,26 +210,37 @@ public class TreePlanterScript : MonoBehaviour
     //Number of x and z cells (horizontal plane is xz in Unity3D)
     int m_xCells = 100;
     int m_zCells = 100;
-    int[,,] m_age; //Tracks the age of each plant in each generation.
-    int[,] m_totalSpeciesCounts; //Total species counts for each generation.
-    float[,] m_averageSpeciesAges; //Species average ages for each generation
-    Vector3[,] m_cellPositions; //Keeps track of the region coordinates where each plant will be placed.
-    int m_displayedGeneration = 0; //Which generation number is currently visualized
-    string m_chosenGeneration = "0"; //The generation number the user selects from the GUI
+    //Tracks the age of each plant in each generation.
+    int[,,] m_age;
+    //Total species counts for each generation.
+    int[,] m_totalSpeciesCounts;
+    //Species average ages for each generation
+    float[,] m_averageSpeciesAges;
+    //Keeps track of the region coordinates where each plant will be placed.
+    Vector3[,] m_cellPositions;
+    //Which generation number is currently visualized
+    int m_displayedGeneration = 0;
+    //The generation number the user selects from the GUI
+    string m_chosenGeneration = "0";
     string m_chosenSimulationId = "";
     string m_countLogString = "";
     string m_ageLogString = "";
-    bool m_showCountLogWindow = false; //Whether to display the window with species count log data
-    bool m_showAgeLogWindow = false; //Whether to display the window with age log data
+    //Whether to display the window with species count log data
+    bool m_showCountLogWindow = false;
+    //Whether to display the window with age log data
+    bool m_showAgeLogWindow = false;
     Rect m_countLogWindow = new Rect(200, 5, 400, 400);
     Rect m_ageLogWindow = new Rect(210, 5, 400, 400);
-    string m_parameterPath = "http://vpcsim.appspot.com"; //Base URL of parameter webapp
+    //Base URL of parameter webapp
+    string m_parameterPath = "http://vpcsim.appspot.com";
     //string m_debugString = ""; //Debug errors to display on the HUD
-    WWW m_www; //Stores xml data downloaded from the web
+    //Stores xml data downloaded from the web
+    WWW m_www;
     //bool m_showDebugWindow = false; //Whether to display the window with debug messages
     //Rect m_debugWindow = new Rect(300, 10, 400, 400);
     string m_currentDataString = "Not Available.\nLoad a simulation.";
-    bool m_showErrorWindow = false; //Whether to display the window with error messages
+    //Whether to display the window with error messages
+    bool m_showErrorWindow = false;
     Rect m_errorWindow = new Rect(250, 110, 250, 150);
     string m_errorString = "";
     //Convert values from the webapp to numbers the simulation can use
@@ -401,7 +415,8 @@ public class TreePlanterScript : MonoBehaviour
         if (showParametersButton)
         {
             //Open the parameters webapp to show the current parameters in a new browser window or tab
-            Application.ExternalCall("window.open('http://vpcsim.appspot.com/show?id=" + m_chosenSimulationId + "','_blank')");
+            Application.ExternalCall("window.open('http://vpcsim.appspot.com/show?id=" +
+                                     m_chosenSimulationId + "','_blank')");
         }
         if (loadButton)
         {
@@ -1066,7 +1081,8 @@ public class TreePlanterScript : MonoBehaviour
             //Avoid divide-by-zero errors
             if (speciesCount != 0)
             {
-                m_averageSpeciesAges[0, i] = (float)System.Math.Round((double)speciesAgeSums[i] / (double)speciesCount, 2);
+                m_averageSpeciesAges[0, i] = (float)System.Math.Round((double)speciesAgeSums[i] /
+                                                                      (double)speciesCount, 2);
             }
             else
             {
@@ -1185,7 +1201,8 @@ public class TreePlanterScript : MonoBehaviour
                 //Avoid divide-by-zero errors
                 if (speciesCount != 0)
                 {
-                    m_averageSpeciesAges[nextGeneration, i] = (float)System.Math.Round((double)speciesAgeSums[i] / (double)speciesCount, 2);
+                    m_averageSpeciesAges[nextGeneration, i] = (float)System.Math.Round((double)speciesAgeSums[i] /
+                                                                                       (double)speciesCount, 2);
                 }
                 else
                 {
@@ -1207,7 +1224,8 @@ public class TreePlanterScript : MonoBehaviour
         if (colleft >= 0)
         {
             neighborType = m_cellStatus[generation, colleft, z];
-            if (neighborType != -1) //Don't count permanent gaps
+            //Don't count permanent gaps
+            if (neighborType != -1)
             {
                 neighborSpeciesCounts[neighborType]++;
             }
@@ -1299,7 +1317,8 @@ public class TreePlanterScript : MonoBehaviour
     bool CalculateSurvival(int species, int age, Vector3 coordinates)
     {
         //Return true if the plant survives or false if it does not
-        if (species == 0) //If there is no plant it can't possibly survive...
+        //If there is no plant it can't possibly survive...
+        if (species == 0)
         {
             return false;
         }
