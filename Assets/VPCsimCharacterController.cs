@@ -139,6 +139,10 @@ public class VPCsimCharacterController : MonoBehaviour
 			transform.Translate(xTranslation, zTranslation, yTranslation);
 			transform.eulerAngles = new Vector3(90, 0, 0);
 		}
+        //Calculations for compass
+        m_cameraRot = (-90 + transform.eulerAngles.y)* Mathf.Deg2Rad;
+        m_compassMarkerX = m_compassRadius * Mathf.Cos(m_cameraRot);
+        m_compassMarkerY = m_compassRadius * Mathf.Sin(m_cameraRot);
 	}
 
 	void OnGUI()
@@ -211,10 +215,7 @@ public class VPCsimCharacterController : MonoBehaviour
             //Show or hide the help message window
             m_showHelpWindow = !m_showHelpWindow;
         }
-        //Calculate and display compass
-        m_cameraRot = (-90 + transform.eulerAngles.y)* Mathf.Deg2Rad;
-        m_compassMarkerX = m_compassRadius * Mathf.Cos(m_cameraRot);
-        m_compassMarkerY = m_compassRadius * Mathf.Sin(m_cameraRot);
+        //Display compass
         GUI.DrawTexture(m_compassRect, m_compassRose);
         GUI.DrawTexture(new Rect(m_compassCenter.x + m_compassMarkerX - m_compassMarkerSize.x / 2,
                                  m_compassCenter.y + m_compassMarkerY - m_compassMarkerSize.y/2,
