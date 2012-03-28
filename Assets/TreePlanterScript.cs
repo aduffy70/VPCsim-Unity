@@ -25,7 +25,7 @@ public class TreePlanterScript : MonoBehaviour
         {0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f},
         {0.40f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f},
         {0.40f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f},
-        {0.50f, 0.12f, 0.10f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f},
+        {0.50f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f},
         {0.40f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f},
         {0.40f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f},
         {0.40f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f},
@@ -61,19 +61,19 @@ public class TreePlanterScript : MonoBehaviour
                                                 "Willow"};
     //Adjust the default sizes of the plants
     float[] m_prototypeScales = new float[14] { 1.2f,
-                                                1.0f,
+                                                1.5f,
                                                 3.0f,
                                                 80.0f,
                                                 5.0f,
                                                 7.0f,
                                                 6.0f,
-                                                7.0f,
-                                                3.0f,
+                                                9.0f,
+                                                5.0f,
                                                 0.5f,
                                                 0.3f,
-                                                1.0f,
+                                                1.5f,
                                                 1.2f,
-                                                1.5f};
+                                                1.0f};
     //Maximum age for each prototype
     int[] m_lifespans = new int[14] {   25,
                                         25,
@@ -90,7 +90,7 @@ public class TreePlanterScript : MonoBehaviour
                                         25,
                                         25};
     //The biomass of a newly established (age=0) individual of each prototype
-    float[] m_baseBiomass = new float[14] {   100f,
+    float[] m_baseBiomass = new float[14] { 100f,
                                             100f,
                                             100f,
                                             100f,
@@ -805,7 +805,6 @@ public class TreePlanterScript : MonoBehaviour
             }
         }
         logData = logDataBuilder.ToString();
-        //print(logData);
         return logData;
     }
 
@@ -871,20 +870,17 @@ public class TreePlanterScript : MonoBehaviour
             }
         }
         logData = logDataBuilder.ToString();
-        //print(logData);
         return logData;
     }
 
     string GetBiomassLogData(bool isForPlotting)
     {
-        print("GettingLogData");
         //Generates a string of log data suitable for either displaying to humans or
         //for sending out for plotting
         StringBuilder logDataBuilder = new StringBuilder();
         string logData;
         if (isForPlotting)
         {
-            print("Logdata for plotting");
             //Generate string for sending out for plotting
             logDataBuilder.Append("\"year,");
             for (int i=1; i<6; i++)
@@ -913,7 +909,6 @@ public class TreePlanterScript : MonoBehaviour
         }
         else
         {
-            print("Logdata for humans");
             //Generate string for displaying to humans
             logDataBuilder.Append("Year, ");
             for (int i=1; i<6; i++)
@@ -940,7 +935,6 @@ public class TreePlanterScript : MonoBehaviour
             }
         }
         logData = logDataBuilder.ToString();
-        print(logData);
         return logData;
     }
 
@@ -1565,9 +1559,9 @@ public class TreePlanterScript : MonoBehaviour
         //with an 'actual' value for some environmental parameter given the
         //optimal value and shape. This function works for age or others
         //parameters with a maximum rather than optimal value. Health is
-        //highest (1.0) when age = 0 and decreases linearly to 0.0 when age = maximumAge.
-        float health = ((maximumAge - actual) / (float)maximumAge);
-         //Don't allow return values >1 or <0
+        //highest (1.0) when age = 0 and decreases nonlinearly to 0.0 when age = maximumAge.
+        float health = 1.0f - (float)System.Math.Pow((float)actual/(float)maximumAge, 6);
+        //Don't allow return values >1 or <0
         if (health > 1.0f)
         {
             health = 1.0f;
@@ -1630,13 +1624,13 @@ public class TreePlanterScript : MonoBehaviour
         float[] replacementProbabilities = new float[6];
         for (int species=1; species<6; species++)
         {
-            //90% local, 9.95% distant, 0.05% out-of-area
+            //97% local, 2.99% distant, 0.01% out-of-area
             replacementProbabilities[species] = ((m_replacementMatrix[species, currentSpecies] *
                                                  ((float)neighborSpeciesCounts[species] / 8.0f)) *
-                                                 0.9f) +
+                                                 0.97f) +
                                                  ((m_replacementMatrix[species, currentSpecies] *
                                                  ((float)m_totalSpeciesCounts[generation, species] /
-                                                  (m_xCells * m_zCells))) * 0.0995f) + 0.0005f;
+                                                  (m_xCells * m_zCells))) * 0.0295f) + 0.0001f;
         }
         return replacementProbabilities;
     }
