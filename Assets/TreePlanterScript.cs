@@ -67,7 +67,7 @@ public class TreePlanterScript : MonoBehaviour
                                                 3.0f,
                                                 80.0f,
                                                 5.0f,
-                                                7.0f,
+                                                10.0f,
                                                 6.0f,
                                                 9.0f,
                                                 5.0f,
