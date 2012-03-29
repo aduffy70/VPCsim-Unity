@@ -14,6 +14,8 @@ public class TreePlanterScript : MonoBehaviour
     int[,,] m_cellStatus;
     //Whether each cell is marked as permanently disturbed
     bool[,] m_permanentDisturbanceMap;
+    //Number of species included in the community (actually number of species +1 for gaps)
+    int m_species = 6;
     //Unity tree prototypes to include in the community (-1 represents a gap with no tree)
     int[] m_speciesList = new int[6];
     //Replacement Matrix.  The probability of replacement of a tree of one prototype
@@ -271,11 +273,11 @@ public class TreePlanterScript : MonoBehaviour
     Rect m_biomassLogWindow = new Rect(260, 55, 400, 400);
     //Base URL of parameter webapp
     string m_parameterPath = "http://vpcsim.appspot.com";
-    //string m_debugString = ""; //Debug errors to display on the HUD
+    string m_debugString = ""; //Debug errors to display on the HUD
     //Stores xml data downloaded from the web
     WWW m_www;
-    //bool m_showDebugWindow = false; //Whether to display the window with debug messages
-    //Rect m_debugWindow = new Rect(300, 10, 400, 400);
+    bool m_showDebugWindow = false; //Whether to display the window with debug messages
+    Rect m_debugWindow = new Rect(300, 10, 400, 400);
     string m_currentDataString = "Not Available.\nLoad a simulation.";
     //Whether to display the window with error messages
     bool m_showErrorWindow = false;
@@ -294,7 +296,7 @@ public class TreePlanterScript : MonoBehaviour
 
     void Start()
     {
-        //m_debugString += "Start\n"; //Debug
+        m_debugString += "Start\n"; //Debug
         //There shouldn't be trees in the scene at startup, but just in case...
         DeleteAllTrees();
     }
@@ -306,6 +308,7 @@ public class TreePlanterScript : MonoBehaviour
 
     void OnApplicationQuit()
     {
+        //I don't think it matters but just in case...
         DeleteAllTrees();
     }
 
@@ -384,9 +387,9 @@ public class TreePlanterScript : MonoBehaviour
                                      new GUIContent("Biomass",
                                      "Show biomass log data"));
         //Button to display debug messages - TODO: Remove?  This is not for students.
-        //bool debugButton = GUI.Button(new Rect(100, 575, 60, 20),
-        //                              new GUIContent("Debug",
-        //                              "Show/Hide debug messages"));
+        bool debugButton = GUI.Button(new Rect(10, 580, 60, 20),
+                                      new GUIContent("Debug",
+                                      "Show/Hide debug messages"));
         if (!System.String.IsNullOrEmpty(GUI.tooltip))
         {
             GUI.Box(new Rect(175 , 30, 220, 20),"");
@@ -428,23 +431,23 @@ public class TreePlanterScript : MonoBehaviour
             m_chosenGeneration = m_displayedGeneration.ToString();
             GUI.FocusControl("focusBuster");
         }
-        //if (m_showDebugWindow)
-        //{
-        //    //Setup the debug message window
-        //    m_debugWindow = GUI.Window(5, m_debugWindow, DisplayDebugWindow, "Debug");
-        //}
+        if (m_showDebugWindow)
+        {
+            //Setup the debug message window
+            m_debugWindow = GUI.Window(5, m_debugWindow, DisplayDebugWindow, "Debug");
+        }
         if (m_showErrorWindow)
         {
             //Setup the error message window
             m_errorWindow = GUI.Window(4, m_errorWindow, DisplayErrorWindow, "***  Error!  ***");
             GUI.BringWindowToFront(4);
         }
-        //if (debugButton)
-        //{
-        //    //Show or hide the debug message window
-        //    m_showDebugWindow = !m_showDebugWindow;
-        //    GUI.FocusControl("focusBuster");
-        //}
+        if (debugButton)
+        {
+            //Show or hide the debug message window
+            m_showDebugWindow = !m_showDebugWindow;
+            GUI.FocusControl("focusBuster");
+        }
         if (defaultsButton)
         {
             //Run a simulation using the default settings
@@ -480,12 +483,10 @@ public class TreePlanterScript : MonoBehaviour
                 //supposed to be a datecode.)
                 long newSimulationId = System.Int64.Parse(m_chosenSimulationId);
                 isValidId = true;
-                //m_debugString += "Valid ID\n";
             }
             catch
             {
                 isValidId = false;
-                //m_debugString += "Not Valid ID\n";
                 m_errorString = "Invalid simulation id.";
                 m_showErrorWindow = true;
             }
@@ -727,11 +728,11 @@ public class TreePlanterScript : MonoBehaviour
         GUI.DragWindow();
     }
 
-    //void DisplayDebugWindow(int windowID)
-    //{
-    //    GUI.TextArea(new Rect(5, 20, 390, 350), m_debugString);
-    //    GUI.DragWindow();
-    //}
+    void DisplayDebugWindow(int windowID)
+    {
+        GUI.TextArea(new Rect(5, 20, 390, 350), m_debugString);
+        GUI.DragWindow();
+    }
 
     string GetCurrentCounts()
     {
@@ -740,7 +741,7 @@ public class TreePlanterScript : MonoBehaviour
         string currentData;
         currentDataBuilder.Append("Gaps: ");
         currentDataBuilder.Append(m_totalSpeciesCounts[m_displayedGeneration, 0].ToString() + "\n");
-        for (int i=1; i<6; i++)
+        for (int i=1; i<m_species; i++)
         {
             currentDataBuilder.Append(m_prototypeNames[m_speciesList[i]] + ": ");
             currentDataBuilder.Append(m_totalSpeciesCounts[m_displayedGeneration, i].ToString() + "\n");
@@ -759,7 +760,7 @@ public class TreePlanterScript : MonoBehaviour
         {
             //Generate string for sending out for plotting
             logDataBuilder.Append("\"year,");
-            for (int i=1; i<6; i++)
+            for (int i=1; i<m_species; i++)
             {
                 logDataBuilder.Append(m_prototypeNames[m_speciesList[i]] + ",");
             }
@@ -768,11 +769,10 @@ public class TreePlanterScript : MonoBehaviour
             {
                 logDataBuilder.Append("\"");
                 logDataBuilder.Append(generation.ToString() + ',');
-                logDataBuilder.Append(m_totalSpeciesCounts[generation, 1].ToString() + ",");
-                logDataBuilder.Append(m_totalSpeciesCounts[generation, 2].ToString() + ",");
-                logDataBuilder.Append(m_totalSpeciesCounts[generation, 3].ToString() + ",");
-                logDataBuilder.Append(m_totalSpeciesCounts[generation, 4].ToString() + ",");
-                logDataBuilder.Append(m_totalSpeciesCounts[generation, 5].ToString() + ",");
+                for (int i=1; i<m_species; i++)
+                {
+                    logDataBuilder.Append(m_totalSpeciesCounts[generation, i].ToString() + ",");
+                }
                 logDataBuilder.Append(m_totalSpeciesCounts[generation, 0].ToString() + "\\\n\"");
                 if (generation != m_generations - 1)
                 {
@@ -784,7 +784,7 @@ public class TreePlanterScript : MonoBehaviour
         {
             //Generate string for displaying to humans
             logDataBuilder.Append("Year, ");
-            for (int i=1; i<6; i++)
+            for (int i=1; i<m_species; i++)
             {
                 logDataBuilder.Append(m_prototypeNames[m_speciesList[i]] + ", ");
             }
@@ -792,11 +792,10 @@ public class TreePlanterScript : MonoBehaviour
             for(int generation=0; generation<m_generations; generation++)
             {
                 logDataBuilder.Append(generation.ToString() + ", ");
-                logDataBuilder.Append(m_totalSpeciesCounts[generation, 1].ToString() + ", ");
-                logDataBuilder.Append(m_totalSpeciesCounts[generation, 2].ToString() + ", ");
-                logDataBuilder.Append(m_totalSpeciesCounts[generation, 3].ToString() + ", ");
-                logDataBuilder.Append(m_totalSpeciesCounts[generation, 4].ToString() + ", ");
-                logDataBuilder.Append(m_totalSpeciesCounts[generation, 5].ToString() + ", ");
+                for (int i=1; i<m_species; i++)
+                {
+                    logDataBuilder.Append(m_totalSpeciesCounts[generation, i].ToString() + ", ");
+                }
                 logDataBuilder.Append(m_totalSpeciesCounts[generation, 0].ToString());
                 if (generation != m_generations - 1)
                 {
@@ -818,10 +817,10 @@ public class TreePlanterScript : MonoBehaviour
         {
             //Generate string for sending out for plotting
             logDataBuilder.Append("\"year,");
-            for (int i=1; i<6; i++)
+            for (int i=1; i<m_species; i++)
             {
                 logDataBuilder.Append(m_prototypeNames[m_speciesList[i]]);
-                if (i != 5)
+                if (i != m_species - 1)
                 {
                     logDataBuilder.Append(",");
                 }
@@ -831,11 +830,18 @@ public class TreePlanterScript : MonoBehaviour
             {
                 logDataBuilder.Append("\"");
                 logDataBuilder.Append(generation.ToString() + ',');
-                logDataBuilder.Append(m_averageSpeciesAges[generation, 1].ToString() + ",");
-                logDataBuilder.Append(m_averageSpeciesAges[generation, 2].ToString() + ",");
-                logDataBuilder.Append(m_averageSpeciesAges[generation, 3].ToString() + ",");
-                logDataBuilder.Append(m_averageSpeciesAges[generation, 4].ToString() + ",");
-                logDataBuilder.Append(m_averageSpeciesAges[generation, 5].ToString() + "\\\n\"");
+                for (int i=1; i<m_species; i++)
+                {
+                    logDataBuilder.Append(m_averageSpeciesAges[generation, i].ToString());
+                    if (i!= m_species - 1)
+                    {
+                        logDataBuilder.Append(",");
+                    }
+                    else
+                    {
+                        logDataBuilder.Append("\\\n\"");
+                    }
+                }
                 if (generation != m_generations - 1)
                 {
                     logDataBuilder.Append(" + ");
@@ -846,10 +852,10 @@ public class TreePlanterScript : MonoBehaviour
         {
             //Generate string for displaying to humans
             logDataBuilder.Append("Year, ");
-            for (int i=1; i<6; i++)
+            for (int i=1; i<m_species; i++)
             {
                 logDataBuilder.Append(m_prototypeNames[m_speciesList[i]]);
-                if (i != 5)
+                if (i != m_species - 1)
                 {
                     logDataBuilder.Append(", ");
                 }
@@ -858,11 +864,14 @@ public class TreePlanterScript : MonoBehaviour
             for(int generation=0; generation<m_generations; generation++)
             {
                 logDataBuilder.Append(generation.ToString() + ", ");
-                logDataBuilder.Append(m_averageSpeciesAges[generation, 1].ToString() + ", ");
-                logDataBuilder.Append(m_averageSpeciesAges[generation, 2].ToString() + ", ");
-                logDataBuilder.Append(m_averageSpeciesAges[generation, 3].ToString() + ", ");
-                logDataBuilder.Append(m_averageSpeciesAges[generation, 4].ToString() + ", ");
-                logDataBuilder.Append(m_averageSpeciesAges[generation, 5].ToString());
+                for (int i=1; i<m_species; i++)
+                {
+                    logDataBuilder.Append(m_averageSpeciesAges[generation, i].ToString());
+                    if (i != m_species - 1)
+                    {
+                        logDataBuilder.Append(", ");
+                    }
+                }
                 if (generation != m_generations - 1)
                 {
                     logDataBuilder.Append("\n");
@@ -883,10 +892,10 @@ public class TreePlanterScript : MonoBehaviour
         {
             //Generate string for sending out for plotting
             logDataBuilder.Append("\"year,");
-            for (int i=1; i<6; i++)
+            for (int i=1; i<m_species; i++)
             {
                 logDataBuilder.Append(m_prototypeNames[m_speciesList[i]]);
-                if (i != 5)
+                if (i != m_species - 1)
                 {
                     logDataBuilder.Append(",");
                 }
@@ -896,11 +905,18 @@ public class TreePlanterScript : MonoBehaviour
             {
                 logDataBuilder.Append("\"");
                 logDataBuilder.Append(generation.ToString() + ',');
-                logDataBuilder.Append(m_totalSpeciesBiomass[generation, 1].ToString() + ",");
-                logDataBuilder.Append(m_totalSpeciesBiomass[generation, 2].ToString() + ",");
-                logDataBuilder.Append(m_totalSpeciesBiomass[generation, 3].ToString() + ",");
-                logDataBuilder.Append(m_totalSpeciesBiomass[generation, 4].ToString() + ",");
-                logDataBuilder.Append(m_totalSpeciesBiomass[generation, 5].ToString() + "\\\n\"");
+                for (int i=1; i<m_species; i++)
+                {
+                    logDataBuilder.Append(m_totalSpeciesBiomass[generation, i].ToString());
+                    if (i != m_species - 1)
+                    {
+                        logDataBuilder.Append(",");
+                    }
+                    else
+                    {
+                        logDataBuilder.Append("\\\n\"");
+                    }
+                }
                 if (generation != m_generations - 1)
                 {
                     logDataBuilder.Append(" + ");
@@ -911,10 +927,10 @@ public class TreePlanterScript : MonoBehaviour
         {
             //Generate string for displaying to humans
             logDataBuilder.Append("Year, ");
-            for (int i=1; i<6; i++)
+            for (int i=1; i<m_species; i++)
             {
                 logDataBuilder.Append(m_prototypeNames[m_speciesList[i]]);
-                if (i != 5)
+                if (i != m_species - 1)
                 {
                     logDataBuilder.Append(", ");
                 }
@@ -923,11 +939,14 @@ public class TreePlanterScript : MonoBehaviour
             for(int generation=0; generation<m_generations; generation++)
             {
                 logDataBuilder.Append(generation.ToString() + ", ");
-                logDataBuilder.Append(m_totalSpeciesBiomass[generation, 1].ToString() + ", ");
-                logDataBuilder.Append(m_totalSpeciesBiomass[generation, 2].ToString() + ", ");
-                logDataBuilder.Append(m_totalSpeciesBiomass[generation, 3].ToString() + ", ");
-                logDataBuilder.Append(m_totalSpeciesBiomass[generation, 4].ToString() + ", ");
-                logDataBuilder.Append(m_totalSpeciesBiomass[generation, 5].ToString());
+                for (int i=1; i<m_species; i++)
+                {
+                    logDataBuilder.Append(m_totalSpeciesBiomass[generation, i].ToString());
+                    if (i != m_species - 1)
+                    {
+                        logDataBuilder.Append(", ");
+                    }
+                }
                 if (generation != m_generations - 1)
                 {
                     logDataBuilder.Append("\n");
@@ -1009,25 +1028,20 @@ public class TreePlanterScript : MonoBehaviour
         yield return m_www;
         if (m_www.isDone)
         {
-            //m_debugString += "WWW read isDone\n";
             bool unpackSuccess = UnpackParameters();
             if (unpackSuccess)
             {
-                //m_debugString += "Unpacked success\n";
                 DeleteAllTrees();
                 RunSimulation();
-                //m_debugString += "RunSimulation success\n";
                 m_countLogString = GetCountLogData(false);
                 m_ageLogString = GetAgeLogData(false);
                 VisualizeGeneration(0);
-                //m_debugString += "VisualizeGeneration success\n";
                 m_chosenGeneration = m_displayedGeneration.ToString();
                 m_chosenSimulationId = m_simulationId;
             }
         }
         else
         {
-            //m_debugString += "WWW not isDone\n";
             m_errorString = "Unable to retrieve settings.\nWWW read failed?";
             m_showErrorWindow = true;
         }
@@ -1041,7 +1055,6 @@ public class TreePlanterScript : MonoBehaviour
         try
         {
             reader = new XmlTextReader(new System.IO.StringReader(m_www.text));
-            //m_debugString += "opened stream\n";
             reader.WhitespaceHandling = WhitespaceHandling.Significant;
         }
         catch
@@ -1078,7 +1091,10 @@ public class TreePlanterScript : MonoBehaviour
             int temperatureLevelCode = System.Int32.Parse(newParameters["temperature_level"]);
             m_temperatureLevel = m_convertTemperatureLevel[temperatureLevelCode];
             string[] speciesList = newParameters["plant_types"].Split(',');
-            for (int i = 1; i<6; i++) //Start at index 1 so index 0 stays "None" to represent gaps
+            m_species = speciesList.Length + 1;
+            m_speciesList = new int[m_species];
+            m_speciesList[0] = -1;
+            for (int i = 1; i<m_species; i++) //Start at index 1 so index 0 stays "None" to represent gaps
             {
                 m_speciesList[i] = System.Int32.Parse(speciesList[i - 1]);
             }
@@ -1089,9 +1105,12 @@ public class TreePlanterScript : MonoBehaviour
             m_cellStatus = new int[m_generations, m_xCells, m_zCells];
             m_permanentDisturbanceMap = new bool[m_xCells, m_zCells];
             m_age = new int[m_generations, m_xCells, m_zCells];
-            m_totalSpeciesCounts = new int[m_generations, 6];
-            m_averageSpeciesAges = new float[m_generations, 6];
+            m_biomass = new float[m_generations, m_xCells, m_zCells];
+            m_totalSpeciesCounts = new int[m_generations, m_species];
+            m_averageSpeciesAges = new float[m_generations, m_species];
+            m_totalSpeciesBiomass = new float[m_generations, m_species];
             m_cellPositions = new Vector3[m_xCells, m_zCells];
+            int[] speciesAgeSums = new int[m_species];
             for (int z=0; z<m_zCells; z++)
             {
                 for (int x=0; x<m_xCells; x++)
@@ -1112,15 +1131,24 @@ public class TreePlanterScript : MonoBehaviour
                     if (startingPlants[startingMatrixCell] == 'R')
                     {
                         //Randomly select the plant type
-                        newSpecies = Random.Range(0,6);
+                        newSpecies = Random.Range(0,m_species);
                         m_cellStatus[0, x, z] = newSpecies;
                         if (newSpecies != 0)
                         {
-                            m_age[0, x, z] = Random.Range(0, m_lifespans[m_speciesList[newSpecies]] / 3);
+                            int prototypeIndex = m_speciesList[newSpecies];
+                            int age = Random.Range(0, m_lifespans[prototypeIndex] / 3);
+                            m_age[0, x, z] = age;
+                            speciesAgeSums[newSpecies] = speciesAgeSums[newSpecies] + age;
+                            float randomHealth = (float)m_random.NextDouble();
+                            float biomass = (m_baseBiomass[prototypeIndex] +
+                                             (age * randomHealth * m_biomassIncrease[prototypeIndex]));
+                            m_biomass[0, x, z] = biomass;
+                            m_totalSpeciesBiomass[0, newSpecies] += biomass;
                         }
                         else
                         {
                             m_age[0, x, z] = 0;
+                            m_biomass[0, x, z] = 0;
                         }
                         m_totalSpeciesCounts[0, newSpecies]++;
                     }
@@ -1135,9 +1163,39 @@ public class TreePlanterScript : MonoBehaviour
                         //A numbered plant type (or a gap for 0)
                         newSpecies = System.Int32.Parse(startingPlants[startingMatrixCell].ToString());
                         m_cellStatus[0, x, z] = newSpecies;
-                        m_age[0, x, z] = Random.Range(0, m_lifespans[m_speciesList[newSpecies]] / 3);
+                        if (newSpecies != 0)
+                        {
+                            int prototypeIndex = m_speciesList[newSpecies];
+                            int age = Random.Range(0, m_lifespans[prototypeIndex] / 3);
+                            m_age[0, x, z] = age;
+                            speciesAgeSums[newSpecies] = speciesAgeSums[newSpecies] + age;
+                            float randomHealth = (float)m_random.NextDouble();
+                            float biomass = (m_baseBiomass[prototypeIndex] +
+                                             (age * randomHealth * m_biomassIncrease[prototypeIndex]));
+                            m_biomass[0, x, z] = biomass;
+                            m_totalSpeciesBiomass[0, newSpecies] += biomass;
+                        }
+                        else
+                        {
+                            m_age[0, x, z] = 0;
+                            m_biomass[0, x, z] = 0;
+                        }
                         m_totalSpeciesCounts[0, newSpecies]++;
                     }
+                }
+            }
+            for (int i=0; i<m_species; i++)
+            {
+                int speciesCount = m_totalSpeciesCounts[0, i];
+                //Avoid divide-by-zero errors
+                if (speciesCount != 0)
+                {
+                    m_averageSpeciesAges[0, i] = (float)System.Math.Round((double)speciesAgeSums[i] /
+                                                                      (double)speciesCount, 2);
+                }
+                else
+                {
+                    m_averageSpeciesAges[0, i] = 0f;
                 }
             }
             return true;
@@ -1158,7 +1216,7 @@ public class TreePlanterScript : MonoBehaviour
         //row and column indices correspond to the species numbers.
         int rowPrototype;
         int columnPrototype;
-        for (int i=0; i<6; i++)
+        for (int i=0; i<m_species; i++)
         {
             if (i == 0)
             {
@@ -1168,7 +1226,7 @@ public class TreePlanterScript : MonoBehaviour
             {
                 rowPrototype = m_speciesList[i];
             }
-            for (int j=0; j<6; j++)
+            for (int j=0; j<m_species; j++)
             {
                 if (j == 0)
                 {
@@ -1188,6 +1246,7 @@ public class TreePlanterScript : MonoBehaviour
         //Generate starting matrix with random species and determine the
         //region x,y,z coordinates where each tree will be placed
         //Unity tree prototypes to include in the default community (-1 represents a gap with no tree)
+        m_species = 6;
         m_speciesList = new int[6] {-1, 1, 8, 9, 11, 13};
         GenerateReplacementMatrix();
         m_cellStatus = new int[m_generations, m_xCells, m_zCells];
@@ -1199,7 +1258,7 @@ public class TreePlanterScript : MonoBehaviour
         m_cellPositions = new Vector3[m_xCells, m_zCells];
         //Make a default disturbance map with no permanent disturbances
         m_permanentDisturbanceMap = new bool[m_xCells, m_zCells];
-        int[] speciesAgeSums = new int[6] {0, 0, 0, 0, 0, 0};
+        int[] speciesAgeSums = new int[6];
         for (int z=0; z<m_zCells; z++)
         {
             for (int x=0; x<m_xCells; x++)
@@ -1263,7 +1322,7 @@ public class TreePlanterScript : MonoBehaviour
         //Generate the simulation data
         for (int generation=0; generation<m_generations - 1; generation++)
         {
-            int[] speciesAgeSums = new int[6] {0, 0, 0, 0, 0, 0};
+            int[] speciesAgeSums = new int[m_species];
             //Setup some variables we will need later
             int nextGeneration = generation + 1;
             int rowabove;
@@ -1388,7 +1447,7 @@ public class TreePlanterScript : MonoBehaviour
                 }
             }
             //Store the average age of each species in this generation
-            for (int i=0; i<6; i++)
+            for (int i=0; i<m_species; i++)
             {
                 int speciesCount = m_totalSpeciesCounts[nextGeneration, i];
                 //Avoid divide-by-zero errors
@@ -1412,7 +1471,7 @@ public class TreePlanterScript : MonoBehaviour
         //Edge cells will have fewer neighbors.  That is ok.  We only care about
         //the count of neighbors of each species so a neighbor that is a gap or
         //off the edge of the matrix doesn't matter.
-        int[] neighborSpeciesCounts = new int[6] {0, 0, 0, 0, 0, 0};
+        int[] neighborSpeciesCounts = new int[m_species];
         int neighborType;
         if (colleft >= 0)
         {
@@ -1621,8 +1680,8 @@ public class TreePlanterScript : MonoBehaviour
         //Calculate the probability that the current plant will be replaced by each species.
         //The first value is always 0 because gaps cannot replace a plant through competition.
         //Gaps arise only when a plant dies and no replacement is selected.
-        float[] replacementProbabilities = new float[6];
-        for (int species=1; species<6; species++)
+        float[] replacementProbabilities = new float[m_species];
+        for (int species=1; species<m_species; species++)
         {
             //97% local, 2.99% distant, 0.01% out-of-area
             replacementProbabilities[species] = ((m_replacementMatrix[species, currentSpecies] *
@@ -1641,37 +1700,20 @@ public class TreePlanterScript : MonoBehaviour
         //We aren't concerned with the probability of replacement by no plant,
         //since we are looking at competition between species here.
         float randomReplacement = (float)m_random.NextDouble();
-        if (randomReplacement <= replacementProbability[1])
+        float replacementThreshold = 0;
+        for (int i=1; i<m_species; i++)
         {
-            return 1;
+            replacementThreshold += replacementProbability[i];
+            if (randomReplacement <= replacementThreshold)
+            {
+                return i;
+            }
         }
-        else if (randomReplacement <= replacementProbability[2] + replacementProbability[1])
-        {
-            return 2;
-        }
-        else if (randomReplacement <= replacementProbability[3] + replacementProbability[2] +
-                 replacementProbability[1])
-        {
-            return 3;
-        }
-        else if (randomReplacement <= replacementProbability[4] + replacementProbability[3] +
-                 replacementProbability[2] + replacementProbability[1])
-        {
-            return 4;
-        }
-        else if (randomReplacement <= replacementProbability[5] + replacementProbability[4] +
-                 replacementProbability[3] + replacementProbability[2] + replacementProbability[1])
-        {
-            return 5;
-        }
-        else
-        {
-            //Indicate that the current plant was not replaced (we use -1 for
-            //this because returning the current species integer would indicate
-            //that the current individual was replaced by a new member of the
-            //same species.
-            return -1;
-        }
+        //Indicate that the current plant was not replaced (we use -1 for
+        //this because returning the current species integer would indicate
+        //that the current individual was replaced by a new member of the
+        //same species.
+        return -1;
     }
 
     #endregion
