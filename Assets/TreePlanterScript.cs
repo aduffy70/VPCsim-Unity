@@ -476,26 +476,43 @@ public class TreePlanterScript : MonoBehaviour
         if (loadButton)
         {
             //Run a simulation using the parameters for the simulation id entered in the textbox
-            bool isValidId = false;
-            try
+            if (m_chosenSimulationId == "default")
             {
-                //Make sure the new simulation id can be converted to a long integer (it is
-                //supposed to be a datecode.)
-                long newSimulationId = System.Int64.Parse(m_chosenSimulationId);
-                isValidId = true;
+                //Run a simulation using the default settings
+                DeleteAllTrees();
+                GenerateRandomCommunity();
+                RunSimulation();
+                m_countLogString = GetCountLogData(false);
+                m_ageLogString = GetAgeLogData(false);
+                m_biomassLogString = GetBiomassLogData(false);
+                VisualizeGeneration(0);
+                m_chosenGeneration = m_displayedGeneration.ToString();
+                m_chosenSimulationId = m_simulationId;
+                GUI.FocusControl("focusBuster");
             }
-            catch
+            else
             {
-                isValidId = false;
-                m_errorString = "Invalid simulation id.";
-                m_showErrorWindow = true;
+                bool isValidId = false;
+                try
+                {
+                    //Make sure the new simulation id can be converted to a long integer (it is
+                    //supposed to be a datecode.)
+                    long newSimulationId = System.Int64.Parse(m_chosenSimulationId);
+                    isValidId = true;
+                }
+                catch
+                {
+                    isValidId = false;
+                    m_errorString = "Invalid simulation id.";
+                    m_showErrorWindow = true;
+                }
+                if (isValidId)
+                {
+                    //Retrieve simulation parameters from the web
+                    StartCoroutine(GetNewSimulationParameters(m_chosenSimulationId));
+                }
+                GUI.FocusControl("focusBuster");
             }
-            if (isValidId)
-            {
-                //Retrieve simulation parameters from the web
-                StartCoroutine(GetNewSimulationParameters(m_chosenSimulationId));
-            }
-            GUI.FocusControl("focusBuster");
         }
         if (firstButton)
         {
