@@ -272,7 +272,7 @@ public class TreePlanterScript : MonoBehaviour
     Rect m_ageLogWindow = new Rect(230, 30, 400, 400);
     Rect m_biomassLogWindow = new Rect(260, 55, 400, 400);
     //Base URL of parameter webapp
-    string m_parameterPath = "http://vpcsim.appspot.com";
+    string m_parameterPath = "http://vpcsim.appspot.com:80/";
     string m_debugString = ""; //Debug errors to display on the HUD
     //Stores xml data downloaded from the web
     WWW m_www;
@@ -296,7 +296,7 @@ public class TreePlanterScript : MonoBehaviour
 
     void Start()
     {
-        m_debugString += "Start\n"; //Debug
+        m_debugString += "Started\n"; //Debug
         //There shouldn't be trees in the scene at startup, but just in case...
         DeleteAllTrees();
     }
@@ -500,10 +500,11 @@ public class TreePlanterScript : MonoBehaviour
                     long newSimulationId = System.Int64.Parse(m_chosenSimulationId);
                     isValidId = true;
                 }
-                catch
+                catch(System.Exception e)
                 {
                     isValidId = false;
                     m_errorString = "Invalid simulation id.";
+                    m_debugString += e.ToString() + "\n";
                     m_showErrorWindow = true;
                 }
                 if (isValidId)
@@ -1071,13 +1072,17 @@ public class TreePlanterScript : MonoBehaviour
         XmlTextReader reader;
         try
         {
+            m_debugString += "entered try\n";
             reader = new XmlTextReader(new System.IO.StringReader(m_www.text));
+            m_debugString += "Created new XmlTextReader\n";
             reader.WhitespaceHandling = WhitespaceHandling.Significant;
+            m_debugString += "Setup whitespace handling\n";
         }
-        catch
+        catch(System.Exception e)
         {
             m_errorString = "Unable to retrieve settings.\nCould not open xml stream?";
             m_showErrorWindow = true;
+            m_debugString += e.ToString() + "\n";
             return false;
         }
         try
@@ -1092,10 +1097,11 @@ public class TreePlanterScript : MonoBehaviour
                 }
             }
         }
-        catch
+        catch(System.Exception e)
         {
             m_errorString = "Unable to retrieve settings.\nUnrecognized simulation ID or no connection to webapp?";
             m_showErrorWindow = true;
+            m_debugString += e.ToString() + "\n";
             return false;
         }
         try
@@ -1217,10 +1223,11 @@ public class TreePlanterScript : MonoBehaviour
             }
             return true;
         }
-        catch
+        catch(System.Exception e)
         {
             m_errorString = "Unable to retrieve settings.\nError in settings string from webapp?";
             m_showErrorWindow = true;
+            m_debugString += e.ToString() + "\n";
             return false;
         }
     }
