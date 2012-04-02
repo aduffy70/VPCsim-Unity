@@ -10,7 +10,7 @@
             //Request a Counts plot from the VPCsim webapp and open it in a new window
             var myForm = document.createElement("form");
             myForm.method = "post";
-            myForm.action = "http://vpcsim.appspot.com/requestplot";
+            myForm.action = "http://vpcsim.appspot.com/requestplot?" + Math.round(Math.random()*10000);
             var myInput = document.createElement("input");
             myInput.setAttribute("name", "data_string");
             myInput.setAttribute("value", data_string);
@@ -33,7 +33,7 @@
             //Request an age plot from the VPCsim webapp and open it in a new window
             var myForm = document.createElement("form");
             myForm.method = "post";
-            myForm.action = "http://vpcsim.appspot.com/requestplot";
+            myForm.action = "http://vpcsim.appspot.com/requestplot?" + Math.round(Math.random()*10000);
             var myInput = document.createElement("input");
             myInput.setAttribute("name", "data_string");
             myInput.setAttribute("value", data_string);
@@ -56,7 +56,7 @@
             //Request a biomass plot from the VPCsim webapp and open it in a new window
             var myForm = document.createElement("form");
             myForm.method = "post";
-            myForm.action = "http://vpcsim.appspot.com/requestplot";
+            myForm.action = "http://vpcsim.appspot.com/requestplot?" + Math.round(Math.random()*10000);
             var myInput = document.createElement("input");
             myInput.setAttribute("name", "data_string");
             myInput.setAttribute("value", data_string);
