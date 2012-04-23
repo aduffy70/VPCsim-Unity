@@ -25,20 +25,21 @@ public class TreePlanterScript : MonoBehaviour
     //Row  and column indices are 1+ the prototype number (because row 1 and column 1 are for gaps.)
     float[,] m_masterReplacementMatrix = new float[15,15]{
         {0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f},
-        {0.40f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f},
-        {0.40f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f},
-        {0.50f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f, 0.12f},
-        {0.40f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f},
-        {0.40f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f},
-        {0.40f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f},
-        {0.40f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f},
-        {0.40f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f},
-        {0.40f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f},
-        {0.40f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f},
-        {0.40f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f},
-        {0.40f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f},
-        {0.40f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f},
-        {0.40f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f}};
+        {0.25f, 0.10f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f},
+        {0.10f, 0.01f, 0.10f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f},
+        {0.35f, 0.01f, 0.01f, 0.10f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f},
+        {0.05f, 0.01f, 0.01f, 0.01f, 0.10f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f},
+        {0.25f, 0.01f, 0.01f, 0.01f, 0.01f, 0.10f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f},
+        {0.10f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.10f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f},
+        {0.25f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.10f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f},
+        {0.25f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.10f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f},
+        {0.30f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.10f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f},
+        {0.10f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.10f, 0.01f, 0.01f, 0.01f, 0.01f},
+        {0.25f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.10f, 0.01f, 0.01f, 0.01f},
+        {0.05f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.10f, 0.01f, 0.01f},
+        {0.05f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.10f, 0.01f},
+        {0.25f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.10f}
+        };
     //This smaller replacement matrix is for convenience.  We only have to dig through
     //the master replacement matrix once (to generate this smaller matrix) when we
     //import simulation settings rather than everytime we need a replacement value.
@@ -61,36 +62,21 @@ public class TreePlanterScript : MonoBehaviour
                                                 "Pine",
                                                 "Cottonwood",
                                                 "Willow"};
-    //Adjust the default sizes of the plants
-    float[] m_prototypeScales = new float[14] { 1.2f,
-                                                1.5f,
-                                                3.0f,
-                                                80.0f,
-                                                5.0f,
-                                                10.0f,
-                                                6.0f,
-                                                9.0f,
-                                                5.0f,
-                                                0.5f,
-                                                0.3f,
-                                                1.5f,
-                                                1.2f,
-                                                1.0f};
     //Maximum age for each prototype
-    int[] m_lifespans = new int[14] {   25,
-                                        25,
-                                        25,
-                                        25,
-                                        25,
-                                        25,
-                                        25,
-                                        25,
-                                        25,
-                                        25,
-                                        25,
-                                        25,
-                                        25,
-                                        25};
+    int[] m_lifespans = new int[14] {   30,
+                                        30,
+                                        5,
+                                        75,
+                                        15,
+                                        30,
+                                        15,
+                                        15,
+                                        5,
+                                        30,
+                                        15,
+                                        75,
+                                        75,
+                                        15};
     //The biomass of a newly established (age=0) individual of each prototype
     float[] m_baseBiomass = new float[14] { 100f,
                                             100f,
@@ -122,34 +108,34 @@ public class TreePlanterScript : MonoBehaviour
                                                 10f,
                                                 10f};
     //Optimal values and shape parameters for each prototype
-    float[] m_altitudeOptimums = new float[14] {35f,
-                                                35f,
-                                                35f,
-                                                35f,
-                                                35f,
-                                                35f,
-                                                35f,
-                                                35f,
-                                                35f,
-                                                35f,
-                                                35f,
-                                                35f,
-                                                35f,
-                                                35f};
-    float[] m_altitudeEffects = new float[14] { 0.0f,
-                                                0.0f,
-                                                0.0f,
-                                                0.0f,
-                                                0.0f,
-                                                0.0f,
-                                                0.0f,
-                                                0.0f,
-                                                0.0f,
-                                                0.0f,
-                                                0.0f,
-                                                0.0f,
-                                                0.0f,
-                                                0.0f};
+    float[] m_altitudeOptimums = new float[14] {105f,
+                                                105f,
+                                                105f,
+                                                105f,
+                                                105f,
+                                                105f,
+                                                105f,
+                                                105f,
+                                                105f,
+                                                105f,
+                                                105f,
+                                                105f,
+                                                105f,
+                                                105f};
+    float[] m_altitudeEffects = new float[14] { 1.5f,
+                                                1.5f,
+                                                1.5f,
+                                                1.5f,
+                                                1.5f,
+                                                1.5f,
+                                                1.5f,
+                                                1.5f,
+                                                1.5f,
+                                                1.5f,
+                                                1.5f,
+                                                1.5f,
+                                                1.5f,
+                                                1.5f};
     float[] m_waterLevelOptimums = new float[14] {  0.5f,
                                                     0.5f,
                                                     0.5f,
@@ -157,27 +143,27 @@ public class TreePlanterScript : MonoBehaviour
                                                     0.5f,
                                                     0.5f,
                                                     0.5f,
-                                                    0.75f,
+                                                    0.5f,
                                                     0.5f,
                                                     0.5f,
                                                     0.5f,
                                                     0.5f,
                                                     0.5f,
                                                     0.5f,};
-    float[] m_waterLevelEffects = new float[14] {   0.1f,
-                                                    0.1f,
-                                                    0.1f,
-                                                    0.1f,
-                                                    0.1f,
-                                                    0.1f,
-                                                    0.1f,
-                                                    0.1f,
-                                                    0.1f,
-                                                    0.1f,
-                                                    0.1f,
-                                                    0.1f,
-                                                    0.1f,
-                                                    0.1f};
+    float[] m_waterLevelEffects = new float[14] {   4f,
+                                                    4f,
+                                                    4f,
+                                                    4f,
+                                                    4f,
+                                                    4f,
+                                                    4f,
+                                                    4f,
+                                                    4f,
+                                                    4f,
+                                                    4f,
+                                                    4f,
+                                                    4f,
+                                                    4f};
     float[] m_lightLevelOptimums = new float[14] {  0.5f,
                                                     0.5f,
                                                     0.5f,
@@ -191,21 +177,21 @@ public class TreePlanterScript : MonoBehaviour
                                                     0.5f,
                                                     0.5f,
                                                     0.5f,
-                                                    0.5f,};
-    float[] m_lightLevelEffects = new float[14] {   0f,
-                                                    0f,
-                                                    0f,
-                                                    0f,
-                                                    0f,
-                                                    0f,
-                                                    0f,
-                                                    0f,
-                                                    0f,
-                                                    0f,
-                                                    0f,
-                                                    0f,
-                                                    0f,
-                                                    0f};
+                                                    0.5f};
+    float[] m_lightLevelEffects = new float[14] {   4f,
+                                                    4f,
+                                                    4f,
+                                                    4f,
+                                                    4f,
+                                                    4f,
+                                                    4f,
+                                                    4f,
+                                                    4f,
+                                                    4f,
+                                                    4f,
+                                                    4f,
+                                                    4f,
+                                                    4f};
     float[] m_temperatureLevelOptimums = new float[14] {0.5f,
                                                         0.5f,
                                                         0.5f,
@@ -220,20 +206,35 @@ public class TreePlanterScript : MonoBehaviour
                                                         0.5f,
                                                         0.5f,
                                                         0.5f,};
-    float[] m_temperatureLevelEffects = new float[14] { 0f,
-                                                        0f,
-                                                        0f,
-                                                        0f,
-                                                        0f,
-                                                        0f,
-                                                        0f,
-                                                        0f,
-                                                        0f,
-                                                        0f,
-                                                        0f,
-                                                        0f,
-                                                        0f,
-                                                        0f};
+    float[] m_temperatureLevelEffects = new float[14] { 4f,
+                                                        4f,
+                                                        4f,
+                                                        4f,
+                                                        4f,
+                                                        4f,
+                                                        4f,
+                                                        4f,
+                                                        4f,
+                                                        4f,
+                                                        4f,
+                                                        4f,
+                                                        4f,
+                                                        4f};
+    //Adjust the default sizes of the plants
+    float[] m_prototypeScales = new float[14] { 1.2f,
+                                                1.5f,
+                                                3.0f,
+                                                80.0f,
+                                                5.0f,
+                                                10.0f,
+                                                6.0f,
+                                                9.0f,
+                                                5.0f,
+                                                0.5f,
+                                                0.3f,
+                                                1.5f,
+                                                1.2f,
+                                                1.0f};
     float m_ongoingDisturbanceRate = 0.0f;
     //These levels range from 0-1.0.  Default to 0.5 (mid-range or normal)
     float m_waterLevel = 0.5f;
@@ -1660,11 +1661,13 @@ public class TreePlanterScript : MonoBehaviour
     {
         //Returns a value from 0-1.0 representing the health of an individual
         //with an 'actual' value for some environmental parameter given the
-        //optimal value and shape. This function works for altitude.  With an
-        //optimal of 50 and a shape of 1, values range (linearly) from 1.0 at
-        //50m to 0.0 at 0m.  Lower values for shape flatten the 'fitness curve'.
+        //optimal value and shape. This function works for altitude.  Lower
+        //values for shape flatten the 'fitness curve'. With shape=1 and
+        //optimum=0, health drops to 0 at the highest altitude (210).  When
+        //shape=1 and optimum=105, the health is >90% over the entire
+        //range of altitudes.
         //With shape <= 0, health will always equal 1.0.
-        float health = 1.0f - (System.Math.Abs(((optimal - actual) / 50f)) * shape);
+        float health = 1.0f - ((float)System.Math.Abs(System.Math.Pow((optimal - actual) / 210f, 3)) * shape);
         //Don't allow return values >1 or <0
         if (health > 1.0f)
         {
@@ -1686,7 +1689,7 @@ public class TreePlanterScript : MonoBehaviour
         //range.  With an optimal of 1.0 and a shape of 1,  values range from
         //1.0 at 1.0 to 0.0 at 0.0.  Lower values for shape flatten the
         //'fitness curve'. With shape <= 0, health will always equal 1.
-        float health = 1.0f - (System.Math.Abs(optimal - actual) * shape);
+        float health = 1.0f - ((float)System.Math.Abs(System.Math.Pow(optimal - actual, 3)) * shape);
         //Don't allow return values >1 or <0
         if (health > 1.0f)
         {
@@ -1707,13 +1710,13 @@ public class TreePlanterScript : MonoBehaviour
         float[] replacementProbabilities = new float[m_species];
         for (int species=1; species<m_species; species++)
         {
-            //97% local, 2.99% distant, 0.01% out-of-area
+            //98% local, 1.99% distant, 0.01% out-of-area
             replacementProbabilities[species] = ((m_replacementMatrix[species, currentSpecies] *
                                                  ((float)neighborSpeciesCounts[species] / 8.0f)) *
-                                                 0.97f) +
+                                                 0.98f) +
                                                  ((m_replacementMatrix[species, currentSpecies] *
                                                  ((float)m_totalSpeciesCounts[generation, species] /
-                                                  (m_xCells * m_zCells))) * 0.0295f) + 0.0001f;
+                                                  (m_xCells * m_zCells))) * 0.0199f) + 0.0001f;
         }
         return replacementProbabilities;
     }
