@@ -25,20 +25,20 @@ public class TreePlanterScript : MonoBehaviour
     //Row  and column indices are 1+ the prototype number (because row 1 and column 1 are for gaps.)
     float[,] m_masterReplacementMatrix = new float[15,15]{
         {0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f},
-        {0.25f, 0.10f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f},
-        {0.10f, 0.01f, 0.10f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f},
-        {0.35f, 0.01f, 0.01f, 0.10f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f},
-        {0.05f, 0.01f, 0.01f, 0.01f, 0.10f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f},
-        {0.25f, 0.01f, 0.01f, 0.01f, 0.01f, 0.10f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f},
-        {0.10f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.10f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f},
-        {0.25f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.10f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f},
-        {0.25f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.10f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f},
-        {0.30f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.10f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f},
-        {0.10f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.10f, 0.01f, 0.01f, 0.01f, 0.01f},
-        {0.25f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.10f, 0.01f, 0.01f, 0.01f},
-        {0.05f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.10f, 0.01f, 0.01f},
-        {0.05f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.10f, 0.01f},
-        {0.25f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.10f}
+        {0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f},
+        {0.16f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f}, //Aspen
+        {0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f},
+        {0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f},
+        {0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f},
+        {0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f},
+        {0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f},
+        {0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f},
+        {1.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f}, //Fern
+        {0.16f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f}, //Maple
+        {0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f},
+        {0.01f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f}, //Pine
+        {0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f},
+        {0.45f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f}  //Willow
         };
     //This smaller replacement matrix is for convenience.  We only have to dig through
     //the master replacement matrix once (to generate this smaller matrix) when we
@@ -63,20 +63,20 @@ public class TreePlanterScript : MonoBehaviour
                                                 "Cottonwood",
                                                 "Willow"};
     //Maximum age for each prototype
-    int[] m_lifespans = new int[14] {   30,
-                                        30,
-                                        5,
-                                        75,
-                                        15,
-                                        30,
-                                        15,
-                                        15,
-                                        5,
-                                        30,
-                                        15,
-                                        75,
-                                        75,
-                                        15};
+    int[] m_lifespans = new int[14] {   0,
+                                        25, //Aspen
+                                        0,
+                                        0,
+                                        0,
+                                        0,
+                                        0,
+                                        0,
+                                        3,  //Fern
+                                        25, //Maple
+                                        0,
+                                        100, //Pine
+                                        0,
+                                        10}; //Willow
     //The biomass of a newly established (age=0) individual of each prototype
     float[] m_baseBiomass = new float[14] { 100f,
                                             100f,
@@ -122,20 +122,20 @@ public class TreePlanterScript : MonoBehaviour
                                                 105f,
                                                 105f,
                                                 105f};
-    float[] m_altitudeEffects = new float[14] { 1.5f,
-                                                1.5f,
-                                                1.5f,
-                                                1.5f,
-                                                1.5f,
-                                                1.5f,
-                                                1.5f,
-                                                1.5f,
-                                                1.5f,
-                                                1.5f,
-                                                1.5f,
-                                                1.5f,
-                                                1.5f,
-                                                1.5f};
+    float[] m_altitudeEffects = new float[14] { 0f,
+                                                0f,
+                                                0f,
+                                                0f,
+                                                0f,
+                                                0f,
+                                                0f,
+                                                0f,
+                                                0f,
+                                                0f,
+                                                0f,
+                                                0f,
+                                                0f,
+                                                0f};
     float[] m_waterLevelOptimums = new float[14] {  0.5f,
                                                     0.5f,
                                                     0.5f,
@@ -150,20 +150,20 @@ public class TreePlanterScript : MonoBehaviour
                                                     0.5f,
                                                     0.5f,
                                                     0.5f,};
-    float[] m_waterLevelEffects = new float[14] {   4f,
-                                                    4f,
-                                                    4f,
-                                                    4f,
-                                                    4f,
-                                                    4f,
-                                                    4f,
-                                                    4f,
-                                                    4f,
-                                                    4f,
-                                                    4f,
-                                                    4f,
-                                                    4f,
-                                                    4f};
+    float[] m_waterLevelEffects = new float[14] {   2f,
+                                                    2f,
+                                                    2f,
+                                                    2f,
+                                                    2f,
+                                                    2f,
+                                                    2f,
+                                                    2f,
+                                                    2f,
+                                                    2f,
+                                                    2f,
+                                                    2f,
+                                                    2f,
+                                                    2f};
     float[] m_lightLevelOptimums = new float[14] {  0.5f,
                                                     0.5f,
                                                     0.5f,
@@ -291,6 +291,9 @@ public class TreePlanterScript : MonoBehaviour
     float[] m_convertWaterLevel = new float[5] {0f, 0.25f, 0.5f, 0.75f, 1.0f};
     float[] m_convertLightLevel = new float[5] {0f, 0.25f, 0.5f, 0.75f, 1.0f};
     float[] m_convertTemperatureLevel = new float[5] {0f, 0.25f, 0.5f, 0.75f, 1.0f};
+    //Some features of the environment don't change during the simulation.  Let's store
+    //the resulting health values so we don't recalculate them unnecessarily.
+    float[] m_fixedHealth = new float[6];
 
 
     #region Unity3D specific functions
@@ -1160,7 +1163,7 @@ public class TreePlanterScript : MonoBehaviour
                         if (newSpecies != 0)
                         {
                             int prototypeIndex = m_speciesList[newSpecies];
-                            int age = Random.Range(0, m_lifespans[prototypeIndex] / 3);
+                            int age = Random.Range(0, m_lifespans[prototypeIndex] / 2);
                             m_age[0, x, z] = age;
                             speciesAgeSums[newSpecies] = speciesAgeSums[newSpecies] + age;
                             float randomHealth = (float)m_random.NextDouble();
@@ -1190,7 +1193,7 @@ public class TreePlanterScript : MonoBehaviour
                         if (newSpecies != 0)
                         {
                             int prototypeIndex = m_speciesList[newSpecies];
-                            int age = Random.Range(0, m_lifespans[prototypeIndex] / 3);
+                            int age = Random.Range(0, m_lifespans[prototypeIndex] / 2);
                             m_age[0, x, z] = age;
                             speciesAgeSums[newSpecies] = speciesAgeSums[newSpecies] + age;
                             float randomHealth = (float)m_random.NextDouble();
@@ -1308,7 +1311,7 @@ public class TreePlanterScript : MonoBehaviour
                 if (newSpecies != 0)
                 {
                     int prototypeIndex = m_speciesList[newSpecies];
-                    int age = Random.Range(0, m_lifespans[prototypeIndex] / 3);
+                    int age = Random.Range(0, m_lifespans[prototypeIndex] / 2);
                     m_age[0, x, z] = age;
                     speciesAgeSums[newSpecies] = speciesAgeSums[newSpecies] + age;
                     float randomHealth = (float)m_random.NextDouble();
@@ -1345,6 +1348,12 @@ public class TreePlanterScript : MonoBehaviour
     void RunSimulation()
     {
         //Generate the simulation data
+        //Calculate the parts of the health values that will not change during the simulation
+        for (int species=1; species<m_species; species++)
+        {
+            m_fixedHealth[species] = CalculateFixedHealth(species);
+        }
+        //Step through each generation
         for (int generation=0; generation<m_generations - 1; generation++)
         {
             int[] speciesAgeSums = new int[m_species];
@@ -1405,7 +1414,8 @@ public class TreePlanterScript : MonoBehaviour
                                 float[] replacementProbability = GetReplacementProbabilities(
                                                                  currentSpecies,
                                                                  neighborSpeciesCounts,
-                                                                 generation);
+                                                                 generation,
+                                                                 m_cellPositions[x, z]);
                                 //Determine the next generation plant based on those probabilities
                                 int newSpecies = SelectNextGenerationSpecies(replacementProbability,
                                                  currentSpecies);
@@ -1441,7 +1451,8 @@ public class TreePlanterScript : MonoBehaviour
                                 //Calculate replacement probabilities based on a gap
                                 float[] replacementProbability = GetReplacementProbabilities(0,
                                                                  neighborSpeciesCounts,
-                                                                 generation);
+                                                                 generation,
+                                                                 m_cellPositions[x, z]);
                                 m_age[nextGeneration, x, z] = 0;
                                 //Determine the next generation plant based on those probabilities
                                 int newSpecies = SelectNextGenerationSpecies(replacementProbability, 0);
@@ -1591,30 +1602,43 @@ public class TreePlanterScript : MonoBehaviour
         return disturbanceMatrix;
     }
 
+    float CalculateFixedHealth(int species)
+    {
+        //Returns a value from 1.0 healthy to 0.0 unhealthy representing the health of the
+        //plant (its probability of survival), based on the environmental factors that do
+        //not change over the course of a simulation.
+        int prototypeIndex = m_speciesList[species];
+        //Generate a float from 0-1.0 representing the probability of
+        //survival based on water level, light level, and temperature level
+        float waterHealth = CalculateEnvironmentHealth(m_waterLevel,
+                                                       m_waterLevelOptimums[prototypeIndex],
+                                                       m_waterLevelEffects[prototypeIndex]);
+        float lightHealth = CalculateEnvironmentHealth(m_lightLevel,
+                                                       m_lightLevelOptimums[prototypeIndex],
+                                                       m_lightLevelEffects[prototypeIndex]);
+        float temperatureHealth = CalculateEnvironmentHealth(m_temperatureLevel,
+                                                             m_temperatureLevelOptimums[prototypeIndex],
+                                                             m_temperatureLevelEffects[prototypeIndex]);
+        //Overall fixed survival probability is the product of these separate survival probabilities
+        float fixedSurvivalProbability = waterHealth * lightHealth * temperatureHealth;
+        return fixedSurvivalProbability;
+    }
+
     float CalculateHealth(int species, int age, Vector3 coordinates)
     {
         //Returns a value from 1.0 healthy to 0.0 unhealthy representing the health of the
         //plant (its probability of survival).
         int prototypeIndex = m_speciesList[species];
+        //Get the portion of health based on factors that don't change over the simulation
+        float fixedHealth = m_fixedHealth[species];
         //Generate a float from 0-1.0 representing the probability of
-        //survival based on plant age, altitude, water level, light level, and temperature level
+        //survival based on plant age and altitude
         float ageHealth = CalculateAgeHealth(age, m_lifespans[prototypeIndex]);
         float altitudeHealth = CalculateAltitudeHealth(coordinates.y,
                                m_altitudeOptimums[prototypeIndex],
                                m_altitudeEffects[prototypeIndex]);
-        float waterHealth = CalculateHealth(m_waterLevel,
-                                            m_waterLevelOptimums[prototypeIndex],
-                                            m_waterLevelEffects[prototypeIndex]);
-        float lightHealth = CalculateHealth(m_lightLevel,
-                                            m_lightLevelOptimums[prototypeIndex],
-                                            m_lightLevelEffects[prototypeIndex]);
-        float temperatureHealth = CalculateHealth(m_temperatureLevel,
-                                                  m_temperatureLevelOptimums[prototypeIndex],
-                                                  m_temperatureLevelEffects[prototypeIndex]);
         //Overall survival probability is the product of these separate survival probabilities
-        float survivalProbability = (ageHealth * altitudeHealth * waterHealth *
-                                     lightHealth * temperatureHealth);
-
+        float survivalProbability = ageHealth * altitudeHealth * fixedHealth;
         return survivalProbability;
     }
 
@@ -1644,7 +1668,8 @@ public class TreePlanterScript : MonoBehaviour
         //optimal value and shape. This function works for age or others
         //parameters with a maximum rather than optimal value. Health is
         //highest (1.0) when age = 0 and decreases nonlinearly to 0.0 when age = maximumAge.
-        float health = 1.0f - (float)System.Math.Pow((float)actual/(float)maximumAge, 6);
+        int power = (int)System.Math.Ceiling(maximumAge / 10.0) + 2;
+        float health = 1.0f - (float)System.Math.Pow((float)actual/(float)maximumAge, power);
         //Don't allow return values >1 or <0
         if (health > 1.0f)
         {
@@ -1680,7 +1705,7 @@ public class TreePlanterScript : MonoBehaviour
         return health;
     }
 
-    float CalculateHealth(float actual, float optimal, float shape)
+    float CalculateEnvironmentHealth(float actual, float optimal, float shape)
     {
         //Returns a value from 0-1.0 representing the health of an individual
         //with an 'actual' value for some environmental parameter given the
@@ -1689,7 +1714,7 @@ public class TreePlanterScript : MonoBehaviour
         //range.  With an optimal of 1.0 and a shape of 1,  values range from
         //1.0 at 1.0 to 0.0 at 0.0.  Lower values for shape flatten the
         //'fitness curve'. With shape <= 0, health will always equal 1.
-        float health = 1.0f - ((float)System.Math.Abs(System.Math.Pow(optimal - actual, 3)) * shape);
+        float health = 1.0f - ((float)System.Math.Abs(System.Math.Pow(optimal - actual, 2)) * shape);
         //Don't allow return values >1 or <0
         if (health > 1.0f)
         {
@@ -1702,21 +1727,32 @@ public class TreePlanterScript : MonoBehaviour
         return health;
     }
 
-    float[] GetReplacementProbabilities(int currentSpecies, int[] neighborSpeciesCounts, int generation)
+    float[] GetReplacementProbabilities(int currentSpecies, int[] neighborSpeciesCounts, int generation, Vector3 location)
     {
         //Calculate the probability that the current plant will be replaced by each species.
+        //Includes a calculation of health of each species so we don't have the problem of plants
+        //replacing other plants even though the new plant is completely maladapted.
         //The first value is always 0 because gaps cannot replace a plant through competition.
         //Gaps arise only when a plant dies and no replacement is selected.
         float[] replacementProbabilities = new float[m_species];
         for (int species=1; species<m_species; species++)
         {
-            //98% local, 1.99% distant, 0.01% out-of-area
-            replacementProbabilities[species] = ((m_replacementMatrix[species, currentSpecies] *
-                                                 ((float)neighborSpeciesCounts[species] / 8.0f)) *
-                                                 0.98f) +
-                                                 ((m_replacementMatrix[species, currentSpecies] *
-                                                 ((float)m_totalSpeciesCounts[generation, species] /
-                                                  (m_xCells * m_zCells))) * 0.0199f) + 0.0001f;
+            //Mostly based on what plants are most common in the local area (local dispersal)
+            float localComponent = (m_replacementMatrix[species, currentSpecies] *
+                                    ((float)neighborSpeciesCounts[species] / 8.0f)) *
+                                    0.950f;
+            //Partly based on what plants are most common overall (long-distance dispersal)
+            float distantComponent = (m_replacementMatrix[species, currentSpecies] *
+                                      ((float)m_totalSpeciesCounts[generation, species] /
+                                      (m_xCells * m_zCells))) *
+                                      0.045f;
+            //Slightly based on random events (immigration from outside the simulation area)
+            float outOfAreaComponent = 0.005f;
+            //Total replacement probability is the sum of these three components, weighted by the health an
+            //individual of that species would have at age 0 at that location
+            float potentialHealth = CalculateHealth(species, 0, location);
+            replacementProbabilities[species] = ((localComponent + distantComponent + outOfAreaComponent) *
+                                                 potentialHealth);
         }
         return replacementProbabilities;
     }
