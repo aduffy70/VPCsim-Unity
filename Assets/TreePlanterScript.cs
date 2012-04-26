@@ -666,7 +666,6 @@ public class TreePlanterScript : MonoBehaviour
     {
         //Send species count logdata to the surrounding web page where it will be redirected to the webapp
         //which will generate plots in a new browser window or tab.
-        //TODO - generate plots of other data types (age, biomass, etc)
         string logData = GetCountLogData(true);
         Application.ExternalCall("OpenCountsPlotPage", m_simulationId, logData);
     }
@@ -675,7 +674,6 @@ public class TreePlanterScript : MonoBehaviour
     {
         //Send average age logdata to the surrounding web page where it will be redirected to the webapp
         //which will generate plots in a new browser window or tab.
-        //TODO - generate plots of other data types (biomass)
         string logData = GetAgeLogData(true);
         Application.ExternalCall("OpenAgePlotPage", m_simulationId, logData);
     }
@@ -684,7 +682,6 @@ public class TreePlanterScript : MonoBehaviour
     {
         //Send species biomass logdata to the surrounding web page where it will be redirected to the webapp
         //which will generate plots in a new browser window or tab.
-        //TODO - generate plots of other data types (biomass)
         string logData = GetBiomassLogData(true);
         Application.ExternalCall("OpenBiomassPlotPage", m_simulationId, logData);
     }
@@ -1403,10 +1400,8 @@ public class TreePlanterScript : MonoBehaviour
                             }
                             else
                             {
-                                health = CalculateHealth(currentSpecies,
-                                                         m_age[generation, x, z],
-                                                         m_cellPositions[x, z]);
-                                plantSurvives = CalculateSurvival(health);
+                                health = CalculateHealth(currentSpecies, m_cellPositions[x, z]);
+                                plantSurvives = CalculateSurvival(currentSpecies, health, m_age[generation, x, z]);
                             }
                             if (plantSurvives)
                             {
@@ -1605,11 +1600,8 @@ public class TreePlanterScript : MonoBehaviour
     float CalculateFixedHealth(int species)
     {
         //Returns a value from 1.0 healthy to 0.0 unhealthy representing the health of the
-        //plant (its probability of survival), based on the environmental factors that do
-        //not change over the course of a simulation.
+        //plant based on the environmental factors that do not change over the course of a simulation.
         int prototypeIndex = m_speciesList[species];
-        //Generate a float from 0-1.0 representing the probability of
-        //survival based on water level, light level, and temperature level
         float waterHealth = CalculateEnvironmentHealth(m_waterLevel,
                                                        m_waterLevelOptimums[prototypeIndex],
                                                        m_waterLevelEffects[prototypeIndex]);
@@ -1619,34 +1611,54 @@ public class TreePlanterScript : MonoBehaviour
         float temperatureHealth = CalculateEnvironmentHealth(m_temperatureLevel,
                                                              m_temperatureLevelOptimums[prototypeIndex],
                                                              m_temperatureLevelEffects[prototypeIndex]);
-        //Overall fixed survival probability is the product of these separate survival probabilities
-        float fixedSurvivalProbability = waterHealth * lightHealth * temperatureHealth;
-        return fixedSurvivalProbability;
+        //Overall fixed health is the product of these separate health values
+        float fixedHealth = waterHealth * lightHealth * temperatureHealth;
+        return fixedHealth;
     }
 
-    float CalculateHealth(int species, int age, Vector3 coordinates)
+    float CalculateHealth(int species, Vector3 coordinates)
     {
         //Returns a value from 1.0 healthy to 0.0 unhealthy representing the health of the
-        //plant (its probability of survival).
+        //plant based on environmental factors that are fixed and those that vary over space.
         int prototypeIndex = m_speciesList[species];
         //Get the portion of health based on factors that don't change over the simulation
         float fixedHealth = m_fixedHealth[species];
-        //Generate a float from 0-1.0 representing the probability of
-        //survival based on plant age and altitude
-        float ageHealth = CalculateAgeHealth(age, m_lifespans[prototypeIndex]);
+        //Generate a float from 0-1.0 representing the health based on altitude
         float altitudeHealth = CalculateAltitudeHealth(coordinates.y,
                                m_altitudeOptimums[prototypeIndex],
                                m_altitudeEffects[prototypeIndex]);
-        //Overall survival probability is the product of these separate survival probabilities
-        float survivalProbability = ageHealth * altitudeHealth * fixedHealth;
-        return survivalProbability;
+        //Overall health is the product of these separate health components
+        float health = fixedHealth * altitudeHealth;
+        return health;
     }
 
-    bool CalculateSurvival(float survivalProbability)
+    bool CalculateSurvival(int species, float health, int age)
     {
         //Return true if the plant survives or false if it does not
-        //Select a random float from 0-1.0.  Plant survives if
-        //random number <= probability of survival
+        int prototypeIndex = m_speciesList[species];
+        float survivalProbability;
+        //Adjust maximum lifespan based on health
+        float adjustedMaximumAge = m_lifespans[prototypeIndex] * health;
+        //Avoid divide by zero error for really unhealthy plants
+        if (adjustedMaximumAge > 0)
+        {
+            int power = (int)System.Math.Ceiling(adjustedMaximumAge / 20.0) + 2;
+            survivalProbability = 1.0f - (float)System.Math.Pow((float)age/adjustedMaximumAge, power);
+            //Don't allow health values >1 or <0
+            if (survivalProbability > 1.0f)
+            {
+                survivalProbability = 1.0f;
+            }
+            if (survivalProbability < 0f)
+            {
+                survivalProbability = 0f;
+            }
+        }
+        else
+        {
+            survivalProbability = 0f;
+        }
+        //Select a random float from 0-1.0.  Plant survives if random number <= survivalProbability
         float randomFloat = (float)m_random.NextDouble();
         if (randomFloat <= survivalProbability)
         {
@@ -1660,37 +1672,12 @@ public class TreePlanterScript : MonoBehaviour
         }
     }
 
-
-    float CalculateAgeHealth(int actual, int maximumAge)
-    {
-        //Returns a value from 0-1.0 representing the health of an individual
-        //with an 'actual' value for some environmental parameter given the
-        //optimal value and shape. This function works for age or others
-        //parameters with a maximum rather than optimal value. Health is
-        //highest (1.0) when age = 0 and decreases nonlinearly to 0.0 when age = maximumAge.
-        int power = (int)System.Math.Ceiling(maximumAge / 10.0) + 2;
-        float health = 1.0f - (float)System.Math.Pow((float)actual/(float)maximumAge, power);
-        //Don't allow return values >1 or <0
-        if (health > 1.0f)
-        {
-            health = 1.0f;
-        }
-        if (health < 0f)
-        {
-            health = 0f;
-        }
-        return health;
-    }
-
     float CalculateAltitudeHealth(float actual, float optimal, float shape)
     {
         //Returns a value from 0-1.0 representing the health of an individual
         //with an 'actual' value for some environmental parameter given the
         //optimal value and shape. This function works for altitude.  Lower
-        //values for shape flatten the 'fitness curve'. With shape=1 and
-        //optimum=0, health drops to 0 at the highest altitude (210).  When
-        //shape=1 and optimum=105, the health is >90% over the entire
-        //range of altitudes.
+        //values for shape flatten the 'fitness curve'.
         //With shape <= 0, health will always equal 1.0.
         float health = 1.0f - ((float)System.Math.Abs(System.Math.Pow((optimal - actual) / 210f, 3)) * shape);
         //Don't allow return values >1 or <0
@@ -1711,9 +1698,7 @@ public class TreePlanterScript : MonoBehaviour
         //with an 'actual' value for some environmental parameter given the
         //optimal value and shape. This function works for any parameter where
         //the actual values will range from 0-1.0 (or can be converted to that
-        //range.  With an optimal of 1.0 and a shape of 1,  values range from
-        //1.0 at 1.0 to 0.0 at 0.0.  Lower values for shape flatten the
-        //'fitness curve'. With shape <= 0, health will always equal 1.
+        //range.  With shape <= 0, health will always equal 1.
         float health = 1.0f - ((float)System.Math.Abs(System.Math.Pow(optimal - actual, 2)) * shape);
         //Don't allow return values >1 or <0
         if (health > 1.0f)
@@ -1750,7 +1735,7 @@ public class TreePlanterScript : MonoBehaviour
             float outOfAreaComponent = 0.005f;
             //Total replacement probability is the sum of these three components, weighted by the health an
             //individual of that species would have at age 0 at that location
-            float potentialHealth = CalculateHealth(species, 0, location);
+            float potentialHealth = CalculateHealth(species, location);
             replacementProbabilities[species] = ((localComponent + distantComponent + outOfAreaComponent) *
                                                  potentialHealth);
         }
