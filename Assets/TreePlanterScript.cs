@@ -15,9 +15,9 @@ public class TreePlanterScript : MonoBehaviour
     //Whether each cell is marked as permanently disturbed
     bool[,] m_permanentDisturbanceMap;
     //Number of species included in the community (actually number of species +1 for gaps)
-    int m_species = 6;
+    int m_species;
     //Unity tree prototypes to include in the community (-1 represents a gap with no tree)
-    int[] m_speciesList = new int[6];
+    int[] m_speciesList;
     //Replacement Matrix.  The probability of replacement of a tree of one prototype
     //by another prototype if it is entirely surrounded by the other species.
     //Example [1,2] is the probability that species 2 will be replaced by species 1, if
@@ -46,7 +46,7 @@ public class TreePlanterScript : MonoBehaviour
     //The first row will always be zero's because a gap never replaces a plant (that
     //only happens when the plant dies due to age or environment). But by having that
     //row of zero's the index numbers can correspond to the species numbers.
-    float[,] m_replacementMatrix = new float[6,6];
+    float[,] m_replacementMatrix;
     //Store the human-readable plant names so we can display them later
     string[] m_prototypeNames = new string[14] {"Alder",
                                                 "Aspen",
@@ -235,11 +235,11 @@ public class TreePlanterScript : MonoBehaviour
                                                 1.5f,
                                                 1.2f,
                                                 1.0f};
-    float m_ongoingDisturbanceRate = 0.0f;
+    float m_ongoingDisturbanceRate;
     //These levels range from 0-1.0.  Default to 0.5 (mid-range or normal)
-    float m_waterLevel = 0.5f;
-    float m_lightLevel = 0.5f;
-    float m_temperatureLevel = 0.5f;
+    float m_waterLevel;
+    float m_lightLevel;
+    float m_temperatureLevel;
     //Number of x and z cells (horizontal plane is xz in Unity3D)
     int m_xCells = 100;
     int m_zCells = 100;
@@ -293,7 +293,7 @@ public class TreePlanterScript : MonoBehaviour
     float[] m_convertTemperatureLevel = new float[5] {0f, 0.25f, 0.5f, 0.75f, 1.0f};
     //Some features of the environment don't change during the simulation.  Let's store
     //the resulting health values so we don't recalculate them unnecessarily.
-    float[] m_fixedHealth = new float[6];
+    float[] m_fixedHealth;
 
 
     #region Unity3D specific functions
@@ -1135,6 +1135,12 @@ public class TreePlanterScript : MonoBehaviour
             m_totalSpeciesBiomass = new float[m_generations, m_species];
             m_cellPositions = new Vector3[m_xCells, m_zCells];
             int[] speciesAgeSums = new int[m_species];
+            //Calculate the parts of the health values that will not change during the simulation
+            m_fixedHealth = new float[m_species];
+            for (int species=1; species<m_species; species++)
+            {
+                m_fixedHealth[species] = CalculateFixedHealth(species);
+            }
             for (int z=0; z<m_zCells; z++)
             {
                 for (int x=0; x<m_xCells; x++)
@@ -1239,6 +1245,7 @@ public class TreePlanterScript : MonoBehaviour
         //for just the species included in this simulation.  In future steps it
         //is much less confusing to work from this smaller matrix where both
         //row and column indices correspond to the species numbers.
+        m_replacementMatrix = new float[m_species, m_species];
         int rowPrototype;
         int columnPrototype;
         for (int i=0; i<m_species; i++)
@@ -1281,9 +1288,21 @@ public class TreePlanterScript : MonoBehaviour
         m_averageSpeciesAges = new float[m_generations, 6];
         m_totalSpeciesBiomass = new float[m_generations, 6];
         m_cellPositions = new Vector3[m_xCells, m_zCells];
+        m_waterLevel = 0.5f;
+        m_lightLevel = 0.5f;
+        m_temperatureLevel = 0.5f;
+        m_ongoingDisturbanceRate = 0.0f;
+
+
         //Make a default disturbance map with no permanent disturbances
         m_permanentDisturbanceMap = new bool[m_xCells, m_zCells];
         int[] speciesAgeSums = new int[6];
+        //Calculate the parts of the health values that will not change during the simulation
+        m_fixedHealth = new float[m_species];
+        for (int species=1; species<m_species; species++)
+        {
+            m_fixedHealth[species] = CalculateFixedHealth(species);
+        }
         for (int z=0; z<m_zCells; z++)
         {
             for (int x=0; x<m_xCells; x++)
@@ -1304,16 +1323,17 @@ public class TreePlanterScript : MonoBehaviour
                 //dieoff early in the simulation, but skew the distribution
                 //of ages downward or we will start with a dieoff because a
                 //random selection of ages has many more old ages than expected.
-                //Also assign a random health so we can calculate a starting biomass.
+                //Also calculate health so we can calculate a starting biomass.
                 if (newSpecies != 0)
                 {
                     int prototypeIndex = m_speciesList[newSpecies];
                     int age = Random.Range(0, m_lifespans[prototypeIndex] / 2);
                     m_age[0, x, z] = age;
                     speciesAgeSums[newSpecies] = speciesAgeSums[newSpecies] + age;
-                    float randomHealth = (float)m_random.NextDouble();
+                    //float randomHealth = (float)m_random.NextDouble();
+                    float health = CalculateHealth(newSpecies, position);
                     float biomass = (m_baseBiomass[prototypeIndex] +
-                                     (age * randomHealth * m_biomassIncrease[prototypeIndex]));
+                                     (age * health * m_biomassIncrease[prototypeIndex]));
                     m_biomass[0, x, z] = biomass;
                     m_totalSpeciesBiomass[0, newSpecies] += biomass;
                 }
@@ -1345,11 +1365,6 @@ public class TreePlanterScript : MonoBehaviour
     void RunSimulation()
     {
         //Generate the simulation data
-        //Calculate the parts of the health values that will not change during the simulation
-        for (int species=1; species<m_species; species++)
-        {
-            m_fixedHealth[species] = CalculateFixedHealth(species);
-        }
         //Step through each generation
         for (int generation=0; generation<m_generations - 1; generation++)
         {
