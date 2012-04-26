@@ -1292,8 +1292,6 @@ public class TreePlanterScript : MonoBehaviour
         m_lightLevel = 0.5f;
         m_temperatureLevel = 0.5f;
         m_ongoingDisturbanceRate = 0.0f;
-
-
         //Make a default disturbance map with no permanent disturbances
         m_permanentDisturbanceMap = new bool[m_xCells, m_zCells];
         int[] speciesAgeSums = new int[6];
