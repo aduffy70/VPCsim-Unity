@@ -24,10 +24,11 @@ public class TreePlanterScript : MonoBehaviour
     //species 2 is entirely surrounded by species 1.  Row one is all 0.0 because gaps don't replace plants.
     //Row  and column indices are 1+ the prototype number (because row 1 and column 1 are for gaps.)
     float[,] m_masterReplacementMatrix = new float[15,15]{
+        //      Alder  Aspen  Start  Junip  Servi  Sageb  Sumac  Wildr  Fern   Maple  Elder  Pine   Cotto  Willo
         {0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f},
         {0.16f, 0.05f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f}, //Alder
         {0.16f, 0.01f, 0.05f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f}, //Aspen
-        {0.90f, 0.01f, 0.01f, 0.05f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f}, //Starthistle
+        {0.95f, 0.05f, 0.05f, 0.05f, 0.05f, 0.05f, 0.05f, 0.05f, 0.05f, 0.05f, 0.05f, 0.05f, 0.05f, 0.05f, 0.05f}, //Starthistle
         {0.01f, 0.01f, 0.01f, 0.01f, 0.05f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f}, //Juniper
         {0.45f, 0.01f, 0.01f, 0.01f, 0.01f, 0.05f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f}, //Serviceberry
         {0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.05f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f}, //Sagebrush
@@ -78,53 +79,53 @@ public class TreePlanterScript : MonoBehaviour
                                         25,  //Cottonwood
                                         10}; //Willow
     //The biomass of a newly established (age=0) individual of each prototype
-    float[] m_baseBiomass = new float[14] { 100f,  //Alder
-                                            100f,  //Aspen
-                                            100f,  //Starthistle
-                                            100f,  //Juniper
-                                            100f,  //Serviceberry
-                                            100f,  //Sagebrush
-                                            100f,  //Sumac
-                                            100f,  //Wildrose
-                                            100f,  //Fern
-                                            100f,  //Maple
-                                            100f,  //Elderberry
-                                            100f,  //Pine
-                                            100f,  //Cottonwood
-                                            100f}; //Willow
+    float[] m_baseBiomass = new float[14] { 10f,  //Alder
+                                            10f,  //Aspen
+                                            1f,  //Starthistle
+                                            10f,  //Juniper
+                                            5f,  //Serviceberry
+                                            5f,  //Sagebrush
+                                            1f,  //Sumac
+                                            5f,  //Wildrose
+                                            1f,  //Fern
+                                            10f,  //Maple
+                                            1f,  //Elderberry
+                                            10f,  //Pine
+                                            10f,  //Cottonwood
+                                            10f}; //Willow
     //The amount of biomass increase per year at maximum health for each prototype
-    float[] m_biomassIncrease = new float[14] { 10f,  //Alder
-                                                10f,  //Aspen
-                                                10f,  //Starthistle
-                                                10f,  //Juniper
-                                                10f,  //Serviceberry
-                                                10f,  //Sagebrush
-                                                10f,  //Sumac
-                                                10f,  //Wildrose
-                                                10f,  //Fern
-                                                10f,  //Maple
-                                                10f,  //Elderberry
+    float[] m_biomassIncrease = new float[14] { 5f,  //Alder
+                                                5f,  //Aspen
+                                                1f,  //Starthistle
+                                                1f,  //Juniper
+                                                5f,  //Serviceberry
+                                                1f,  //Sagebrush
+                                                5f,  //Sumac
+                                                5f,  //Wildrose
+                                                1f,  //Fern
+                                                5f,  //Maple
+                                                5f,  //Elderberry
                                                 10f,  //Pine
                                                 10f,  //Cottonwood
                                                 10f}; //Willow
     //Optimal values and shape parameters for each prototype
-    float[] m_altitudeOptimums = new float[14] {105f,  //Alder
+    float[] m_altitudeOptimums = new float[14] {25f,  //Alder
                                                 105f,  //Aspen
                                                 105f,  //Starthistle
                                                 105f,  //Juniper
-                                                105f,  //Serviceberry
+                                                185f,  //Serviceberry
                                                 105f,  //Sagebrush
                                                 105f,  //Sumac
                                                 105f,  //Wildrose
                                                 105f,  //Fern
                                                 105f,  //Maple
-                                                105f,  //Elderberry
+                                                185f,  //Elderberry
                                                 105f,  //Pine
-                                                105f,  //Cottonwood
+                                                25f,  //Cottonwood
                                                 105f}; //Willow
     float[] m_altitudeEffects = new float[14] { 2f,  //Alder
                                                 2f,  //Aspen
-                                                2f,  //Starthistle
+                                                1f,  //Starthistle
                                                 2f,  //Juniper
                                                 2f,  //Serviceberry
                                                 2f,  //Sagebrush
@@ -136,23 +137,23 @@ public class TreePlanterScript : MonoBehaviour
                                                 2f,  //Pine
                                                 2f,  //Cottonwood
                                                 2f}; //Willow
-    float[] m_waterLevelOptimums = new float[14] {  0.5f,  //Alder
+    float[] m_waterLevelOptimums = new float[14] {  0.75f,  //Alder
                                                     0.5f,  //Aspen
                                                     0.5f,  //Starthistle
-                                                    0.5f,  //Juniper
+                                                    0.25f,  //Juniper
                                                     0.5f,  //Serviceberry
-                                                    0.5f,  //Sagebrush
+                                                    0.25f,  //Sagebrush
                                                     0.5f,  //Sumac
                                                     0.5f,  //Wildrose
-                                                    0.5f,  //Fern
+                                                    0.75f,  //Fern
                                                     0.5f,  //Maple
                                                     0.5f,  //Elderberry
-                                                    0.5f,  //Pine
+                                                    0.25f,  //Pine
                                                     0.5f,  //Cottonwood
-                                                    0.5f,}; //Willow
+                                                    0.75f,}; //Willow
     float[] m_waterLevelEffects = new float[14] {   2f,  //Alder
                                                     2f,  //Aspen
-                                                    2f,  //Starthistle
+                                                    1f,  //Starthistle
                                                     2f,  //Juniper
                                                     2f,  //Serviceberry
                                                     2f,  //Sagebrush
@@ -168,37 +169,37 @@ public class TreePlanterScript : MonoBehaviour
                                                     0.5f,  //Aspen
                                                     0.5f,  //Starthistle
                                                     0.5f,  //Juniper
-                                                    0.5f,  //Serviceberry
-                                                    0.5f,  //Sagebrush
-                                                    0.5f,  //Sumac
-                                                    0.5f,  //Wildrose
-                                                    0.5f,  //Fern
+                                                    0.25f,  //Serviceberry
+                                                    0.75f,  //Sagebrush
+                                                    0.75f,  //Sumac
+                                                    0.25f,  //Wildrose
+                                                    0.55f,  //Fern
                                                     0.5f,  //Maple
                                                     0.5f,  //Elderberry
                                                     0.5f,  //Pine
                                                     0.5f,  //Cottonwood
                                                     0.5f}; //Willow
-    float[] m_lightLevelEffects = new float[14] {   4f,  //Alder
-                                                    4f,  //Aspen
-                                                    4f,  //Starthistle
-                                                    4f,  //Juniper
-                                                    4f,  //Serviceberry
-                                                    4f,  //Sagebrush
-                                                    4f,  //Sumac
-                                                    4f,  //Wildrose
-                                                    4f,  //Fern
-                                                    4f,  //Maple
-                                                    4f,  //Elderberry
-                                                    4f,  //Pine
-                                                    4f,  //Cottonwood
-                                                    4f}; //Willow
-    float[] m_temperatureLevelOptimums = new float[14] {0.5f,  //Alder
+    float[] m_lightLevelEffects = new float[14] {   1.5f,  //Alder
+                                                    1.5f,  //Aspen
+                                                    0.75f,  //Starthistle
+                                                    1.5f,  //Juniper
+                                                    1.5f,  //Serviceberry
+                                                    1.5f,  //Sagebrush
+                                                    1.5f,  //Sumac
+                                                    1.5f,  //Wildrose
+                                                    1.5f,  //Fern
+                                                    1.5f,  //Maple
+                                                    1.5f,  //Elderberry
+                                                    1.5f,  //Pine
+                                                    1.5f,  //Cottonwood
+                                                    1.5f}; //Willow
+    float[] m_temperatureLevelOptimums = new float[14] {0.25f,  //Alder
                                                         0.5f,  //Aspen
                                                         0.5f,  //Starthistle
                                                         0.5f,  //Juniper
                                                         0.5f,  //Serviceberry
                                                         0.5f,  //Sagebrush
-                                                        0.5f,  //Sumac
+                                                        0.25f,  //Sumac
                                                         0.5f,  //Wildrose
                                                         0.5f,  //Fern
                                                         0.5f,  //Maple
@@ -206,20 +207,20 @@ public class TreePlanterScript : MonoBehaviour
                                                         0.5f,  //Pine
                                                         0.5f,  //Cottonwood
                                                         0.5f}; //Willow
-    float[] m_temperatureLevelEffects = new float[14] { 4f,  //Alder
-                                                        4f,  //Aspen
-                                                        4f,  //Starthistle
-                                                        4f,  //Juniper
-                                                        4f,  //Serviceberry
-                                                        4f,  //Sagebrush
-                                                        4f,  //Sumac
-                                                        4f,  //Wildrose
-                                                        4f,  //Fern
-                                                        4f,  //Maple
-                                                        4f,  //Elderberry
-                                                        4f,  //Pine
-                                                        4f,  //Cottonwood
-                                                        4f}; //Willow
+    float[] m_temperatureLevelEffects = new float[14] { 3f,  //Alder
+                                                        3f,  //Aspen
+                                                        1.5f,  //Starthistle
+                                                        3f,  //Juniper
+                                                        3f,  //Serviceberry
+                                                        3f,  //Sagebrush
+                                                        3f,  //Sumac
+                                                        3f,  //Wildrose
+                                                        3f,  //Fern
+                                                        3f,  //Maple
+                                                        3f,  //Elderberry
+                                                        3f,  //Pine
+                                                        3f,  //Cottonwood
+                                                        3f}; //Willow
     //Adjust the default sizes of the plants
     float[] m_prototypeScales = new float[14] { 1.2f,  //Alder
                                                 1.5f,  //Aspen
