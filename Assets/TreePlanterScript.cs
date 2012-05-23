@@ -109,34 +109,34 @@ public class TreePlanterScript : MonoBehaviour
                                                 10f,  //Cottonwood
                                                 10f}; //Willow
     //Optimal values and shape parameters for each prototype
-    float[] m_altitudeOptimums = new float[14] {25f,  //Alder
-                                                105f,  //Aspen
-                                                105f,  //Starthistle
-                                                105f,  //Juniper
-                                                185f,  //Serviceberry
-                                                105f,  //Sagebrush
-                                                105f,  //Sumac
-                                                105f,  //Wildrose
-                                                105f,  //Fern
-                                                105f,  //Maple
-                                                185f,  //Elderberry
-                                                105f,  //Pine
-                                                25f,  //Cottonwood
-                                                105f}; //Willow
-    float[] m_altitudeEffects = new float[14] { 2f,  //Alder
-                                                2f,  //Aspen
-                                                1f,  //Starthistle
-                                                2f,  //Juniper
-                                                2f,  //Serviceberry
-                                                2f,  //Sagebrush
-                                                2f,  //Sumac
-                                                2f,  //Wildrose
-                                                2f,  //Fern
-                                                2f,  //Maple
-                                                2f,  //Elderberry
-                                                2f,  //Pine
-                                                2f,  //Cottonwood
-                                                2f}; //Willow
+    float[] m_altitudeOptimums = new float[14] {1f,  //Alder
+                                                95f,  //Aspen
+                                                95f,  //Starthistle
+                                                95f,  //Juniper
+                                                150f,  //Serviceberry
+                                                95f,  //Sagebrush
+                                                95f,  //Sumac
+                                                95f,  //Wildrose
+                                                95f,  //Fern
+                                                95f,  //Maple
+                                                150f,  //Elderberry
+                                                95f,  //Pine
+                                                1f,  //Cottonwood
+                                                95f}; //Willow
+    float[] m_altitudeEffects = new float[14] { 15f,  //Alder
+                                                15f,  //Aspen
+                                                1.5f,  //Starthistle
+                                                15f,  //Juniper
+                                                3f,  //Serviceberry
+                                                15f,  //Sagebrush
+                                                15f,  //Sumac
+                                                15f,  //Wildrose
+                                                15f,  //Fern
+                                                15f,  //Maple
+                                                3f,  //Elderberry
+                                                15f,  //Pine
+                                                15f,  //Cottonwood
+                                                15f}; //Willow
     float[] m_waterLevelOptimums = new float[14] {  0.75f,  //Alder
                                                     0.5f,  //Aspen
                                                     0.5f,  //Starthistle
@@ -1154,6 +1154,7 @@ public class TreePlanterScript : MonoBehaviour
                                                    0.0f,
                                                    z * (1.0f / m_zCells) + Random.Range(-0.01f, 0.01f));
                     //Store the coordinates of each position so we don't have to recalculate them
+                    position.y = Terrain.activeTerrain.SampleHeight(new Vector3(position.x * 1000, 0.0f, position.z * 1000));
                     m_cellPositions[x, z] = position;
                     int newSpecies;
                     //The world has a 100x100 matrix of plants but the form to control it
@@ -1313,6 +1314,7 @@ public class TreePlanterScript : MonoBehaviour
                 Vector3 position = new Vector3(x * (1.0f / m_xCells) + Random.Range(-0.01f, 0.01f),
                                                0.0f,
                                                z * (1.0f / m_zCells) + Random.Range(-0.01f, 0.01f));
+                position.y = Terrain.activeTerrain.SampleHeight(new Vector3(position.x * 1000, 0.0f, position.z * 1000));
                 //Store the coordinates of each position so we don't have to recalculate them
                 m_cellPositions[x, z] = position;
                 //Choose a species at random
