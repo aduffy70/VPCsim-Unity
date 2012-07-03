@@ -10,7 +10,7 @@ using System.Collections;
 
 public class VPCsimCharacterController : MonoBehaviour
 {
-	Vector3 m_homePosition = new Vector3(500, 50, 500);
+	Vector3 m_homePosition = new Vector3(500.5f, 50, 500.5f);
 	Vector3 m_homeRotation = new Vector3(0, 0, 0);
 	float m_rotationSpeedY = 0.75f;
 	float m_minimumY = -90f;
