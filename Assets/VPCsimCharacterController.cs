@@ -114,7 +114,7 @@ public class VPCsimCharacterController : MonoBehaviour
 			//Sampling-mode movement
 			//Facing down with North at top of screen.
 			//Arrow keys move N,S,E,W while maintaining fixed height above terrain.
-			//If you move off the edge of the terrain you maintain altitude.
+			//If you move off the edge of the terrain you maintain elevation.
 			if (Input.GetKey("e"))
 			{
 				m_sampleHeight += 0.05f;
@@ -180,7 +180,7 @@ public class VPCsimCharacterController : MonoBehaviour
 		GUI.Label(new Rect(10, 515, 100, 25), "Speed: " + displayedSpeed.ToString());
 		GUI.Label(new Rect(10, 475, 145, 50), "Position: N" + ((int)position.z).ToString() + "  E" +
                                               ((int)position.x).ToString() +
-											  "\nAltitude: " + ((int)position.y).ToString() + "m");
+											  "\nElevation: " + ((int)position.y).ToString() + "m");
 		bool helpButton = GUI.Button(new Rect(10, 555, 60, 20), new GUIContent("Help", "Movement instructions"));
 		if (!System.String.IsNullOrEmpty(GUI.tooltip))
 		{

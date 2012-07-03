@@ -109,7 +109,7 @@ public class TreePlanterScript : MonoBehaviour
                                                 10f,  //Cottonwood
                                                 10f}; //Willow
     //Optimal values and shape parameters for each prototype
-    float[] m_altitudeOptimums = new float[14] {1f,  //Alder
+    float[] m_elevationOptimums = new float[14] {1f,  //Alder
                                                 95f,  //Aspen
                                                 95f,  //Starthistle
                                                 95f,  //Juniper
@@ -123,7 +123,7 @@ public class TreePlanterScript : MonoBehaviour
                                                 95f,  //Pine
                                                 1f,  //Cottonwood
                                                 95f}; //Willow
-    float[] m_altitudeEffects = new float[14] { 15f,  //Alder
+    float[] m_elevationEffects = new float[14] { 15f,  //Alder
                                                 15f,  //Aspen
                                                 1.5f,  //Starthistle
                                                 15f,  //Juniper
@@ -1638,12 +1638,12 @@ public class TreePlanterScript : MonoBehaviour
         int prototypeIndex = m_speciesList[species];
         //Get the portion of health based on factors that don't change over the simulation
         float fixedHealth = m_fixedHealth[species];
-        //Generate a float from 0-1.0 representing the health based on altitude
-        float altitudeHealth = CalculateAltitudeHealth(coordinates.y,
-                               m_altitudeOptimums[prototypeIndex],
-                               m_altitudeEffects[prototypeIndex]);
+        //Generate a float from 0-1.0 representing the health based on elevation
+        float elevationHealth = CalculateElevationHealth(coordinates.y,
+                               m_elevationOptimums[prototypeIndex],
+                               m_elevationEffects[prototypeIndex]);
         //Overall health is the product of these separate health components
-        float health = fixedHealth * altitudeHealth;
+        float health = fixedHealth * elevationHealth;
         return health;
     }
 
@@ -1687,11 +1687,11 @@ public class TreePlanterScript : MonoBehaviour
         }
     }
 
-    float CalculateAltitudeHealth(float actual, float optimal, float shape)
+    float CalculateElevationHealth(float actual, float optimal, float shape)
     {
         //Returns a value from 0-1.0 representing the health of an individual
         //with an 'actual' value for some environmental parameter given the
-        //optimal value and shape. This function works for altitude.  Lower
+        //optimal value and shape. This function works for elevation.  Lower
         //values for shape flatten the 'fitness curve'.
         //With shape <= 0, health will always equal 1.0.
         float health = 1.0f - ((float)System.Math.Abs(System.Math.Pow((optimal - actual) / 210f, 3)) * shape);
