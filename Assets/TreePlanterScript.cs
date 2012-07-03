@@ -6,6 +6,8 @@ using System.Text;
 
 public class TreePlanterScript : MonoBehaviour
 {
+    //A version string to display on the GUI so we can spot browsers running outdated cached versions
+    string m_versionID = "v1.0";
     System.Random m_random = new System.Random();
     string m_simulationId = "none";
     //Number of time steps to simulate
@@ -320,6 +322,8 @@ public class TreePlanterScript : MonoBehaviour
     void OnGUI()
     {
         //Generate the GUI controls and HUD
+        //Display the release version in the bottom right corner
+        GUI.Label(new Rect(770, 580, 35, 20), m_versionID);
         //Create an unused button off-screen so we can move focus out of the TextFields
         GUI.SetNextControlName("focusBuster");
         bool focusBusterButton = GUI.Button(new Rect(-10, -10, 1, 1),
